@@ -1,20 +1,22 @@
 package project
 
 import (
-	"net/http"
-	"time"
+	"goSpider/spider"
+	"net/url"
 )
 
 type Project interface {
+	EntryUrl() []string
+
 	// session
-	NeedToLogin() bool
-	IsLogin() bool
-	LoginWithHeader() *http.Header
+	NeedToLogin(spider *spider.Spider) bool
+	IsLogin(spider *spider.Spider) bool
+	Login(spider *spider.Spider)
 
 	// queue
-	EnqueueFilter() bool
+	EnqueueFilter(spider *spider.Spider, l *url.URL) bool
 
 	// frequency
-	NeedToPause() bool
-	Throttle() time.Duration
+	NeedToPause(spider *spider.Spider) bool
+	Throttle(spider *spider.Spider)
 }
