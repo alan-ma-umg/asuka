@@ -5,6 +5,8 @@ import (
 	"goSpider/database"
 	"goSpider/helper"
 	"time"
+	"goSpider/project"
+	"goSpider/dispatcher"
 )
 
 func main() {
@@ -15,6 +17,9 @@ func main() {
 
 	database.Bl().ClearAll()                             //todo for test
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+
+	c := &dispatcher.Dispatcher{}
+	c.Run(&project.DouBan{})
 
 	//c := &spider.Dispatcher{}
 

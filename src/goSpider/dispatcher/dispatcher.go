@@ -1,4 +1,4 @@
-package spider
+package dispatcher
 
 import (
 	"fmt"
@@ -10,19 +10,20 @@ import (
 	"sort"
 	"sync"
 	"time"
+	"goSpider/spider"
 )
 
 type Dispatcher struct {
 	transportArr   []*proxy.Transport
-	spiderArr      []*Spider
+	spiderArr      []*spider.Spider
 	initSSOnce     sync.Once
 	initSpiderOnce sync.Once
 }
 
-func (dispatcher *Dispatcher) InitSpider() []*Spider {
+func (dispatcher *Dispatcher) InitSpider() []*spider.Spider {
 	dispatcher.initSpiderOnce.Do(func() {
 		for _, t := range dispatcher.InitTransport() {
-			dispatcher.spiderArr = append(dispatcher.spiderArr, New(t, nil))
+			dispatcher.spiderArr = append(dispatcher.spiderArr, spider.New(t, nil))
 		}
 	})
 	return dispatcher.spiderArr
@@ -51,7 +52,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 	return dispatcher.transportArr
 }
 
-func (dispatcher *Dispatcher) dispatcherSpider() *Spider {
+func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
 	if len(dispatcher.spiderArr) == 0 {
 		return nil
 	}
@@ -89,7 +90,7 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 			project.Login(s)
 		}
 
-		go func(s *Spider) {
+		go func(s *spider.Spider) {
 			st := time.Now()
 			s.Crawl(project.EnqueueFilter)
 			et := time.Since(st)
