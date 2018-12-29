@@ -7,14 +7,10 @@ import (
 	"goSpider/proxy"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
-	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -23,12 +19,15 @@ var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]
 var imageRegex, _ = regexp.Compile("(?i)(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)")
 
 type Spider struct {
-	Transport      *proxy.Transport
-	Client         *http.Client
-	CurrentRequest *http.Request
-	RequestsMap    map[string]*http.Request
-	BodyStr        string
-	BodyByte       []byte
+	Transport *proxy.Transport
+	Client    *http.Client
+
+	RequestsMap     map[string]*http.Request
+	CurrentRequest  *http.Request
+	CurrentResponse *http.Response
+
+	ResponseStr  string
+	ResponseByte []byte
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
@@ -71,28 +70,42 @@ func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(url *url.URL) bool {
+func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 	spider.setRequest(url, nil)
 
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
-	res, httpCode, err := requestUrl(spider.Client, spider.CurrentRequest)
+
+	resp, err := spider.Client.Do(spider.CurrentRequest)
+
+	//res, httpCode, err := requestUrl(spider.Client, spider.CurrentRequest)
 	if err != nil {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		fmt.Println("Request Error ", err)
-		return false
+		return resp, err
 	}
-	if httpCode != 200 {
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		fmt.Println("http status" + strconv.Itoa(httpCode))
-		return false
+		fmt.Println("http status", resp.StatusCode)
 	}
-	spider.BodyStr = string(res[:])
-	spider.BodyByte = res
-	return true
+
+	res, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return resp, err
+	}
+
+	spider.ResponseStr = string(res[:])
+	spider.ResponseByte = res
+	return resp, err
+}
+
+func (spider *Spider) ReadAllResponseBody() {
+
 }
 
 func (spider *Spider) GetLinks() (arr []*url.URL) {
-	for _, sub := range linkRegex.FindAllStringSubmatch(spider.BodyStr, -1) {
+	for _, sub := range linkRegex.FindAllStringSubmatch(spider.ResponseStr, -1) {
 		u, err := url.Parse(sub[1])
 		if err != nil {
 			panic(err)
@@ -104,7 +117,7 @@ func (spider *Spider) GetLinks() (arr []*url.URL) {
 }
 
 func (spider *Spider) GetImageLinks() (arr []*url.URL) {
-	for _, sub := range imageRegex.FindAllStringSubmatch(spider.BodyStr, -1) {
+	for _, sub := range imageRegex.FindAllStringSubmatch(spider.ResponseStr, -1) {
 		u, err := url.Parse(sub[0])
 		if err != nil {
 			panic(err)
@@ -133,24 +146,19 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	if ssArr == "" {
 		ssArr = "localhost"
 	}
-	fmt.Println(ssArr, u.String()) //todo
 
-	spider.Fetch(u)
-	fmt.Println(strings.Contains(spider.BodyStr, "Golang1"))
+	st := time.Now()
+	_, err = spider.Fetch(u)
+	fmt.Println(ssArr, time.Since(st), u.String()) //todo
+	if err != nil {
+		fmt.Println(u.String(), err)
+		return
+	}
 
 	for _, l := range spider.GetLinks() {
 		if filter != nil && !filter(spider, l) {
 			continue
 		}
-		//pass := false
-		//for _, white := range hostWhiteList {
-		//	if strings.Contains(strings.ToLower(l.Hostname()), white) {
-		//		pass = true
-		//	}
-		//}
-		//if !pass {
-		//	continue
-		//}
 
 		if database.Bl().TestAndAddString(l.String()) {
 			continue
@@ -160,64 +168,33 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	}
 }
 
-func requestUrl(httpClient *http.Client, r *http.Request) (res []byte, httpCode int, err error) {
-	//todo auto redirect
-
-	// create a request
-	//req, err := http.NewRequest("GET", u.String(), nil)
-	//if err != nil {
-	//	fmt.Fprintln(os.Stderr, "can't create request:", err)
-	//	os.Exit(2)
-	//}
-
-	//request
-
-	resp, err := httpClient.Do(r)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	// read response body
-	res, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-	return res, resp.StatusCode, nil
-}
-
-func requireCookie() *cookiejar.Jar {
-	c, _ := cookiejar.New(nil)
-	return c
-}
-
-func DownloadImage(sp *Spider) {
-	for _, u := range sp.GetImageLinks() {
-		if database.Bl().TestString(u.String()) {
-			continue
-		}
-		database.Bl().AddString(u.String())
-
-		go func(u *url.URL) {
-			//r, _ := http.NewRequest("GET", u.String(), nil)
-			imgSp := New(nil, nil)
-			imgSp.Fetch(u)
-
-			filename := filepath.Base(u.String())
-			if filename == "" {
-				filename = strconv.Itoa(rand.Int())
-			}
-
-			savePath := helper.WorkspacePath() + filename
-			if err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm); err != nil {
-				log.Fatal(err)
-			}
-			outFile, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-			if err != nil {
-				log.Fatal(err)
-			}
-			outFile.Write(imgSp.BodyByte)
-			outFile.Close()
-		}(u)
-	}
-}
+//func DownloadImage(sp *Spider) {
+//	for _, u := range sp.GetImageLinks() {
+//		if database.Bl().TestString(u.String()) {
+//			continue
+//		}
+//		database.Bl().AddString(u.String())
+//
+//		go func(u *url.URL) {
+//			//r, _ := http.NewRequest("GET", u.String(), nil)
+//			imgSp := New(nil, nil)
+//			imgSp.Fetch(u)
+//
+//			filename := filepath.Base(u.String())
+//			if filename == "" {
+//				filename = strconv.Itoa(rand.Int())
+//			}
+//
+//			savePath := helper.WorkspacePath() + filename
+//			if err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm); err != nil {
+//				log.Fatal(err)
+//			}
+//			outFile, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+//			if err != nil {
+//				log.Fatal(err)
+//			}
+//			outFile.Write(imgSp.BodyByte)
+//			outFile.Close()
+//		}(u)
+//	}
+//}

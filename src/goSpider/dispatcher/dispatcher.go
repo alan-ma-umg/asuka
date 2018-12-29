@@ -9,7 +9,6 @@ import (
 	"log"
 	"sort"
 	"sync"
-	"time"
 	"goSpider/spider"
 )
 
@@ -74,57 +73,28 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 	}
 	database.UrlQueueSave()
 
-	chs := make(chan time.Duration, len(dispatcher.spiderArr))
-	for {
-		s := dispatcher.dispatcherSpider()
-		if s == nil {
-			log.Fatal("nil spider")
-		}
+	chs := make(chan int, len(dispatcher.spiderArr))
 
-		if project.NeedToPause(s) {
-			time.Sleep(10e9)
-			continue
-		}
+	for i := 0; i < len(dispatcher.spiderArr); i++ {
+		go func() {
+			for {
+				s := dispatcher.dispatcherSpider()
+				if s == nil {
+					log.Fatal("nil spider")
+				}
 
-		if project.NeedToLogin(s) && !project.IsLogin(s) {
-			project.Login(s)
-		}
-
-		go func(s *spider.Spider) {
-			st := time.Now()
-			s.Crawl(project.EnqueueFilter)
-			et := time.Since(st)
-
-			project.Throttle(s)
-
-			chs <- et
-		}(s)
-		fmt.Println(<-chs)
-
+				go func(s *spider.Spider) {
+					project.Throttle(s)
+					project.RequestBefore(s)
+					s.Crawl(project.EnqueueFilter)
+					project.ResponseAfter(s)
+					chs <- 1
+				}(s)
+				<-chs
+			}
+		}()
 	}
-}
 
-//func (dispatcher *Dispatcher) Run(entryLinks []string, filter func(spider *Spider, l *url.URL) bool) {
-//	dispatcher.InitSpider()
-//
-//	for _, l := range entryLinks {
-//		if !database.Bl().TestString(l) {
-//			database.AddUrlQueue(l)
-//		}
-//	}
-//	database.UrlQueueSave()
-//
-//	chs := make(chan time.Duration, len(dispatcher.spiderArr))
-//	for {
-//		s := dispatcher.dispatcherSpider()
-//		if s == nil {
-//			log.Fatal("nil spider")
-//		}
-//		go func(s *Spider) {
-//			st := time.Now()
-//			s.Crawl(filter)
-//			chs <- time.Since(st)
-//		}(s)
-//		fmt.Println(<-chs)
-//	}
-//}
+	stuck := make(chan int)
+	<-stuck
+}

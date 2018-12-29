@@ -18,7 +18,7 @@ var envConfig *EnvConfig
 
 func Env() *EnvConfig {
 	envParseOnce.Do(func() {
-		filename := "C:/Users/chenset/Downloads/env.json"
+		filename := "C:/data/codes/asuka/env.json"
 
 		file, err := os.Open(filename)
 		if err != nil {

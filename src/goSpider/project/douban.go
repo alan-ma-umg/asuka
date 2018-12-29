@@ -8,29 +8,29 @@ import (
 type DouBan struct {
 }
 
-func (douBan *DouBan) EntryUrl() []string {
-	return []string{}
+func (my *DouBan) EntryUrl() []string {
+	return []string{
+		"https://www.douban.com",
+		"https://book.douban.com",
+		"https://movie.douban.com",
+		"https://www.zhihu.com/explore",
+	}
 }
 
-// session
-func (douBan *DouBan) NeedToLogin(spider *spider.Spider) bool {
-	return false
+func (my *DouBan) RequestBefore(spider *spider.Spider) {
 }
-func (douBan *DouBan) IsLogin(spider *spider.Spider) bool {
-	return false
-}
-func (douBan *DouBan) Login(spider *spider.Spider) {
+
+func (my *DouBan) ResponseAfter(spider *spider.Spider) {
 }
 
 // queue
-func (douBan *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
+func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	return true
 }
 
 // frequency
-func (douBan *DouBan) NeedToPause(spider *spider.Spider) bool {
-	return false
-}
-func (douBan *DouBan) Throttle(spider *spider.Spider) {
-
+func (my *DouBan) Throttle(spider *spider.Spider) {
+	//time.Sleep(2e9)
+	//ch := make(chan int)
+	//<-ch
 }
