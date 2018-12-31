@@ -9,6 +9,7 @@ import (
 	"goSpider/helper"
 	"runtime"
 	"fmt"
+	"os"
 )
 
 func Monitor(dispatcher *dispatcher.Dispatcher) {
@@ -40,7 +41,18 @@ func Monitor(dispatcher *dispatcher.Dispatcher) {
 			redisMem = 0
 		}
 
-		html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb"
+		//bloomFilter
+		file, err := os.Open(helper.Env().BloomFilterFile)
+		var fileSize int64 = 0
+		if err == nil {
+			fi, err := file.Stat()
+			if err == nil {
+				fileSize = fi.Size()
+			}
+		}
+
+		html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb<br>"
+		html += "BloomFilter: " + strconv.FormatFloat(helper.B2Mb(uint64(fileSize)), 'f', 2, 64) + " Mb"
 		html += "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcher.GetSpiders())), 'f', 2, 64) + "</br>"
 		html += "Alloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> TotalAlloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> Sys: " + strconv.FormatFloat(helper.B2Mb(mem.Sys), 'f', 2, 64) + "Mb <br>"
 		html += "NumGC: " + strconv.Itoa(int(mem.NumGC)) + " <br> NumGoroutine: " + strconv.Itoa(runtime.NumGoroutine()) + "<br>"
