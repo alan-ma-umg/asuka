@@ -93,6 +93,7 @@ func (transport *Transport) LoadBalanceRate() float64 {
 	//todo 考虑失败率
 	//return float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
 	//time.Sleep(1)
+	//return rand.Float64() * 1000
 	return float64(transport.LoopCount)
 	//return transport.LoadRate(60) / float64(transport.S.Weight)
 	//return rate

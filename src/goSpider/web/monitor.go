@@ -42,13 +42,10 @@ func Monitor(dispatcher *dispatcher.Dispatcher) {
 		}
 
 		//bloomFilter
-		file, err := os.Open(helper.Env().BloomFilterFile)
 		var fileSize int64 = 0
+		fi, err := os.Stat(helper.Env().BloomFilterFile)
 		if err == nil {
-			fi, err := file.Stat()
-			if err == nil {
-				fileSize = fi.Size()
-			}
+			fileSize = fi.Size()
 		}
 
 		html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb<br>"
