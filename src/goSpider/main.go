@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"time"
-	"goSpider/dispatcher"
-	"goSpider/project"
 	"goSpider/database"
 	"goSpider/helper"
 	"goSpider/web"
+	"goSpider/dispatcher"
+	"goSpider/project"
 )
 
 func main() {
@@ -15,7 +15,6 @@ func main() {
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
-
 	database.Bl().ClearAll()                             //todo for test
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 

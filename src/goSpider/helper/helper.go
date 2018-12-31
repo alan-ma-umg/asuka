@@ -44,6 +44,11 @@ func Contains(a []string, x string) bool {
 	return false
 }
 
+// b2Mb byte to mb
+func B2Mb(b uint64) float64 {
+	return float64(b) / 1024 / 1024
+}
+
 //workspace path
 var downloadPathOnce sync.Once
 var downloadSavePath string

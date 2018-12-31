@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"goSpider/database"
 	"goSpider/helper"
+	"runtime"
+	"fmt"
 )
 
 func Monitor(dispatcher *dispatcher.Dispatcher) {
@@ -21,12 +23,27 @@ func Monitor(dispatcher *dispatcher.Dispatcher) {
 				serAddr = "Localhost"
 			}
 			html += "<tr>"
-			html += "<td>" + serAddr + " </td><td> " + strconv.FormatFloat(s.Transport.LoadBalanceRate(), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(len(s.Transport.AccessList)) + "</td><td>" + strconv.Itoa(len(s.Transport.FailureList)) + "</td>"
+			html += "<td>" + serAddr + " </td><td> " + strconv.FormatFloat(s.Transport.LoadBalanceRate(), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
 			html += "</tr>"
 		}
 
 		queueCount, _ := database.Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
-		html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcher.GetSpiders())), 'f', 2, 64)
+
+		//memory
+		var mem runtime.MemStats
+		runtime.ReadMemStats(&mem)
+
+		//redis memory
+		redisMem, err := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result()
+		if err != nil {
+			fmt.Println(err)
+			redisMem = 0
+		}
+
+		html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb"
+		html += "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcher.GetSpiders())), 'f', 2, 64) + "</br>"
+		html += "Alloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> TotalAlloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> Sys: " + strconv.FormatFloat(helper.B2Mb(mem.Sys), 'f', 2, 64) + "Mb <br>"
+		html += "NumGC: " + strconv.Itoa(int(mem.NumGC)) + " <br> NumGoroutine: " + strconv.Itoa(runtime.NumGoroutine()) + "<br>"
 
 		w.Header().Set("Content-Type", "text/html;charset=utf-8")
 		io.WriteString(w, html)

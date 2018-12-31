@@ -40,8 +40,10 @@ type Transport struct {
 	AccessList  []string
 	FailureList []string
 
-	accessCountList  *list.List
-	failureCountList *list.List
+	accessCountList     *list.List
+	failureCountList    *list.List
+	accessCountHistory  int
+	FailureCountHistory int
 
 	LoopCount int
 }
@@ -89,9 +91,9 @@ func (transport *Transport) LoadBalanceRate() float64 {
 	//return rand.Float64()*100
 	//return float64(rand.Intn(4))+1
 	//todo 考虑失败率
-	return float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
+	//return float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
 	//time.Sleep(1)
-	//return float64(transport.LoopCount)
+	return float64(transport.LoopCount)
 	//return transport.LoadRate(60) / float64(transport.S.Weight)
 	//return rate
 }
@@ -143,17 +145,38 @@ func (transport *Transport) FailureRate(second int) float64 {
 	return rate / float64(times)
 }
 
+func (transport *Transport) GetAccessCount() int {
+	return transport.accessCountHistory + len(transport.AccessList)
+}
+
 func (transport *Transport) recordAccessCount() {
-	transport.accessCountList.PushBack(len(transport.AccessList))
+	transport.accessCountList.PushBack(transport.GetAccessCount())
 	if transport.accessCountList.Len() > countQueueLen {
 		transport.accessCountList.Remove(transport.accessCountList.Front()) // FIFO
 	}
+
+	//todo lock
+	listLen := len(transport.AccessList)
+	if listLen > 2000 {
+		transport.AccessList = transport.AccessList[0:999]
+		transport.accessCountHistory += listLen - 1000
+	}
+}
+
+func (transport *Transport) GetFailureCount() int {
+	return transport.FailureCountHistory + len(transport.FailureList)
 }
 
 func (transport *Transport) recordFailureCount() {
-
-	transport.failureCountList.PushBack(len(transport.FailureList))
+	transport.failureCountList.PushBack(transport.GetFailureCount())
 	if transport.failureCountList.Len() > countQueueLen {
 		transport.failureCountList.Remove(transport.failureCountList.Front()) // FIFO
+	}
+
+	//todo lock
+	listLen := len(transport.FailureList)
+	if listLen > 2000 {
+		transport.FailureList = transport.FailureList[0:999]
+		transport.FailureCountHistory += listLen - 1000
 	}
 }
