@@ -4,31 +4,10 @@ import (
 	"github.com/go-redis/redis"
 	"goSpider/helper"
 	"sync"
-	"time"
 )
 
 var redisOnce sync.Once
 var redisInstance *redis.Client
-var addQueueCollection []string
-
-func init() {
-	//save
-	go func() {
-		t := time.NewTicker(time.Second * 5)
-		for {
-			<-t.C
-			UrlQueueSave()
-		}
-	}()
-}
-
-func UrlQueueSave() {
-	count := len(addQueueCollection)
-	if count > 0 {
-		Redis().RPush(helper.Env().Redis.URLQueueKey, addQueueCollection)
-		addQueueCollection = make([]string, 0, count)
-	}
-}
 
 func Redis() *redis.Client {
 	redisOnce.Do(func() {
@@ -38,7 +17,7 @@ func Redis() *redis.Client {
 }
 
 func AddUrlQueue(link string) {
-	addQueueCollection = append(addQueueCollection, link)
+	Redis().RPush(helper.Env().Redis.URLQueueKey, link)
 }
 
 func PopUrlQueue() (string, error) {

@@ -43,7 +43,7 @@ type Transport struct {
 	accessCountList  *list.List
 	failureCountList *list.List
 
-	loopCount int
+	LoopCount int
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
@@ -68,15 +68,13 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 			TLSHandshakeTimeout: TLSHandshakeTimeout,
 		}
 	}
-
-	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New()}
+	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 1}
 	transportList = append(transportList, instance)
 	return instance, nil
 }
 
 // AddAccess 每次调用请求时增加一次记录, 无论是否成功
 func (transport *Transport) AddAccess(link string) {
-	transport.loopCount++
 	transport.AccessList = append(transport.AccessList, link)
 }
 
@@ -87,8 +85,7 @@ func (transport *Transport) AddFailure(link string) {
 
 func (transport *Transport) LoadBalanceRate() float64 {
 	//todo 考虑失败率
-	rate := float64(transport.loopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
-	transport.loopCount = 1
+	rate := float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
 	return rate
 }
 

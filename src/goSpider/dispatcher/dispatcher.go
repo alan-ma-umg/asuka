@@ -6,7 +6,6 @@ import (
 	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/proxy"
-	"log"
 	"sort"
 	"sync"
 	"goSpider/spider"
@@ -17,6 +16,10 @@ type Dispatcher struct {
 	spiderArr      []*spider.Spider
 	initSSOnce     sync.Once
 	initSpiderOnce sync.Once
+}
+
+func (dispatcher *Dispatcher) GetSpiders() []*spider.Spider {
+	return dispatcher.spiderArr
 }
 
 func (dispatcher *Dispatcher) InitSpider() []*spider.Spider {
@@ -60,7 +63,9 @@ func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
 		return dispatcher.spiderArr[i].Transport.LoadBalanceRate() < dispatcher.spiderArr[j].Transport.LoadBalanceRate()
 	})
 
-	return dispatcher.spiderArr[0]
+	first := dispatcher.spiderArr[0]
+	first.Transport.LoopCount++
+	return first
 }
 
 func (dispatcher *Dispatcher) Run(project project.Project) {
@@ -71,29 +76,60 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 			database.AddUrlQueue(l)
 		}
 	}
-	database.UrlQueueSave()
 
-	chs := make(chan int, len(dispatcher.spiderArr))
-
-	for i := 0; i < len(dispatcher.spiderArr); i++ {
-		go func() {
-			for {
-				s := dispatcher.dispatcherSpider()
-				if s == nil {
-					log.Fatal("nil spider")
-				}
-
-				go func(s *spider.Spider) {
-					project.Throttle(s)
-					project.RequestBefore(s)
-					s.Crawl(project.EnqueueFilter)
-					project.ResponseAfter(s)
-					chs <- 1
-				}(s)
-				<-chs
-			}
-		}()
+	spiderChs := make(map[string]chan *spider.Spider)
+	for _, s := range dispatcher.spiderArr {
+		spiderChs[s.Transport.S.ServerAddr] = make(chan *spider.Spider, 1)
 	}
+
+	go func() {
+		for {
+			s := dispatcher.dispatcherSpider()
+			spiderChs[s.Transport.S.ServerAddr] <- s
+		}
+	}()
+
+	for _, s := range dispatcher.spiderArr {
+
+		//go func(sss *spider.Spider) {
+		//	for {
+		//		s := dispatcher.dispatcherSpider()
+		//		spiderChs[s.Transport.S.ServerAddr] <- s
+		//	}
+		//}(s)
+
+		go func(sss *spider.Spider) {
+			for {
+				s:=<-spiderChs[sss.Transport.S.ServerAddr]
+				project.Throttle(s)
+				project.RequestBefore(s)
+				s.Crawl(project.EnqueueFilter)
+				project.ResponseAfter(s)
+			}
+		}(s)
+	}
+	//
+	//chs := make(chan int, len(dispatcher.spiderArr))
+	//
+	//for i := 0; i < len(dispatcher.spiderArr); i++ {
+	//	go func() {
+	//		for {
+	//			s := dispatcher.dispatcherSpider()
+	//			if s == nil {
+	//				log.Fatal("nil spider")
+	//			}
+	//
+	//			go func(s *spider.Spider) {
+	//				project.Throttle(s)
+	//				project.RequestBefore(s)
+	//				s.Crawl(project.EnqueueFilter)
+	//				project.ResponseAfter(s)
+	//				chs <- 1
+	//			}(s)
+	//			<-chs
+	//		}
+	//	}()
+	//}
 
 	stuck := make(chan int)
 	<-stuck

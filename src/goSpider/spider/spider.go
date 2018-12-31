@@ -147,9 +147,9 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 		ssArr = "localhost"
 	}
 
-	st := time.Now()
+	//st := time.Now()
 	_, err = spider.Fetch(u)
-	fmt.Println(ssArr, time.Since(st), u.String()) //todo
+	//fmt.Println(ssArr, time.Since(st), u.String()) //todo
 	if err != nil {
 		fmt.Println(u.String(), err)
 		return
