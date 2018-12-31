@@ -10,7 +10,7 @@ import (
 func Forever() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		str := ""
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 2; i++ {
 			str += "<a href=\"/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
 			str += "<a href=\"/" + strconv.Itoa(i) + "\">" + strconv.Itoa(i) + "</a>"
 		}
