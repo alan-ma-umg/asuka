@@ -3,7 +3,6 @@ package project
 import (
 	"goSpider/spider"
 	"net/url"
-	"time"
 )
 
 type DouBan struct {
@@ -11,6 +10,14 @@ type DouBan struct {
 
 func (my *DouBan) EntryUrl() []string {
 	return []string{
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
+		"http://10.0.0.180:888/",
 		"http://10.0.0.180:888/",
 		//"https://book.douban.com",
 		//"https://movie.douban.com",
@@ -31,7 +38,7 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
-	time.Sleep(1e9)
+	//time.Sleep(1e9)
 	//ch := make(chan int)
 	//<-ch
 }

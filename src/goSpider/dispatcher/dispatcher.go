@@ -6,9 +6,10 @@ import (
 	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/proxy"
-	"sort"
 	"sync"
 	"goSpider/spider"
+	"sort"
+	"time"
 )
 
 type Dispatcher struct {
@@ -59,7 +60,10 @@ func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
 		return nil
 	}
 
+	//rand.Seed(time.Now().Unix())
 	sort.SliceStable(dispatcher.spiderArr, func(i, j int) bool {
+		//rand.Seed(time.Now().Unix())
+		//return rand.Intn(5) == 1
 		return dispatcher.spiderArr[i].Transport.LoadBalanceRate() < dispatcher.spiderArr[j].Transport.LoadBalanceRate()
 	})
 
@@ -85,9 +89,13 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 	go func() {
 		for {
 			s := dispatcher.dispatcherSpider()
+			//fmt.Println(1)
 			spiderChs[s.Transport.S.ServerAddr] <- s
+			//fmt.Println(2)
 		}
 	}()
+
+	time.Sleep(1e9)
 
 	for _, s := range dispatcher.spiderArr {
 
@@ -100,7 +108,9 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 
 		go func(sss *spider.Spider) {
 			for {
+				//fmt.Println(3)
 				s:=<-spiderChs[sss.Transport.S.ServerAddr]
+				//fmt.Println(4)
 				project.Throttle(s)
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)

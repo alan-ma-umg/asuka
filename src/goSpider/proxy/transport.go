@@ -84,9 +84,16 @@ func (transport *Transport) AddFailure(link string) {
 }
 
 func (transport *Transport) LoadBalanceRate() float64 {
+	//time.Sleep()
+	//return 1.0
+	//return rand.Float64()*100
+	//return float64(rand.Intn(4))+1
 	//todo 考虑失败率
-	rate := float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
-	return rate
+	return float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
+	//time.Sleep(1)
+	//return float64(transport.LoopCount)
+	//return transport.LoadRate(60) / float64(transport.S.Weight)
+	//return rate
 }
 
 // LoadRate 获取指定秒数内的负载值.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
