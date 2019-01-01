@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+</head>
+<body>
+<div id="inject-point"></div>
+<script>
+    let timer_d90g8df987g9dfg7df9gdfj;
+
+    function reconnectSocket() {
+        clearTimeout(timer_d90g8df987g9dfg7df9gdfj);
+        timer_d90g8df987g9dfg7df9gdfj = setTimeout(function () {
+            handlerSocket()
+        }, 1000)
+    }
+
+    function handlerSocket() {
+        let injectPoint = document.getElementById("inject-point");
+        ws = new WebSocket("{{.}}");
+        ws.onmessage = function (evt) {
+            injectPoint.innerHTML = evt.data
+        };
+        ws.onerror = function (evt) {
+            ws.close();
+            reconnectSocket()
+        };
+        ws.onclose = function (evt) {
+            ws.close();
+            reconnectSocket()
+        };
+        window.onbeforeunload = function () {
+            ws.close()
+        }
+    }
+
+    handlerSocket();
+</script>
+</body>
+</html>

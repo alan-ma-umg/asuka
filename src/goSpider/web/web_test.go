@@ -3,5 +3,7 @@ package web
 import "testing"
 
 func TestMonitor(t *testing.T) {
-	//Monitor()
+}
+
+func TestServer(t *testing.T) {
 }
