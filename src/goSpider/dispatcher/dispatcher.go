@@ -69,6 +69,7 @@ func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
 
 	first := dispatcher.spiderArr[0]
 	first.Transport.LoopCount++
+	first.Transport.LoopCountCut++
 	return first
 }
 
@@ -81,6 +82,24 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 		}
 	}
 
+	go func() {
+		t := time.NewTicker(time.Minute)
+		for {
+			<-t.C
+			min := 999999999999.0
+			for _, s := range dispatcher.spiderArr {
+				if s.Transport.LoopCountCut < min {
+					min = s.Transport.LoopCountCut
+				}
+			}
+
+			//todo lock
+			for _, s := range dispatcher.spiderArr {
+				s.Transport.LoopCountCut /= min
+			}
+		}
+	}()
+
 	spiderChs := make(map[string]chan *spider.Spider)
 	for _, s := range dispatcher.spiderArr {
 		spiderChs[s.Transport.S.ServerAddr] = make(chan *spider.Spider, 1)
@@ -89,28 +108,16 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 	go func() {
 		for {
 			s := dispatcher.dispatcherSpider()
-			//fmt.Println(1)
 			spiderChs[s.Transport.S.ServerAddr] <- s
-			//fmt.Println(2)
 		}
 	}()
 
 	time.Sleep(1e9)
 
 	for _, s := range dispatcher.spiderArr {
-
-		//go func(sss *spider.Spider) {
-		//	for {
-		//		s := dispatcher.dispatcherSpider()
-		//		spiderChs[s.Transport.S.ServerAddr] <- s
-		//	}
-		//}(s)
-
 		go func(sss *spider.Spider) {
 			for {
-				//fmt.Println(3)
-				s:=<-spiderChs[sss.Transport.S.ServerAddr]
-				//fmt.Println(4)
+				s := <-spiderChs[sss.Transport.S.ServerAddr]
 				project.Throttle(s)
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)
@@ -118,28 +125,6 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 			}
 		}(s)
 	}
-	//
-	//chs := make(chan int, len(dispatcher.spiderArr))
-	//
-	//for i := 0; i < len(dispatcher.spiderArr); i++ {
-	//	go func() {
-	//		for {
-	//			s := dispatcher.dispatcherSpider()
-	//			if s == nil {
-	//				log.Fatal("nil spider")
-	//			}
-	//
-	//			go func(s *spider.Spider) {
-	//				project.Throttle(s)
-	//				project.RequestBefore(s)
-	//				s.Crawl(project.EnqueueFilter)
-	//				project.ResponseAfter(s)
-	//				chs <- 1
-	//			}(s)
-	//			<-chs
-	//		}
-	//	}()
-	//}
 
 	stuck := make(chan int)
 	<-stuck

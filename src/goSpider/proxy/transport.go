@@ -45,7 +45,8 @@ type Transport struct {
 	accessCountHistory  int
 	FailureCountHistory int
 
-	LoopCount int
+	LoopCount    int
+	LoopCountCut float64
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
@@ -70,7 +71,7 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 			TLSHandshakeTimeout: TLSHandshakeTimeout,
 		}
 	}
-	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 1}
+	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 1, LoopCountCut: 1.0}
 	transportList = append(transportList, instance)
 	return instance, nil
 }
@@ -94,9 +95,11 @@ func (transport *Transport) LoadBalanceRate() float64 {
 	//return float64(transport.LoopCount) * transport.LoadRate(60) / float64(transport.S.Weight)
 	//time.Sleep(1)
 	//return rand.Float64() * 1000
-	return float64(transport.LoopCount)
+	//return float64(transport.LoopCount)
 	//return transport.LoadRate(60) / float64(transport.S.Weight)
 	//return rate
+
+	return transport.LoopCountCut / float64(transport.S.Weight)
 }
 
 // LoadRate 获取指定秒数内的负载值.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
