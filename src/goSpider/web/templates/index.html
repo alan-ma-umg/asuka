@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="utf-8">
-
 </head>
 <body>
 <div id="inject-point"></div>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj;
+    handlerSocket();
 
     function reconnectSocket() {
         clearTimeout(timer_d90g8df987g9dfg7df9gdfj);
@@ -22,20 +22,24 @@
         ws.onmessage = function (evt) {
             injectPoint.innerHTML = evt.data
         };
-        ws.onerror = function (evt) {
+        ws.onopen = function () {
+            injectPoint.style = "background:none";
+        };
+        ws.onerror = function () {
+            injectPoint.style = "background:yellow";
             ws.close();
             reconnectSocket()
         };
-        ws.onclose = function (evt) {
+        ws.onclose = function () {
+            injectPoint.style = "background:red";
             ws.close();
             reconnectSocket()
         };
         window.onbeforeunload = function () {
             ws.close()
-        }
+        };
     }
 
-    handlerSocket();
 </script>
 </body>
 </html>

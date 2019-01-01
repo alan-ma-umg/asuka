@@ -8,8 +8,8 @@ import (
 	"goSpider/proxy"
 	"sync"
 	"goSpider/spider"
-	"sort"
 	"time"
+	"sort"
 )
 
 type Dispatcher struct {
@@ -60,10 +60,7 @@ func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
 		return nil
 	}
 
-	//rand.Seed(time.Now().Unix())
 	sort.SliceStable(dispatcher.spiderArr, func(i, j int) bool {
-		//rand.Seed(time.Now().Unix())
-		//return rand.Intn(5) == 1
 		return dispatcher.spiderArr[i].Transport.LoadBalanceRate() < dispatcher.spiderArr[j].Transport.LoadBalanceRate()
 	})
 
