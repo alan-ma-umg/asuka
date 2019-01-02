@@ -38,10 +38,6 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}}
 }
 
-func (spider *Spider) LoginWithHeader(url *url.URL, header *http.Header) {
-	spider.setRequest(url, header).Fetch(url)
-}
-
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
 func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
 
@@ -66,6 +62,10 @@ func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
 		for k := range *header {
 			spider.CurrentRequest.Header.Set(k, header.Get(k))
 		}
+	}
+
+	if spider.CurrentRequest.UserAgent() == "" {
+		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36")
 	}
 	return spider
 }
@@ -131,8 +131,8 @@ func (spider *Spider) GetImageLinks() (arr []*url.URL) {
 func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	link, err := database.PopUrlQueue()
 	if err != nil {
-		fmt.Println("queue is empty: ", err)
-		time.Sleep(time.Second * 10)
+		//fmt.Println("queue is empty: ", err)
+		time.Sleep(time.Second * 5)
 		return
 	}
 

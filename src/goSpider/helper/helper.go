@@ -16,9 +16,11 @@ import (
 var envParseOnce sync.Once
 var envConfig *EnvConfig
 
+var pwd, _ = os.Getwd()
+
 func Env() *EnvConfig {
 	envParseOnce.Do(func() {
-		filename := "C:/data/codes/asuka/env.json"
+		filename := pwd + "/env.json"
 
 		file, err := os.Open(filename)
 		if err != nil {

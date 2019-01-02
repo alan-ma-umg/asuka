@@ -1,20 +1,19 @@
 package web
 
 import (
-	"net/http"
-	"goSpider/dispatcher"
-	"strconv"
-	"goSpider/database"
-	"goSpider/helper"
-	"runtime"
-	"fmt"
-	"os"
-	"time"
-	"log"
 	"github.com/gorilla/websocket"
+	"goSpider/database"
+	"goSpider/dispatcher"
+	"goSpider/helper"
 	"html/template"
-	"math/rand"
 	"io"
+	"log"
+	"math/rand"
+	"net/http"
+	"os"
+	"runtime"
+	"strconv"
+	"time"
 )
 
 var upgrade = websocket.Upgrader{
@@ -59,7 +58,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 	http.HandleFunc("/forever", func(w http.ResponseWriter, r *http.Request) {
 		str := ""
-		for i := 0; i < rand.Intn(4); i++ {
+		for i := 0; i < rand.Intn(40); i++ {
 			str += "<a href=\"/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
 		}
 		io.WriteString(w, str)
@@ -70,7 +69,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 var MonitorHtml = template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/index.html"))
 
 func html() string {
-	html := "<style>th,td{border:1px solid #ccc}</style><table><tr><th>Server Address</th><th>Load Balance</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
+	html := "<style>th,td{border:1px solid #ccc}</style><table><tr><th>Server Address</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
 	start := time.Now()
 	avgLoad := 0.0
 	for _, s := range dispatcherObj.GetSpiders() {
@@ -80,7 +79,7 @@ func html() string {
 			serAddr = "Localhost"
 		}
 		html += "<tr>"
-		html += "<td>" + serAddr + " </td><td> " + strconv.FormatFloat(s.Transport.LoadBalanceRate(), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
+		html += "<td>" + serAddr + " </td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
 		html += "</tr>"
 	}
 
@@ -93,7 +92,7 @@ func html() string {
 	//redis memory
 	redisMem, err := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result()
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		redisMem = 0
 	}
 

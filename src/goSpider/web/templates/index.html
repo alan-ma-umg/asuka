@@ -31,7 +31,7 @@
             reconnectSocket()
         };
         ws.onclose = function () {
-            injectPoint.style = "background:red";
+            injectPoint.style = "background:gray";
             ws.close();
             reconnectSocket()
         };

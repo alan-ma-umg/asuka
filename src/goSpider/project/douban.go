@@ -10,15 +10,15 @@ type DouBan struct {
 
 func (my *DouBan) EntryUrl() []string {
 	return []string{
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
-		"http://10.0.0.180:888/",
+		"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
+		//"http://192.168.100.125:888/forever",
 		//"https://book.douban.com",
 		//"https://movie.douban.com",
 		//"https://www.zhihu.com/explore",
@@ -38,7 +38,4 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
-	//time.Sleep(1e9)
-	//ch := make(chan int)
-	//<-ch
 }

@@ -17,10 +17,10 @@ func Redis() *redis.Client {
 }
 
 func AddUrlQueue(link string) {
-	count, _ := Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
-	if count > 100000 { //todo remove
-		return
-	}
+	//count, _ := Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
+	//if count > 100000 { //todo remove
+	//	return
+	//}
 
 	Redis().RPush(helper.Env().Redis.URLQueueKey, link)
 }

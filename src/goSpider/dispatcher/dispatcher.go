@@ -6,27 +6,28 @@ import (
 	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/proxy"
-	"sync"
 	"goSpider/spider"
-	"time"
-	"sort"
+	"sync"
 )
 
 type Dispatcher struct {
-	transportArr   []*proxy.Transport
-	spiderArr      []*spider.Spider
-	initSSOnce     sync.Once
-	initSpiderOnce sync.Once
+	transportArr    []*proxy.Transport
+	spiderArr       []*spider.Spider
+	originSpiderArr []*spider.Spider
+	initSSOnce      sync.Once
+	initSpiderOnce  sync.Once
 }
 
 func (dispatcher *Dispatcher) GetSpiders() []*spider.Spider {
-	return dispatcher.spiderArr
+	return dispatcher.originSpiderArr
 }
 
 func (dispatcher *Dispatcher) InitSpider() []*spider.Spider {
 	dispatcher.initSpiderOnce.Do(func() {
 		for _, t := range dispatcher.InitTransport() {
-			dispatcher.spiderArr = append(dispatcher.spiderArr, spider.New(t, nil))
+			s := spider.New(t, nil)
+			dispatcher.spiderArr = append(dispatcher.spiderArr, s)
+			dispatcher.originSpiderArr = append(dispatcher.originSpiderArr, s)
 		}
 	})
 	return dispatcher.spiderArr
@@ -39,7 +40,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 		for _, ssAddr := range proxy.SsLocalHandler() {
 			t, err := proxy.NewTransport(ssAddr)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("proxy error: ", err)
 				continue
 			}
 			dispatcher.transportArr = append(dispatcher.transportArr, t)
@@ -55,21 +56,6 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 	return dispatcher.transportArr
 }
 
-func (dispatcher *Dispatcher) dispatcherSpider() *spider.Spider {
-	if len(dispatcher.spiderArr) == 0 {
-		return nil
-	}
-
-	sort.SliceStable(dispatcher.spiderArr, func(i, j int) bool {
-		return dispatcher.spiderArr[i].Transport.LoadBalanceRate() < dispatcher.spiderArr[j].Transport.LoadBalanceRate()
-	})
-
-	first := dispatcher.spiderArr[0]
-	first.Transport.LoopCount++
-	first.Transport.LoopCountCut++
-	return first
-}
-
 func (dispatcher *Dispatcher) Run(project project.Project) {
 	dispatcher.InitSpider()
 
@@ -79,42 +65,10 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 		}
 	}
 
-	go func() {
-		t := time.NewTicker(time.Minute)
-		for {
-			<-t.C
-			min := 999999999999.0
-			for _, s := range dispatcher.spiderArr {
-				if s.Transport.LoopCountCut < min {
-					min = s.Transport.LoopCountCut
-				}
-			}
-
-			//todo lock
-			for _, s := range dispatcher.spiderArr {
-				s.Transport.LoopCountCut /= min
-			}
-		}
-	}()
-
-	spiderChs := make(map[string]chan *spider.Spider)
-	for _, s := range dispatcher.spiderArr {
-		spiderChs[s.Transport.S.ServerAddr] = make(chan *spider.Spider, 1)
-	}
-
-	go func() {
-		for {
-			s := dispatcher.dispatcherSpider()
-			spiderChs[s.Transport.S.ServerAddr] <- s
-		}
-	}()
-
-	time.Sleep(1e9)
-
-	for _, s := range dispatcher.spiderArr {
-		go func(sss *spider.Spider) {
+	for _, s := range dispatcher.GetSpiders() {
+		go func(s *spider.Spider) {
 			for {
-				s := <-spiderChs[sss.Transport.S.ServerAddr]
+				s.Transport.LoopCount++
 				project.Throttle(s)
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)
@@ -122,7 +76,4 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 			}
 		}(s)
 	}
-
-	stuck := make(chan int)
-	<-stuck
 }
