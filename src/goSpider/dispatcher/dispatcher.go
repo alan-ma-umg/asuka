@@ -63,6 +63,7 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 	for _, s := range dispatcher.InitSpider() {
 		go func(s *spider.Spider) {
 			for {
+				s.Throttle()
 				project.Throttle(s)
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)

@@ -37,6 +37,8 @@ type Spider struct {
 
 	TimeList     *list.List
 	TimeLenLimit int
+
+	ConnectFail bool
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
@@ -45,6 +47,13 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 	}
 	c := &http.Client{Transport: t.T, Jar: j}
 	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+}
+
+func (spider *Spider) Throttle() {
+	if spider.ConnectFail {
+		time.Sleep(time.Minute)
+		spider.ConnectFail = false
+	}
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
@@ -103,6 +112,8 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 
 	//res, httpCode, err := requestUrl(spider.Client, spider.CurrentRequest)
 	if err != nil {
+		//fmt.Println(reflect.TypeOf(err))
+		spider.ConnectFail = true
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		fmt.Println("Request Error ", err)
 		return resp, err

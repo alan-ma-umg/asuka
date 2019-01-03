@@ -11,6 +11,9 @@ type DouBan struct {
 
 func (my *DouBan) EntryUrl() []string {
 	return []string{
+		//"http://192.168.100.125:8188/forever",
+		//"http://192.168.100.125:8188/forever",
+		//"http://192.168.100.125:8188/forever",
 		"http://192.168.100.125:888/forever",
 		"http://192.168.100.125:888/forever",
 		"http://192.168.100.125:888/forever",
