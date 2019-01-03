@@ -148,21 +148,22 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 
 func (spider *Spider) GetAvgTime() (t time.Duration) {
 	//var all time.Duration
-	count := spider.TimeList.Len()
-	for i := 0; i < count; i++ {
-		cursor := spider.TimeList.Back()
+	count := 0
+	cursor := spider.TimeList.Back()
+	for {
 		if cursor == nil {
 			break
 		}
 
+		count++
 		t += cursor.Value.(time.Duration)
+		cursor = cursor.Prev()
 	}
 
 	if count == 0 {
 		return
 	}
 	t /= time.Duration(count)
-
 	return
 }
 
