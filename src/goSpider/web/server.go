@@ -141,10 +141,10 @@ func html() string {
 		fileSize = fi.Size()
 	}
 
-	html += "</table><a href=\"/queue\">queue: " + strconv.Itoa(int(queueCount)) + "</a><br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb<br>"
-	html += "BloomFilter: " + strconv.FormatFloat(helper.B2Mb(uint64(fileSize)), 'f', 2, 64) + " Mb"
+	html += "</table><a href=\"/queue\">queue: " + strconv.Itoa(int(queueCount)) + "</a><br> Redis mem: " + helper.ByteCountBinary(uint64(redisMem)) + " <br>"
+	html += "BloomFilter: " + helper.ByteCountBinary(uint64(fileSize))
 	html += "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + "</br>"
-	html += "Alloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> TotalAlloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> Sys: " + strconv.FormatFloat(helper.B2Mb(mem.Sys), 'f', 2, 64) + "Mb <br>"
+	html += "Alloc: " + helper.ByteCountBinary(mem.Alloc) + " <br> TotalAlloc: " + helper.ByteCountBinary(mem.Alloc) + " <br> Sys: " + helper.ByteCountBinary(mem.Sys) + " <br>"
 	html += "NumGC: " + strconv.Itoa(int(mem.NumGC)) + " <br> NumGoroutine: " + strconv.Itoa(runtime.NumGoroutine()) + "<br>"
 	html += "webSocketConnections: " + strconv.Itoa(webSocketConnections) + "<br>"
 	html += "time: " + time.Since(start).String() + "   " + time.Since(startTime).String()

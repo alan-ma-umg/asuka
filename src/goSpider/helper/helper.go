@@ -47,11 +47,6 @@ func Contains(a []string, x string) bool {
 	return false
 }
 
-// b2Mb byte to mb
-func B2Mb(b uint64) float64 {
-	return float64(b) / 1024 / 1024
-}
-
 func ByteCountBinary(b uint64) string {
 	const unit = 1024
 	if b < unit {
@@ -62,7 +57,7 @@ func ByteCountBinary(b uint64) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %c", float64(b)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.2f %c", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 //workspace path
