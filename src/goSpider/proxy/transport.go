@@ -85,7 +85,7 @@ func (transport *Transport) AddFailure(link string) {
 	transport.FailureList = append(transport.FailureList, link)
 }
 
-// LoadRate 获取指定秒数内的负载值.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
+// LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒, 最大取值 countQueueLen*SecondInterval-1
 func (transport *Transport) LoadRate(second int) float64 {
 	rate := 0.0
 	cursor := transport.accessCountList.Back()
@@ -102,6 +102,7 @@ func (transport *Transport) LoadRate(second int) float64 {
 		}
 		rate += float64(currentNum-prevNum) / SecondInterval
 	}
+
 	return rate / float64(times)
 }
 
@@ -124,7 +125,7 @@ func (transport *Transport) FailureRate(second int) float64 {
 			accessCursor = accessCursor.Prev()
 		}
 
-		if currentAccessNum != 0 {
+		if currentAccessNum != 0 { //todo validation
 			rate += float64(currentFailureNum/SecondInterval) / float64(currentAccessNum/SecondInterval)
 		}
 	}

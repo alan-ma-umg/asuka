@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Queue</title>
+</head>
+<body>
+<div>
+    <a href="/">Monitor</a>
+    <br>
+    {{range $index, $element := .}}
+        <a href="{{$element}}" target="_blank">{{$element}}</a><br>
+    {{end}}
+</div>
+</body>
+</html>

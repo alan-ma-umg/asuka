@@ -1,6 +1,7 @@
 package spider
 
 import (
+	"container/list"
 	"fmt"
 	"goSpider/database"
 	"goSpider/helper"
@@ -28,6 +29,9 @@ type Spider struct {
 
 	ResponseStr  string
 	ResponseByte []byte
+
+	TimeList     *list.List
+	TimeLenLimit int
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
@@ -35,7 +39,7 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 		j, _ = cookiejar.New(nil)
 	}
 	c := &http.Client{Transport: t.T, Jar: j}
-	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}}
+	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
@@ -75,6 +79,14 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
 
+	st := time.Now()
+	defer func() {
+		spider.TimeList.PushBack(time.Since(st))
+		if spider.TimeList.Len() > spider.TimeLenLimit {
+			spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
+		}
+	}()
+
 	resp, err := spider.Client.Do(spider.CurrentRequest)
 
 	//res, httpCode, err := requestUrl(spider.Client, spider.CurrentRequest)
@@ -100,8 +112,24 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 	return resp, err
 }
 
-func (spider *Spider) ReadAllResponseBody() {
+func (spider *Spider) GetAvgTime() (t time.Duration) {
+	//var all time.Duration
+	count := spider.TimeList.Len()
+	for i := 0; i < count; i++ {
+		cursor := spider.TimeList.Back()
+		if cursor == nil {
+			break
+		}
 
+		t += cursor.Value.(time.Duration)
+	}
+
+	if count == 0 {
+		return
+	}
+	t /= time.Duration(count)
+
+	return
 }
 
 func (spider *Spider) GetLinks() (arr []*url.URL) {

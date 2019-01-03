@@ -1,6 +1,7 @@
 package web
 
 import (
+	"compress/gzip"
 	"github.com/gorilla/websocket"
 	"goSpider/database"
 	"goSpider/dispatcher"
@@ -13,6 +14,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,6 +24,35 @@ var upgrade = websocket.Upgrader{
 var startTime = time.Now()
 var webSocketConnections = 0
 var pwd, _ = os.Getwd()
+
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			fn(w, r)
+			return
+		}
+
+		if w.Header().Get("Content-Type") == "" {
+			w.Header().Set("Content-Type", "text/html")
+		}
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Server", "spider")
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		gzr := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		fn(gzr, r)
+	}
+}
 
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -46,30 +77,35 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	MonitorHtml.Execute(w, "ws://"+r.Host+"/echo")
+	template.Must(template.ParseFiles(pwd+"/src/goSpider/web/templates/index.html")).Execute(w, "ws://"+r.Host+"/echo")
 }
 
 var dispatcherObj *dispatcher.Dispatcher
 
 func Server(d *dispatcher.Dispatcher, address string) {
 	dispatcherObj = d
+	http.HandleFunc("/queue", commonHandler(queue))
 	http.HandleFunc("/echo", echo)
-	http.HandleFunc("/", home)
-
-	http.HandleFunc("/forever", func(w http.ResponseWriter, r *http.Request) {
-		str := ""
-		for i := 0; i < rand.Intn(40); i++ {
-			str += "<a href=\"/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
-		}
-		io.WriteString(w, str)
-	})
+	http.HandleFunc("/", commonHandler(home))
+	http.HandleFunc("/forever/", forever)
 	log.Fatal(http.ListenAndServe(address, nil))
 }
 
-var MonitorHtml = template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/index.html"))
+func queue(w http.ResponseWriter, r *http.Request) {
+	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
+	template.Must(template.ParseFiles(pwd+"/src/goSpider/web/templates/queue.html")).Execute(w, list)
+}
+
+func forever(w http.ResponseWriter, r *http.Request) {
+	str := ""
+	for i := 0; i < rand.Intn(4); i++ {
+		str += "<a href=\"/forever/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
+	}
+	io.WriteString(w, str)
+}
 
 func html() string {
-	html := "<style>th,td{border:1px solid #ccc}</style><table><tr><th>Server Address</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
+	html := "<table><tr><th>Server Address</th><th>Avg Time</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
 	start := time.Now()
 	avgLoad := 0.0
 	for _, s := range dispatcherObj.GetSpiders() {
@@ -79,7 +115,7 @@ func html() string {
 			serAddr = "Localhost"
 		}
 		html += "<tr>"
-		html += "<td>" + serAddr + " </td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
+		html += "<td>" + serAddr + " </td><td>" + s.GetAvgTime().String() + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
 		html += "</tr>"
 	}
 
@@ -103,7 +139,7 @@ func html() string {
 		fileSize = fi.Size()
 	}
 
-	html += "</table> queue: " + strconv.Itoa(int(queueCount)) + "<br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb<br>"
+	html += "</table><a href=\"/queue\">queue: " + strconv.Itoa(int(queueCount)) + "</a><br> Redis mem: " + strconv.FormatFloat(helper.B2Mb(uint64(redisMem)), 'f', 2, 64) + " Mb<br>"
 	html += "BloomFilter: " + strconv.FormatFloat(helper.B2Mb(uint64(fileSize)), 'f', 2, 64) + " Mb"
 	html += "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + "</br>"
 	html += "Alloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> TotalAlloc: " + strconv.FormatFloat(helper.B2Mb(mem.Alloc), 'f', 2, 64) + "Mb <br> Sys: " + strconv.FormatFloat(helper.B2Mb(mem.Sys), 'f', 2, 64) + "Mb <br>"

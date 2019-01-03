@@ -1,10 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Monitor</title>
     <meta charset="utf-8">
 </head>
+<style>
+    table {
+        border-spacing: 0;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ccc
+    }
+
+    tr td {
+        text-align: right;
+    }
+
+    tr td:first-child {
+       text-align: left;
+    }
+</style>
 <body>
-<div id="inject-point"></div>
+<div style="margin: 0 auto;max-width:1000px;">
+    <div id="inject-point"></div>
+</div>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj;
     handlerSocket();
@@ -31,7 +53,7 @@
             reconnectSocket()
         };
         ws.onclose = function () {
-            injectPoint.style = "background:gray";
+            injectPoint.style = "background:#f2f2f2";
             ws.close();
             reconnectSocket()
         };
