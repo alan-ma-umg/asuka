@@ -3,6 +3,7 @@ package project
 import (
 	"goSpider/spider"
 	"net/url"
+	"time"
 )
 
 type DouBan struct {
@@ -11,14 +12,17 @@ type DouBan struct {
 func (my *DouBan) EntryUrl() []string {
 	return []string{
 		"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
+		"http://192.168.100.125:888/forever",
 		//"https://book.douban.com",
 		//"https://movie.douban.com",
 		//"https://www.zhihu.com/explore",
@@ -26,6 +30,10 @@ func (my *DouBan) EntryUrl() []string {
 }
 
 func (my *DouBan) RequestBefore(spider *spider.Spider) {
+	//Referer
+	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" {
+		spider.CurrentRequest.Header.Set("Referer", my.EntryUrl()[0])
+	}
 }
 
 func (my *DouBan) ResponseAfter(spider *spider.Spider) {
@@ -38,4 +46,5 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
+	time.Sleep(2e9)
 }

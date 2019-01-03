@@ -46,6 +46,10 @@ type Transport struct {
 	FailureCountHistory int
 
 	LoopCount int
+
+	//traffic size
+	TrafficIn  uint64
+	TrafficOut uint64
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {

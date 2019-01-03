@@ -68,7 +68,6 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 	for _, s := range dispatcher.GetSpiders() {
 		go func(s *spider.Spider) {
 			for {
-				s.Transport.LoopCount++
 				project.Throttle(s)
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)

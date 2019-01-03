@@ -1,17 +1,22 @@
 package spider
 
 import (
+	"compress/gzip"
 	"container/list"
 	"fmt"
 	"goSpider/database"
 	"goSpider/helper"
 	"goSpider/proxy"
+	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httputil"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -43,7 +48,7 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
-func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
+func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 
 	tld, err := helper.TldDomain(url.String())
 	if err != nil {
@@ -58,6 +63,12 @@ func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		//Accept-Encoding: gzip
+		if r.Header.Get("Accept-Encoding") == "" {
+			r.Header.Set("Accept-Encoding", "gzip")
+		}
+
 		spider.CurrentRequest = r
 		spider.RequestsMap[tld] = r
 	}
@@ -69,16 +80,17 @@ func (spider *Spider) setRequest(url *url.URL, header *http.Header) *Spider {
 	}
 
 	if spider.CurrentRequest.UserAgent() == "" {
-		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36")
+		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 	}
 	return spider
 }
 
 func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
-	spider.setRequest(url, nil)
+	spider.SetRequest(url, nil)
 
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
 
+	//time
 	st := time.Now()
 	defer func() {
 		spider.TimeList.PushBack(time.Since(st))
@@ -97,12 +109,34 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 	}
 	defer resp.Body.Close()
 
+	//traffic count
+	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
+	if err == nil {
+		spider.Transport.TrafficOut += uint64(len(dump))
+	}
+
+	dump, err = httputil.DumpResponse(resp, true)
+	if err == nil {
+		spider.Transport.TrafficIn += uint64(len(dump))
+	}
+
+	//http status
 	if resp.StatusCode != 200 {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		fmt.Println("http status", resp.StatusCode)
 	}
 
-	res, err := ioutil.ReadAll(resp.Body)
+	//gzip decompression
+	var reader io.ReadCloser
+	switch strings.ToLower(resp.Header.Get("Content-Encoding")) {
+	case "gzip":
+		reader, err = gzip.NewReader(resp.Body)
+		defer reader.Close()
+	default:
+		reader = resp.Body
+	}
+
+	res, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return resp, err
 	}
@@ -176,6 +210,8 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	}
 
 	//st := time.Now()
+
+	spider.Transport.LoopCount++
 	_, err = spider.Fetch(u)
 	//fmt.Println(ssArr, time.Since(st), u.String()) //todo
 	if err != nil {

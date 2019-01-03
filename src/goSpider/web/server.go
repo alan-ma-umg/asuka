@@ -87,7 +87,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 	http.HandleFunc("/queue", commonHandler(queue))
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", commonHandler(home))
-	http.HandleFunc("/forever/", forever)
+	http.HandleFunc("/forever/", commonHandler(forever))
 	log.Fatal(http.ListenAndServe(address, nil))
 }
 
@@ -101,11 +101,13 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < rand.Intn(4); i++ {
 		str += "<a href=\"/forever/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
 	}
+	//append 1k str
+	//str += "11111111111111423443111111111111114234234431111111111111142342344311111111111423423443111111111111113443111111111111113443111111111111114234234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443"
 	io.WriteString(w, str)
 }
 
 func html() string {
-	html := "<table><tr><th>Server Address</th><th>Avg Time</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
+	html := "<table><tr><th>Server Address</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
 	start := time.Now()
 	avgLoad := 0.0
 	for _, s := range dispatcherObj.GetSpiders() {
@@ -115,7 +117,7 @@ func html() string {
 			serAddr = "Localhost"
 		}
 		html += "<tr>"
-		html += "<td>" + serAddr + " </td><td>" + s.GetAvgTime().String() + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
+		html += "<td>" + serAddr + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
 		html += "</tr>"
 	}
 

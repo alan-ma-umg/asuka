@@ -2,6 +2,7 @@ package helper
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/jpillora/go-tld"
 	"log"
 	"net/url"
@@ -49,6 +50,19 @@ func Contains(a []string, x string) bool {
 // b2Mb byte to mb
 func B2Mb(b uint64) float64 {
 	return float64(b) / 1024 / 1024
+}
+
+func ByteCountBinary(b uint64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %c", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 //workspace path
