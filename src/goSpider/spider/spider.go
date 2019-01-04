@@ -32,6 +32,8 @@ type RecentFetch struct {
 	Url           *url.URL
 	ConsumeTime   time.Duration
 	AddTime       time.Time
+	ErrType       string
+	ResponseSize  uint64
 }
 
 var RecentFetchList []*RecentFetch
@@ -119,6 +121,9 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
 
 	defer func() {
+		if err != nil {
+			recentFetch.ErrType = reflect.TypeOf(err).String()
+		}
 
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
 
@@ -167,7 +172,8 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	dump, err = httputil.DumpResponse(resp, true)
 	if err == nil {
-		spider.Transport.TrafficIn += uint64(len(dump))
+		recentFetch.ResponseSize = uint64(len(dump))
+		spider.Transport.TrafficIn += recentFetch.ResponseSize
 	}
 
 	recentFetch.StatusCode = resp.StatusCode

@@ -142,13 +142,39 @@ func html() string {
 		fileSize = fi.Size()
 	}
 
-	html += "</table><a href=\"/queue\">queue: " + strconv.Itoa(int(queueCount)) + "</a><br> Redis mem: " + helper.ByteCountBinary(uint64(redisMem)) + " <br>"
-	html += "BloomFilter: " + helper.ByteCountBinary(uint64(fileSize))
-	html += "<br> Avg Load:" + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + "</br>"
-	html += "Alloc: " + helper.ByteCountBinary(mem.Alloc) + " <br> TotalAlloc: " + helper.ByteCountBinary(mem.Alloc) + " <br> Sys: " + helper.ByteCountBinary(mem.Sys) + " <br>"
-	html += "NumGC: " + strconv.Itoa(int(mem.NumGC)) + " <br> NumGoroutine: " + strconv.Itoa(runtime.NumGoroutine()) + "<br>"
-	html += "webSocketConnections: " + strconv.Itoa(webSocketConnections) + "<br>"
-	html += "time: " + time.Since(start).String() + "   " + time.Since(startTime).String()
+	html += "</table><br>"
+	overviewHtml := `
+<table>
+    <tr>
+        <th>Queue</th>
+        <td style="width:100px">` + strconv.Itoa(int(queueCount)) + `</td>
+        <th>Redis Mem</th>
+        <td style="width:100px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
+        <th>Bloom Filter</th>
+        <td style="width:100px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
+        <th>Avg Load</th>
+        <td style="width:100px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
+        <th>Mem Alloc</th>
+        <td style="width:100px">` + helper.ByteCountBinary(mem.Alloc) + `</td>
+        <th>Mem All Alloc</th>
+        <td style="width:100px">` + helper.ByteCountBinary(mem.Alloc) + `</td>
+</tr><tr>
+        <th>Mem SYS</th>
+        <td>` + helper.ByteCountBinary(mem.Sys) + `</td>
+        <th>GC</th>
+        <td>` + strconv.Itoa(int(mem.NumGC)) + `</td>
+        <th>Goroutine</th>
+        <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
+        <th>WS Count</th>
+        <td>` + strconv.Itoa(webSocketConnections) + `</td>
+        <th>Time</th>
+        <td>` + time.Since(start).String() + `</td>
+        <th>Run</th>
+        <td>` + time.Since(startTime).String() + `</td>
+    </tr>
+</table>
+<br>
+`
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
 	for _, s := range dispatcherObj.GetSpiders() {
@@ -158,20 +184,20 @@ func html() string {
 	}
 	html += "</table><br>"
 
-	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status Code</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
+	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
 
 	for i := len(spider.RecentFetchList); i > 0; i-- {
 		l := spider.RecentFetchList[i-1]
 		if l.StatusCode == 0 && l.ConsumeTime != 0 {
-			html += "<tr style=\"background:red\">"
+			html += "<tr style=\"background:#ff9d87\">"
 		} else if l.ConsumeTime == 0 {
 			html += "<tr style=\"background:#f2f2f2\">"
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a class=\"text-ellipsis\" href=\"" + l.Url.String() + "\">" + l.Url.String() + "</a></td>"
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a class=\"text-ellipsis\" href=\"" + l.Url.String() + "\">" + l.Url.String() + "</a></td>"
 		html += "</tr>"
 	}
 	html += "</table>"
-	return html
+	return overviewHtml + html
 }
