@@ -12,7 +12,8 @@
     }
 
     th, td {
-        border: 1px solid #ccc
+        border: 1px solid #ccc;
+        max-width: 960px;
     }
 
     tr td {
@@ -20,7 +21,15 @@
     }
 
     tr td:first-child {
-       text-align: left;
+        text-align: left;
+    }
+
+    .text-ellipsis {
+        width: inherit;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
 <body>

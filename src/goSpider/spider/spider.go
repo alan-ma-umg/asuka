@@ -59,7 +59,7 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 	if j == nil {
 		j, _ = cookiejar.New(nil)
 	}
-	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 10}
+	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 30}
 	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
 }
 

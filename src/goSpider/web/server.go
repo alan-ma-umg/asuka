@@ -102,9 +102,6 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < rand.Intn(4); i++ {
 		str += "<a href=\"/forever/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
 	}
-	//append 1k str
-	//str += "11111111111111423443111111111111114234234431111111111111142342344311111111111423423443111111111111113443111111111111113443111111111111114234234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443"
-
 	w.Header().Set("Content-type", "text/html")
 	io.WriteString(w, str)
 }
@@ -156,13 +153,12 @@ func html() string {
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
 	for _, s := range dispatcherObj.GetSpiders() {
 		if s.CurrentRequest != nil {
-			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).String() + "</td><td><a href=\"" + s.CurrentRequest.URL.String() + "\">" + s.CurrentRequest.URL.String() + "</a></td></tr>"
+			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).String() + "</td><td><a class=\"text-ellipsis\" href=\"" + s.CurrentRequest.URL.String() + "\">" + s.CurrentRequest.URL.String() + "</a></td></tr>"
 		}
 	}
 	html += "</table><br>"
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status Code</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
-	//for _, l := range spider.RecentFetchList {
 
 	for i := len(spider.RecentFetchList); i > 0; i-- {
 		l := spider.RecentFetchList[i-1]
@@ -173,24 +169,9 @@ func html() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a href=\"" + l.Url.String() + "\">" + l.Url.String() + "</a></td>"
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a class=\"text-ellipsis\" href=\"" + l.Url.String() + "\">" + l.Url.String() + "</a></td>"
 		html += "</tr>"
 	}
 	html += "</table>"
 	return html
 }
-
-//
-//func sortRecentFetchList() (list []*spider.RecentFetch) {
-//	for _, s := range dispatcherObj.GetSpiders() {
-//		for _, l := range s.RecentFetchList {
-//			list = append(list, l)
-//		}
-//	}
-//
-//	sort.SliceStable(list, func(i, j int) bool {
-//		return list[i].AddTime.Unix() > list[j].AddTime.Unix()
-//	})
-//
-//	return list
-//}
