@@ -103,3 +103,12 @@ func TldDomain(rawUrl string) (str string, err error) {
 
 	return tldU.Domain + "." + tldU.TLD, nil
 }
+
+func TruncateStr(str string, length int, postfix string) string {
+	//todo support utf8
+	cut := str
+	if len(str) > length {
+		cut = str[0:length] + postfix
+	}
+	return cut
+}
