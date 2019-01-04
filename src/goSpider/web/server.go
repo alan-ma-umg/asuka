@@ -6,6 +6,7 @@ import (
 	"goSpider/database"
 	"goSpider/dispatcher"
 	"goSpider/helper"
+	"goSpider/spider"
 	"html/template"
 	"io"
 	"log"
@@ -77,7 +78,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/index.html")).Execute(w, "ws://"+r.Host+"/echo")
+	template.Must(template.ParseFiles(pwd+"/src/goSpider/web/templates/index.html")).Execute(w, "ws://"+r.Host+"/echo")
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -93,7 +94,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(pwd+"/src/goSpider/web/templates/queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -103,25 +104,24 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	}
 	//append 1k str
 	//str += "11111111111111423443111111111111114234234431111111111111142342344311111111111423423443111111111111113443111111111111113443111111111111114234234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443111111111111114234431111111111111142344311111111111111423443"
+
+	w.Header().Set("Content-type", "text/html")
 	io.WriteString(w, str)
 }
 
 func html() string {
-	html := "<table><tr><th>Server Address</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
+	html := "<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatcher Count</th><th>Access Count</th><th>Failure Count</th></tr>"
+
 	start := time.Now()
 	avgLoad := 0.0
 	for _, s := range dispatcherObj.GetSpiders() {
 		avgLoad += s.Transport.LoadRate(5)
-		serAddr := s.Transport.S.ServerAddr
-		if serAddr == "" {
-			serAddr = "Localhost"
-		}
 		if s.ConnectFail {
 			html += "<tr style=\"background:yellow\">"
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + serAddr + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
+		html += "<td>" + s.Transport.S.Name + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
 		html += "</tr>"
 	}
 
@@ -153,5 +153,44 @@ func html() string {
 	html += "webSocketConnections: " + strconv.Itoa(webSocketConnections) + "<br>"
 	html += "time: " + time.Since(start).String() + "   " + time.Since(startTime).String()
 
+	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
+	for _, s := range dispatcherObj.GetSpiders() {
+		if s.CurrentRequest != nil {
+			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).String() + "</td><td><a href=\"" + s.CurrentRequest.URL.String() + "\">" + s.CurrentRequest.URL.String() + "</a></td></tr>"
+		}
+	}
+	html += "</table><br>"
+
+	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status Code</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
+	//for _, l := range spider.RecentFetchList {
+
+	for i := len(spider.RecentFetchList); i > 0; i-- {
+		l := spider.RecentFetchList[i-1]
+		if l.StatusCode == 0 && l.ConsumeTime != 0 {
+			html += "<tr style=\"background:red\">"
+		} else if l.ConsumeTime == 0 {
+			html += "<tr style=\"background:#f2f2f2\">"
+		} else {
+			html += "<tr>"
+		}
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a href=\"" + l.Url.String() + "\">" + l.Url.String() + "</a></td>"
+		html += "</tr>"
+	}
+	html += "</table>"
 	return html
 }
+
+//
+//func sortRecentFetchList() (list []*spider.RecentFetch) {
+//	for _, s := range dispatcherObj.GetSpiders() {
+//		for _, l := range s.RecentFetchList {
+//			list = append(list, l)
+//		}
+//	}
+//
+//	sort.SliceStable(list, func(i, j int) bool {
+//		return list[i].AddTime.Unix() > list[j].AddTime.Unix()
+//	})
+//
+//	return list
+//}

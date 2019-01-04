@@ -3,6 +3,7 @@ package spider
 import (
 	"compress/gzip"
 	"container/list"
+	"errors"
 	"fmt"
 	"goSpider/database"
 	"goSpider/helper"
@@ -15,6 +16,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -23,6 +25,16 @@ import (
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
 var imageRegex, _ = regexp.Compile("(?i)(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)")
+
+type RecentFetch struct {
+	TransportName string
+	StatusCode    int // http response status code
+	Url           *url.URL
+	ConsumeTime   time.Duration
+	AddTime       time.Time
+}
+
+var RecentFetchList []*RecentFetch
 
 type Spider struct {
 	Transport *proxy.Transport
@@ -39,19 +51,21 @@ type Spider struct {
 	TimeLenLimit int
 
 	ConnectFail bool
+
+	RequestStartTime time.Time
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 	if j == nil {
 		j, _ = cookiejar.New(nil)
 	}
-	c := &http.Client{Transport: t.T, Jar: j}
+	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 10}
 	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
 }
 
 func (spider *Spider) Throttle() {
 	if spider.ConnectFail {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 5)
 		spider.ConnectFail = false
 	}
 }
@@ -94,31 +108,56 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
-	spider.SetRequest(url, nil)
-
-	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
+func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
+	spider.SetRequest(u, nil)
 
 	//time
-	st := time.Now()
+	spider.RequestStartTime = time.Now()
+
+	recentFetch := &RecentFetch{Url: u, AddTime: time.Now(), TransportName: spider.Transport.S.Name}
+	RecentFetchList = append(RecentFetchList, recentFetch)
+	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
+
 	defer func() {
-		spider.TimeList.PushBack(time.Since(st))
+
+		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
+
+		recentFetchCount := 100
+		if len(RecentFetchList) > recentFetchCount {
+			RecentFetchList = RecentFetchList[len(RecentFetchList)-recentFetchCount:]
+		}
+
+		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		if spider.TimeList.Len() > spider.TimeLenLimit {
 			spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
 		}
+
+		if r := recover(); r != nil {
+			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
+		}
 	}()
 
-	resp, err := spider.Client.Do(spider.CurrentRequest)
+	resp, err = spider.Client.Do(spider.CurrentRequest)
 
-	//res, httpCode, err := requestUrl(spider.Client, spider.CurrentRequest)
 	if err != nil {
-		//fmt.Println(reflect.TypeOf(err))
-		spider.ConnectFail = true
+		switch err.(type) {
+
+		case *url.Error:
+			fmt.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err)
+		default:
+			spider.ConnectFail = true
+			println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err)
+		}
+
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		fmt.Println("Request Error ", err)
 		return resp, err
 	}
 	defer resp.Body.Close()
+
+	//todo remove
+	if !strings.Contains(resp.Header.Get("Content-type"), "text/html") {
+		return resp, errors.New("Content-type:Content-type must be text/html, " + resp.Header.Get("Content-type") + " given")
+	}
 
 	//traffic count
 	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
@@ -131,10 +170,12 @@ func (spider *Spider) Fetch(url *url.URL) (*http.Response, error) {
 		spider.Transport.TrafficIn += uint64(len(dump))
 	}
 
+	recentFetch.StatusCode = resp.StatusCode
+
 	//http status
 	if resp.StatusCode != 200 {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		fmt.Println("http status", resp.StatusCode)
+		fmt.Println("http status", resp.StatusCode, spider.CurrentRequest.URL.String())
 	}
 
 	//gzip decompression
@@ -182,7 +223,7 @@ func (spider *Spider) GetLinks() (arr []*url.URL) {
 	for _, sub := range linkRegex.FindAllStringSubmatch(spider.ResponseStr, -1) {
 		u, err := url.Parse(sub[1])
 		if err != nil {
-			panic(err)
+			continue
 		}
 		arr = append(arr, spider.CurrentRequest.URL.ResolveReference(u))
 	}

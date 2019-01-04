@@ -13,6 +13,8 @@ import (
 )
 
 type SsAddr struct {
+	Enable     bool
+	Name       string
 	ServerAddr string
 	ClientAddr string
 	Weight     int
@@ -34,9 +36,10 @@ func SsLocalHandler() (ssAddr []*SsAddr) {
 		ssLocalAddr := "127.0.0.1:" + strconv.Itoa(listenPort)
 
 		ss := &SsAddr{
+			Enable:     server.Enable,
+			Name:       server.Name,
 			ServerAddr: server.Addr,
 			ClientAddr: ssLocalAddr,
-			Weight:     server.Weight,
 			Status:     10,
 		}
 

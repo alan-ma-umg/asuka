@@ -84,7 +84,13 @@ func WorkspacePath() string {
 // TldDomain return the Second-level domain and Top-level domain from url string
 // https://www.domain.com => domain.com
 // http://c.a.b.domain.com => domain.com
-func TldDomain(rawUrl string) (string, error) {
+func TldDomain(rawUrl string) (str string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			str = rawUrl
+		}
+	}()
+
 	tldU, err := tld.Parse(rawUrl)
 	if err != nil {
 		u, err := url.Parse(rawUrl)

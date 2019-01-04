@@ -1,19 +1,24 @@
 package helper
 
 type EnvConfig struct {
-	WorkspacePath        string
-	BloomFilterFile      string
-	LocalTransportEnable bool //using http.DefaultTransport
-	LocalTransportWeight int
-	SsServers            []SsServer
-	Redis                Redis
+	WorkspacePath   string
+	BloomFilterFile string
+	LocalTransport  LocalTransport //using http.DefaultTransport
+	SsServers       []SsServer
+	Redis           Redis
+}
+
+type LocalTransport struct {
+	Enable bool
+	Name   string
 }
 
 type SsServer struct {
+	Enable   bool
+	Name     string
 	Addr     string
 	Password string
 	Cipher   string
-	Weight   int
 }
 
 type Redis struct {

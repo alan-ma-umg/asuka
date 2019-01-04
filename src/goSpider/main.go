@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"goSpider/database"
 	"goSpider/dispatcher"
-	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/web"
 	"time"
@@ -15,11 +13,10 @@ func main() {
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
-
-	database.Bl().ClearAll()                             //todo for test
-	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	//database.Bl().ClearAll()                             //todo for test
+	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
-	c.Run(&project.DouBan{})
 	web.Server(c, ":888") // http://127.0.0.1:888
+	c.Run(&project.Www{})
 }

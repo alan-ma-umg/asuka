@@ -33,14 +33,20 @@ func (dispatcher *Dispatcher) InitSpider() []*spider.Spider {
 
 func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 	dispatcher.initSSOnce.Do(func() {
-		if helper.Env().LocalTransportEnable {
+		if helper.Env().LocalTransport.Enable {
 			//append default transport
-			dt, _ := proxy.NewTransport(&proxy.SsAddr{Weight: helper.Env().LocalTransportWeight})
+			dt, _ := proxy.NewTransport(&proxy.SsAddr{})
+			dt.S.Name = helper.Env().LocalTransport.Name
+			dt.S.Enable = helper.Env().LocalTransport.Enable
 			dispatcher.transportArr = append(dispatcher.transportArr, dt)
 		}
 
 		//todo 可用性维护
 		for _, ssAddr := range proxy.SsLocalHandler() {
+			if !ssAddr.Enable {
+				continue
+			}
+
 			t, err := proxy.NewTransport(ssAddr)
 			if err != nil {
 				fmt.Println("proxy error: ", err)
