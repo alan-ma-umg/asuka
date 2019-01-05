@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"net/http"
 )
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
@@ -31,6 +32,9 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {
+	if len(spider.RequestsMap) > 10 {
+		spider.RequestsMap = map[string]*http.Request{}
+	}
 }
 
 // queue

@@ -205,7 +205,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 }
 
 func (spider *Spider) GetAvgTime() (t time.Duration) {
-	//var all time.Duration
 	count := 0
 	cursor := spider.TimeList.Back()
 	for {
@@ -252,7 +251,6 @@ func (spider *Spider) GetImageLinks() (arr []*url.URL) {
 func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	link, err := database.PopUrlQueue()
 	if err != nil {
-		//fmt.Println("queue is empty: ", err)
 		time.Sleep(time.Second * 5)
 		return
 	}
@@ -268,11 +266,8 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 		ssArr = "localhost"
 	}
 
-	//st := time.Now()
-
 	spider.Transport.LoopCount++
 	_, err = spider.Fetch(u)
-	//fmt.Println(ssArr, time.Since(st), u.String()) //todo
 	if err != nil {
 		fmt.Println(u.String(), err)
 		return

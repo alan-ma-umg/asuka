@@ -215,7 +215,7 @@ func html() string {
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
 	for _, s := range dispatcherObj.GetSpiders() {
 		if s.CurrentRequest != nil {
-			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).String() + "</td><td><a class=\"text-ellipsis\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr(s.CurrentRequest.URL.String(), 80, "...("+strconv.Itoa(len(s.CurrentRequest.URL.String()))+")") + "</a></td></tr>"
+			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr(s.CurrentRequest.URL.String(), 80, "...("+strconv.Itoa(len(s.CurrentRequest.URL.String()))+")") + "</a></td></tr>"
 		}
 	}
 	html += "</table><br>"
@@ -231,7 +231,7 @@ func html() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a class=\"text-ellipsis\" href=\"" + l.Url.String() + "\">" + helper.TruncateStr(l.Url.String(), 50, "...("+strconv.Itoa(len(l.Url.String()))+")") + "</a></td>"
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.Url.String() + "\">" + helper.TruncateStr(l.Url.String(), 50, "...("+strconv.Itoa(len(l.Url.String()))+")") + "</a></td>"
 		html += "</tr>"
 	}
 	html += "</table>"
