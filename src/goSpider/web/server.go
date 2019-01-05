@@ -190,13 +190,9 @@ func html() string {
         <td style="width:100px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
         <th>Avg Load</th>
         <td style="width:100px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
-        <th>Mem Alloc</th>
-        <td style="width:100px">` + helper.ByteCountBinary(mem.Alloc) + `</td>
-        <th>Mem All Alloc</th>
-        <td style="width:100px">` + helper.ByteCountBinary(mem.Alloc) + `</td>
-</tr><tr>
         <th>Mem SYS</th>
         <td>` + helper.ByteCountBinary(mem.Sys) + `</td>
+</tr><tr>
         <th>GC</th>
         <td>` + strconv.Itoa(int(mem.NumGC)) + `</td>
         <th>Goroutine</th>
