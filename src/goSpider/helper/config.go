@@ -1,7 +1,7 @@
 package helper
 
 type EnvConfig struct {
-	WorkspacePath   string
+	TemplatePath    string
 	BloomFilterFile string
 	LocalTransport  LocalTransport //using http.DefaultTransport
 	SsServers       []SsServer

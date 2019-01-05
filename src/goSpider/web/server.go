@@ -114,7 +114,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/index.html")).Execute(w, "ws://"+r.Host+"/echo")
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, "ws://"+r.Host+"/echo")
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -130,7 +130,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(pwd + "/src/goSpider/web/templates/queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {

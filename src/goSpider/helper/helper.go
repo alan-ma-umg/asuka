@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"os/user"
-	"runtime"
 	"sync"
 )
 
@@ -58,27 +56,6 @@ func ByteCountBinary(b uint64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.2f %c", float64(b)/float64(div), "KMGTPE"[exp])
-}
-
-//workspace path
-var downloadPathOnce sync.Once
-var downloadSavePath string
-
-func WorkspacePath() string {
-	downloadPathOnce.Do(func() {
-		if Env().WorkspacePath != "" {
-			downloadSavePath = Env().WorkspacePath
-			return
-		}
-
-		osUser, _ := user.Current()
-		downloadSavePath = osUser.HomeDir + "/Downloads/"
-		if runtime.GOOS == "windows" {
-			downloadSavePath = osUser.HomeDir + "\\Downloads\\"
-		}
-	})
-
-	return downloadSavePath
 }
 
 // TldDomain return the Second-level domain and Top-level domain from url string

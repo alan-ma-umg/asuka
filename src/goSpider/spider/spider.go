@@ -238,7 +238,9 @@ func (spider *Spider) responseErrorHandler(err error) {
 	case *url.Error:
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
-		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		if io.ErrUnexpectedEOF != err {
+			log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		}
 	}
 }
 

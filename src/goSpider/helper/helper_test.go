@@ -10,7 +10,4 @@ func TestEnv(t *testing.T) {
 }
 
 func TestDownloadPath(t *testing.T) {
-	fmt.Println(WorkspacePath())
-	fmt.Println(WorkspacePath())
-	fmt.Println(WorkspacePath())
 }
