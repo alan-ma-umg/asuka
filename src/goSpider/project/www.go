@@ -28,7 +28,7 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
 	}
 
-	spider.Client.Timeout = 5 * time.Second
+	spider.Client.Timeout = 10 * time.Second
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {

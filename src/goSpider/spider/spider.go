@@ -21,6 +21,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"golang.org/x/net/html"
+	"bytes"
+	"net"
 )
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
@@ -67,7 +70,7 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 
 func (spider *Spider) Throttle() {
 	if spider.ConnectFail {
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Minute)
 		spider.ConnectFail = false
 	}
 }
@@ -142,20 +145,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		}
 	}()
 
-	resp, err = spider.Client.Do(spider.CurrentRequest)
-
-	if err != nil {
-		switch err.(type) {
-
-		case *url.Error:
-			fmt.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err)
-		default:
-			spider.ConnectFail = true
-			println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err)
-		}
-
+	resp, requestErr := spider.Client.Do(spider.CurrentRequest)
+	if requestErr != nil {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		return resp, err
+		spider.requestErrorHandler(requestErr)
+		return resp, requestErr
 	}
 	defer resp.Body.Close()
 
@@ -169,7 +163,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	if err == nil {
 		spider.Transport.TrafficOut += uint64(len(dump))
 	} else {
-		log.Println("Request Dump:" + reflect.TypeOf(err).String() + " : " + err.Error())
+		spider.requestErrorHandler(err)
 	}
 
 	dump, err = httputil.DumpResponse(resp, true)
@@ -177,7 +171,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		recentFetch.ResponseSize = uint64(len(dump))
 		spider.Transport.TrafficIn += recentFetch.ResponseSize
 	} else {
-		log.Println("Response Dump:" + reflect.TypeOf(err).String() + " : " + err.Error())
+		spider.responseErrorHandler(err)
 	}
 
 	recentFetch.StatusCode = resp.StatusCode
@@ -185,7 +179,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	//http status
 	if resp.StatusCode != 200 {
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		fmt.Println("http status", resp.StatusCode, spider.CurrentRequest.URL.String())
+		//log.Println("http status", resp.StatusCode, spider.CurrentRequest.URL.String())
 	}
 
 	//gzip decompression
@@ -193,6 +187,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	switch strings.ToLower(resp.Header.Get("Content-Encoding")) {
 	case "gzip":
 		reader, err = gzip.NewReader(resp.Body)
+		//*http.httpError todo  2019/01/05 14:58:53 Gzip Error:*http.httpError : read tcp 127.0.0.1:10281->127.0.0.1:10199: use of closed network connection (Client.Timeout exceeded while reading body)
 		if err != nil {
 			log.Println("Gzip Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
 		}
@@ -203,13 +198,48 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	res, err := ioutil.ReadAll(reader)
 	if err != nil {
-		log.Println("Ioutil Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
+		spider.responseErrorHandler(err)
 		return resp, err
 	}
 
 	spider.ResponseStr = string(res[:])
 	spider.ResponseByte = res
 	return resp, err
+}
+
+func (spider *Spider) requestErrorHandler(err error) {
+	switch err.(type) {
+	case *net.OpError:
+		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	case net.Error:
+		return
+		if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
+			log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+			//fmt.Errorf()
+			//debug.PrintStack()
+		}
+	case *url.Error:
+		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	default:
+		spider.ConnectFail = true
+		println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	}
+}
+
+func (spider *Spider) responseErrorHandler(err error) {
+	switch err.(type) {
+	case *net.OpError:
+		return
+		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	case net.Error:
+		if !err.(net.Error).Timeout() && err != io.EOF {
+			log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		}
+	case *url.Error:
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	default:
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	}
 }
 
 func (spider *Spider) GetAvgTime() (t time.Duration) {
@@ -232,7 +262,40 @@ func (spider *Spider) GetAvgTime() (t time.Duration) {
 	return
 }
 
-func (spider *Spider) GetLinks() (arr []*url.URL) {
+func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
+	token := html.NewTokenizer(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
+	for {
+		switch next := token.Next(); next {
+		case html.StartTagToken:
+			token := token.Token()
+			if token.Data == "a" {
+				for _, attr := range token.Attr {
+					if attr.Key == "href" {
+						value := strings.TrimSpace(attr.Val)
+						if value == "" {
+							continue
+						}
+						u, err := url.Parse(value)
+						if err != nil {
+							//log.Println("Url Parse: " + reflect.TypeOf(err).String() + " : " + value + " : " + err.Error() + " : from : " + spider.CurrentRequest.URL.String())
+							continue
+						}
+						addUrl := spider.CurrentRequest.URL.ResolveReference(u)
+						if addUrl.Scheme != "http" && addUrl.Scheme != "https" {
+							continue
+						}
+						res = append(res, addUrl)
+					}
+				}
+			}
+		case html.ErrorToken:
+			return
+		}
+	}
+	return
+}
+
+func (spider *Spider) GetLinksByRegex() (arr []*url.URL) {
 	for _, sub := range linkRegex.FindAllStringSubmatch(spider.ResponseStr, -1) {
 		u, err := url.Parse(sub[1])
 		if err != nil {
@@ -265,7 +328,7 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 
 	u, err := url.Parse(link)
 	if err != nil {
-		fmt.Println("URL parse filed ", link, err)
+		log.Println("URL parse filed ", link, err)
 		return
 	}
 
@@ -277,11 +340,12 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	spider.Transport.LoopCount++
 	_, err = spider.Fetch(u)
 	if err != nil {
-		fmt.Println("Fetch Fial: "+reflect.TypeOf(err).String()+" : "+u.String(), err)
+		//todo register error handler
+		//log.Println("Fetch Fial: "+reflect.TypeOf(err).String()+" : "+u.String(), err)
 		return
 	}
 
-	for _, l := range spider.GetLinks() {
+	for _, l := range spider.GetLinksByTokenizer() {
 		if filter != nil && !filter(spider, l) {
 			continue
 		}

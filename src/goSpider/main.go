@@ -6,9 +6,11 @@ import (
 	"goSpider/project"
 	"goSpider/web"
 	"time"
+	"log"
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	mainStart := time.Now()
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))

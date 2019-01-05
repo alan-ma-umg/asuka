@@ -228,6 +228,8 @@ func html() string {
 			html += "<tr style=\"background:#ff9d87\">"
 		} else if l.ConsumeTime == 0 {
 			html += "<tr style=\"background:#f2f2f2\">"
+		} else if l.StatusCode != 200 {
+			html += "<tr style=\"background:yellow\">"
 		} else {
 			html += "<tr>"
 		}
