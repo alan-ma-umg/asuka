@@ -168,12 +168,16 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
 	if err == nil {
 		spider.Transport.TrafficOut += uint64(len(dump))
+	} else {
+		log.Println("Request Dump:" + reflect.TypeOf(err).String() + " : " + err.Error())
 	}
 
 	dump, err = httputil.DumpResponse(resp, true)
 	if err == nil {
 		recentFetch.ResponseSize = uint64(len(dump))
 		spider.Transport.TrafficIn += recentFetch.ResponseSize
+	} else {
+		log.Println("Response Dump:" + reflect.TypeOf(err).String() + " : " + err.Error())
 	}
 
 	recentFetch.StatusCode = resp.StatusCode
@@ -189,6 +193,9 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	switch strings.ToLower(resp.Header.Get("Content-Encoding")) {
 	case "gzip":
 		reader, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			log.Println("Gzip Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
+		}
 		defer reader.Close()
 	default:
 		reader = resp.Body
@@ -196,6 +203,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	res, err := ioutil.ReadAll(reader)
 	if err != nil {
+		log.Println("Ioutil Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
 		return resp, err
 	}
 
@@ -269,7 +277,7 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 	spider.Transport.LoopCount++
 	_, err = spider.Fetch(u)
 	if err != nil {
-		fmt.Println(u.String(), err)
+		fmt.Println("Fetch Fial: "+reflect.TypeOf(err).String()+" : "+u.String(), err)
 		return
 	}
 
