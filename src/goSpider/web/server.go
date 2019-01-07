@@ -114,7 +114,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, "ws://"+r.Host+"/echo")
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
 }
 
 var dispatcherObj *dispatcher.Dispatcher

@@ -116,7 +116,7 @@
 
     function handlerSocket() {
         let injectPoint = document.getElementById("inject-point");
-        ws = new WebSocket("{{.}}");
+        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/echo");
         ws.onmessage = function (evt) {
             injectPoint.innerHTML = evt.data
         };
