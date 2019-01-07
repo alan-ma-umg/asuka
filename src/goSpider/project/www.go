@@ -17,8 +17,8 @@ type Www struct {
 
 func (my *Www) EntryUrl() []string {
 	return []string{
-		//"https://www.douban.com/",
-		//"https://www.zhihu.com/explore",
+		"https://www.douban.com/",
+		"https://www.zhihu.com/explore",
 		"https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=url&rsv_pq=91d6b9ef0003df6b&rsv_t=915bi46CZilwcCL7mzlzJoWjIX4rS87mPrBstd9AgYgORE4stRCZxzsFTjA&rqlang=cn&rsv_enter=1&rsv_sug3=4&rsv_sug1=4&rsv_sug7=101&rsv_sug2=0&inputT=373&rsv_sug4=1556",
 	}
 }
