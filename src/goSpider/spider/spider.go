@@ -133,6 +133,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	defer func() {
 		if err != nil {
 			recentFetch.ErrType = reflect.TypeOf(err).String()
+			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		}
 
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
@@ -148,13 +149,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		}
 
 		if r := recover(); r != nil {
+			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
 		}
 	}()
 
 	resp, requestErr := spider.Client.Do(spider.CurrentRequest)
 	if requestErr != nil {
-		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		spider.requestErrorHandler(requestErr)
 		return resp, requestErr
 	}
@@ -183,12 +184,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	recentFetch.StatusCode = resp.StatusCode
 
-	//http status
-	if resp.StatusCode != 200 {
-		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-		//log.Println("http status", resp.StatusCode, spider.CurrentRequest.URL.String())
-	}
-
 	//gzip decompression
 	var reader io.ReadCloser
 	switch strings.ToLower(resp.Header.Get("Content-Encoding")) {
@@ -207,6 +202,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	if err != nil {
 		spider.responseErrorHandler(err)
 		return resp, err
+	}
+
+	//http status
+	if resp.StatusCode != 200 && err == nil {
+		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 	}
 
 	spider.ResponseStr = string(res[:])
