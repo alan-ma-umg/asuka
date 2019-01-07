@@ -123,14 +123,17 @@
         ws.onopen = function () {
             changeRefreshRate();
             injectPoint.style = "background:none";
+            document.title = "Monitor Good";
         };
         ws.onerror = function () {
             injectPoint.style = "background:yellow";
+            document.title = "Monitor Error !";
             ws && ws.close();
             reconnectSocket()
         };
         ws.onclose = function () {
             injectPoint.style = "background:#f2f2f2";
+            document.title = "Monitor Closed !";
             ws && ws.close();
             reconnectSocket()
         };

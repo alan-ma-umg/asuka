@@ -203,7 +203,7 @@ func html() string {
         <th>Time</th>
         <td>` + time.Since(start).String() + `</td>
         <th>Run</th>
-        <td>` + time.Since(startTime).String() + `</td>
+        <td>` + time.Since(startTime).Truncate(time.Second).String() + `</td>
     </tr>
 </table>
 <br>
