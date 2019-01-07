@@ -114,7 +114,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, "ws://"+r.Host+"/echo")
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, "ws://"+r.Host+"/echo")
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -130,7 +130,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := "<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load Rate 5s</th><th>Load Rate 60s</th><th>Load Rate 5m</th><th>Load Rate 15m</th><th>Dispatch</th><th>Access</th><th>Failure</th></tr>"
+	html := `<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Dispatch</th><th>Access</th><th>Failure</th><th style="width:100px">Failure 5min</th></tr>`
 
 	start := time.Now()
 	avgLoad := 0.0
@@ -154,7 +154,7 @@ func html() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + s.Transport.S.Name + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td>"
+		html += "<td>" + s.Transport.S.Name + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td><td> " + strconv.FormatFloat(s.Transport.FailureRate(60*5)*100, 'f', 2, 64) + "%</td>"
 		html += "</tr>"
 	}
 
@@ -183,21 +183,22 @@ func html() string {
 <table>
     <tr>
         <th>Queue</th>
-        <td style="width:100px">` + strconv.Itoa(int(queueCount)) + `</td>
+        <td style="width:130px">` + strconv.Itoa(int(queueCount)) + `</td>
         <th>Redis Mem</th>
-        <td style="width:100px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
+        <td style="width:130px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
         <th>Bloom Filter</th>
-        <td style="width:100px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
-        <th>Avg Load</th>
-        <td style="width:100px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
+        <td style="width:130px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
+        <th>Load</th>
+        <td style="width:130px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
         <th>Mem SYS</th>
-        <td>` + helper.ByteCountBinary(mem.Sys) + `</td>
-</tr><tr>
-        <th>GC</th>
-        <td>` + strconv.Itoa(int(mem.NumGC)) + `</td>
+        <td style="width:130px">` + helper.ByteCountBinary(mem.Sys) + `</td>
+	</tr>
+	<tr>
         <th>Goroutine</th>
         <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
-        <th>WS Count</th>
+        <th>Sockets</th>
+        <td>` + strconv.Itoa(helper.GetSocketEstablishedCountLazy()) + `</td>
+        <th>WebSockets</th>
         <td>` + strconv.Itoa(webSocketConnections) + `</td>
         <th>Time</th>
         <td>` + time.Since(start).String() + `</td>

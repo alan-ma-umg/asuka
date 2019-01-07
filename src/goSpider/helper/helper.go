@@ -4,10 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jpillora/go-tld"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
+	"runtime"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 )
 
 // env config
@@ -88,4 +94,52 @@ func TruncateStr(str string, length int, postfix string) string {
 		cut = str[0:length] + postfix
 	}
 	return cut
+}
+
+var GetSocketEstablishedCountLazyTicker = false
+var GetSocketEstablishedCountLazyCacheCount = 0
+
+func GetSocketEstablishedCountLazy() int {
+
+	if GetSocketEstablishedCountLazyTicker {
+		return GetSocketEstablishedCountLazyCacheCount
+	}
+
+	GetSocketEstablishedCountLazyTicker = true
+	ticker := time.After(time.Second * 5)
+	go func() {
+		defer func() {
+			<-ticker
+			GetSocketEstablishedCountLazyTicker = false
+		}()
+		GetSocketEstablishedCountLazyCacheCount = 0
+
+		if runtime.GOOS == "windows" {
+			out, err := exec.Command("netstat", "-ano", "-p", "tcp").Output() //slower
+			if err != nil {
+				GetSocketEstablishedCountLazyCacheCount = 0
+				return
+			}
+			pid := strconv.Itoa(os.Getpid())
+			for _, s := range strings.Split(string(out), "\r\n") {
+				if strings.Contains(s, "ESTABLISHED") && strings.Contains(s, pid) {
+					GetSocketEstablishedCountLazyCacheCount++
+				}
+			}
+		} else {
+			pid := strconv.Itoa(os.Getpid())
+			files, err := ioutil.ReadDir("/proc/" + pid + "/fd/") // faster than netstat
+			if err != nil {
+				GetSocketEstablishedCountLazyCacheCount = 0
+				return
+			}
+
+			GetSocketEstablishedCountLazyCacheCount = len(files) - 5
+			if GetSocketEstablishedCountLazyCacheCount < 0 {
+				GetSocketEstablishedCountLazyCacheCount = 0
+			}
+		}
+	}()
+
+	return GetSocketEstablishedCountLazyCacheCount
 }
