@@ -7,6 +7,6 @@ import (
 )
 
 func TestSsLocalHandler(t *testing.T) {
-	fmt.Println(SsLocalHandler())
+	fmt.Println(SSLocalHandler())
 	time.Sleep(1e9)
 }

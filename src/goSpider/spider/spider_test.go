@@ -17,7 +17,7 @@ import (
 
 func TestSpider_Crawl(t *testing.T) {
 	var transportArr []*proxy.Transport
-	for _, ssAddr := range proxy.SsLocalHandler() {
+	for _, ssAddr := range proxy.SSLocalHandler() {
 		fmt.Println(ssAddr)
 		t, err := proxy.NewTransport(ssAddr)
 		if err != nil {

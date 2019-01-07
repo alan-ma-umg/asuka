@@ -14,37 +14,68 @@ import (
 
 type SsAddr struct {
 	Enable     bool
+	Type       string
 	Name       string
 	ServerAddr string
 	ClientAddr string
 	Weight     int
-	Status     int // 10
 }
 
-func SsLocalHandler() (ssAddr []*SsAddr) {
+func SSLocalHandler() (ssAddr []*SsAddr) {
 	for _, server := range helper.Env().SsServers {
-		cipher, err := core.PickCipher(server.Cipher, []byte{}, server.Password)
-		if err != nil {
-			log.Fatal(err)
+		if !server.Enable {
+			continue
 		}
-
 		listenPort, err := GetFreePort()
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		ssLocalAddr := "127.0.0.1:" + strconv.Itoa(listenPort)
 
-		ss := &SsAddr{
-			Enable:     server.Enable,
-			Name:       server.Name,
-			ServerAddr: server.Addr,
-			ClientAddr: ssLocalAddr,
-			Status:     10,
-		}
+		if server.Obfs != "" || server.ObfsParam != "" || server.ProtocolParam != "" || server.Protocol != "" {
+			go func(server helper.SsServer) {
+				bi := &BackendInfo{
+					Address: server.Server + ":" + server.ServerPort,
+					Type:    "ssr",
+					SSInfo: SSInfo{
+						EncryptMethod:   server.Method,
+						EncryptPassword: server.Password,
+						SSRInfo: SSRInfo{
+							Protocol:      server.Protocol,
+							ProtocolParam: server.ProtocolParam,
+							Obfs:          server.Obfs,
+							ObfsParam:     server.ObfsParam,
+						},
+					},
+				}
 
-		ssAddr = append(ssAddr, ss)
-		go socksLocal(ss, cipher.StreamConn)
+				ss := &SsAddr{
+					Enable:     server.Enable,
+					Name:       server.Name,
+					Type:       "ssr",
+					ServerAddr: server.Server + ":" + server.ServerPort,
+					ClientAddr: ssLocalAddr,
+				}
+				ssAddr = append(ssAddr, ss)
+				bi.Listen(ssLocalAddr)
+			}(server)
+		} else {
+			cipher, err := core.PickCipher(server.Method, []byte{}, server.Password)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			ss := &SsAddr{
+				Enable:     server.Enable,
+				Name:       server.Name,
+				Type:       "ss",
+				ServerAddr: server.Server + ":" + server.ServerPort,
+				ClientAddr: ssLocalAddr,
+			}
+
+			ssAddr = append(ssAddr, ss)
+			go socksLocal(ss, cipher.StreamConn)
+		}
 	}
 
 	return
@@ -72,6 +103,33 @@ func socksLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn) {
 	tcpLocal(ssAddr, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
 }
 
+// relay copies between left and right bidirectionally. Returns number of
+// bytes copied from right to left, from left to right, and any error occurred.
+func relay(left, right net.Conn) (int64, int64, error) {
+	type res struct {
+		N   int64
+		Err error
+	}
+	ch := make(chan res)
+
+	go func() {
+		n, err := io.Copy(right, left)
+		right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
+		left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
+		ch <- res{n, err}
+	}()
+
+	n, err := io.Copy(left, right)
+	right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
+	left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
+	rs := <-ch
+
+	if err == nil {
+		err = rs.Err
+	}
+	return n, rs.N, err
+}
+
 func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
 	l, err := net.Listen("tcp", ssAddr.ClientAddr)
 	if err != nil {
@@ -80,14 +138,12 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 	}
 
 	for {
-		ssAddr.Status = 20
 		c, err := l.Accept()
 		if err != nil {
 			fmt.Println("failed to accept: %s", err)
 			continue
 		}
 		go func() {
-			ssAddr.Status = 30
 			defer c.Close()
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)
@@ -135,31 +191,4 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 			}
 		}()
 	}
-}
-
-// relay copies between left and right bidirectionally. Returns number of
-// bytes copied from right to left, from left to right, and any error occurred.
-func relay(left, right net.Conn) (int64, int64, error) {
-	type res struct {
-		N   int64
-		Err error
-	}
-	ch := make(chan res)
-
-	go func() {
-		n, err := io.Copy(right, left)
-		right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
-		left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
-		ch <- res{n, err}
-	}()
-
-	n, err := io.Copy(left, right)
-	right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
-	left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
-	rs := <-ch
-
-	if err == nil {
-		err = rs.Err
-	}
-	return n, rs.N, err
 }

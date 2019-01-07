@@ -14,15 +14,22 @@ type LocalTransport struct {
 }
 
 type SsServer struct {
-	Enable   bool
-	Name     string
-	Addr     string
-	Password string
-	Cipher   string
+	Enable     bool
+	Name       string
+	Server     string
+	ServerPort string
+	Password   string
+	Method     string
+
+	//ssr only
+	Obfs          string
+	ObfsParam     string
+	ProtocolParam string
+	Protocol      string
 }
 
 type Redis struct {
-	Addr        string
+	Server        string
 	DB          int
 	URLQueueKey string
 }

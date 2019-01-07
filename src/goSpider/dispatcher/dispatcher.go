@@ -42,7 +42,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 		}
 
 		//todo 可用性维护
-		for _, ssAddr := range proxy.SsLocalHandler() {
+		for _, ssAddr := range proxy.SSLocalHandler() {
 			if !ssAddr.Enable {
 				continue
 			}

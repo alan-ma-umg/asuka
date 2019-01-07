@@ -27,7 +27,7 @@ func init() {
 
 func Redis() *redis.Client {
 	redisOnce.Do(func() {
-		redisInstance = redis.NewClient(&redis.Options{Addr: helper.Env().Redis.Addr, Password: "", DB: helper.Env().Redis.DB})
+		redisInstance = redis.NewClient(&redis.Options{Addr: helper.Env().Redis.Server, Password: "", DB: helper.Env().Redis.DB})
 	})
 	return redisInstance
 }

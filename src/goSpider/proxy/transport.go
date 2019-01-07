@@ -67,9 +67,9 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 
 		//http transport
 		t = &http.Transport{
-			MaxIdleConnsPerHost: 2,
-			MaxIdleConns:        5,
-			IdleConnTimeout:     10 * time.Second,
+			//MaxIdleConnsPerHost: 2,
+			MaxIdleConns:        10,
+			IdleConnTimeout:     20 * time.Second,
 			TLSHandshakeTimeout: 10 * time.Second,
 
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
