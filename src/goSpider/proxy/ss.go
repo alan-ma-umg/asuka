@@ -48,17 +48,18 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 						},
 					},
 				}
-
-				ss := &SsAddr{
-					Enable:     server.Enable,
-					Name:       server.Name,
-					Type:       "ssr",
-					ServerAddr: server.Server + ":" + server.ServerPort,
-					ClientAddr: ssLocalAddr,
-				}
-				ssAddr = append(ssAddr, ss)
 				bi.Listen(ssLocalAddr)
 			}(server)
+
+			ss := &SsAddr{
+				Enable:     server.Enable,
+				Name:       server.Name,
+				Type:       "ssr",
+				ServerAddr: server.Server + ":" + server.ServerPort,
+				ClientAddr: ssLocalAddr,
+			}
+			ssAddr = append(ssAddr, ss)
+
 		} else {
 			cipher, err := core.PickCipher(server.Method, []byte{}, server.Password)
 			if err != nil {
