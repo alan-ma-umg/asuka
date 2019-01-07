@@ -121,19 +121,27 @@ func (transport *Transport) FailureRate(second int) float64 {
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	for i := 0; i < times; i++ {
 		currentFailureNum := 0
+		prevFailureNum := 0
 		if failureCursor != nil {
 			currentFailureNum = failureCursor.Value.(int)
 			failureCursor = failureCursor.Prev()
+			if failureCursor != nil {
+				prevFailureNum = failureCursor.Value.(int)
+			}
 		}
 
 		currentAccessNum := 0
+		prevAccessNum := 0
 		if accessCursor != nil {
 			currentAccessNum = accessCursor.Value.(int)
 			accessCursor = accessCursor.Prev()
+			if accessCursor != nil {
+				prevAccessNum = accessCursor.Value.(int)
+			}
 		}
 
-		if currentAccessNum != 0 { //todo validation
-			rate += float64(currentFailureNum/SecondInterval) / float64(currentAccessNum/SecondInterval)
+		if currentAccessNum-prevAccessNum != 0 { //todo validation
+			rate += float64(currentFailureNum-prevFailureNum/SecondInterval) / float64(currentAccessNum-prevAccessNum/SecondInterval)
 		}
 	}
 

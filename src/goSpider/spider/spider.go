@@ -74,13 +74,7 @@ func (spider *Spider) Throttle() {
 		spider.ConnectFail = false
 	}
 
-	failureRate := spider.Transport.FailureRate(30)
-	if failureRate > 0.3 {
-		spider.ConnectFail = true
-		time.Sleep(time.Minute)
-		spider.ConnectFail = false
-	}
-
+	failureRate := spider.Transport.FailureRate(60)
 	if failureRate > 0.5 {
 		spider.ConnectFail = true
 		time.Sleep(time.Hour)

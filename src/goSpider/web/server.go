@@ -143,7 +143,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Dispatch</th><th>Access</th><th>Failure</th><th style="width:100px">Failure 5min</th></tr>`
+	html := `<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Dispatch</th><th>Access</th><th>Failure</th><th style="width:100px">Failure 60s</th></tr>`
 
 	start := time.Now()
 	avgLoad := 0.0
@@ -154,7 +154,7 @@ func html() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + s.Transport.S.Name + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td><td> " + strconv.FormatFloat(s.Transport.FailureRate(60*5)*100, 'f', 2, 64) + "%</td>"
+		html += "<td>" + s.Transport.S.Name + " </td><td>" + s.GetAvgTime().String() + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficIn) + "</td><td>" + helper.ByteCountBinary(s.Transport.TrafficOut) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + "</td><td> " + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + "</td><td>" + strconv.Itoa(s.Transport.LoopCount) + "</td><td>" + strconv.Itoa(s.Transport.GetAccessCount()) + "</td><td>" + strconv.Itoa(s.Transport.GetFailureCount()) + "</td><td> " + strconv.FormatFloat(s.Transport.FailureRate(60)*100, 'f', 2, 64) + "%</td>"
 		html += "</tr>"
 	}
 
