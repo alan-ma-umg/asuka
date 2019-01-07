@@ -58,9 +58,10 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *Www) Throttle(spider *spider.Spider) {
-	//time.Sleep(2e9)
 
 	if spider.Transport.LoadRate(5) > 5.0 {
-		time.Sleep(10e9)
+		time.Sleep(60e9)
 	}
+
+	time.Sleep(0.4e9)
 }
