@@ -1,6 +1,7 @@
 package spider
 
 import (
+	"bytes"
 	"compress/gzip"
 	"container/list"
 	"errors"
@@ -8,10 +9,12 @@ import (
 	"goSpider/database"
 	"goSpider/helper"
 	"goSpider/proxy"
+	"golang.org/x/net/html"
 	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httputil"
@@ -21,9 +24,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"golang.org/x/net/html"
-	"bytes"
-	"net"
 )
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
@@ -71,6 +71,19 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 func (spider *Spider) Throttle() {
 	if spider.ConnectFail {
 		time.Sleep(time.Minute)
+		spider.ConnectFail = false
+	}
+
+	failureRate := spider.Transport.FailureRate(30)
+	if failureRate > 0.3 {
+		spider.ConnectFail = true
+		time.Sleep(time.Minute)
+		spider.ConnectFail = false
+	}
+
+	if failureRate > 0.5 {
+		spider.ConnectFail = true
+		time.Sleep(time.Hour)
 		spider.ConnectFail = false
 	}
 }
