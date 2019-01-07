@@ -14,7 +14,6 @@ import (
 
 const SecondInterval = 1
 const countQueueLen = 2000
-const TLSHandshakeTimeout = 10e9
 
 //time url
 func init() {
@@ -68,10 +67,14 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 
 		//http transport
 		t = &http.Transport{
+			MaxIdleConnsPerHost: 2,
+			MaxIdleConns:        5,
+			IdleConnTimeout:     10 * time.Second,
+			TLSHandshakeTimeout: 10 * time.Second,
+
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 				return dialer.Dial(network, addr)
 			},
-			TLSHandshakeTimeout: TLSHandshakeTimeout,
 		}
 	}
 	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 1}
