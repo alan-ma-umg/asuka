@@ -4,10 +4,10 @@ import (
 	"github.com/willf/bloom"
 	"goSpider/helper"
 	"goSpider/spider"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
-	"net/http"
 )
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
@@ -28,7 +28,7 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
 	}
 
-	spider.Client.Timeout = 10 * time.Second
+	spider.Client.Timeout = 4 * time.Second
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {
