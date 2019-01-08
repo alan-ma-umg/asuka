@@ -90,13 +90,12 @@ func TldDomain(rawUrl string) (str string, err error) {
 	return tldU.Domain + "." + tldU.TLD, nil
 }
 
-func TruncateStr(str string, length int, postfix string) string {
-	//todo support utf8
+func TruncateStr(str []rune, length int, postfix string) string {
 	cut := str
 	if len(str) > length {
-		cut = str[0:length] + postfix
+		cut = str[0:length]
 	}
-	return cut
+	return string(cut) + postfix
 }
 
 var GetSocketEstablishedCountLazyTicker = false
