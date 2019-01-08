@@ -14,7 +14,7 @@
 
     body {
         font-family: Helvetica, Arial, sans-serif, "Microsoft YaHei", 'Helvetica Neue';
-        color: #333;
+        color: #222;
         font-size: 14px;
     }
 
@@ -23,7 +23,7 @@
     }
 
     ::selection {
-        background: #efefef;
+        background: #cccccc;
     }
 
     a {
@@ -111,8 +111,7 @@
 <div style="margin: 10px auto;max-width:1400px">
     <div class="ctrl-wrap">
         <input type="text" id="refresh-value" placeholder="Refresh Rate" value="0.5">
-        <button id="ws-open">Start</button>
-        <button id="ws-close">Stop</button>
+        <button id="ws-open-close">On / Off</button>
     </div>
     <div id="inject-point"></div>
 </div>
@@ -136,11 +135,8 @@
         changeRefreshRate()
     };
 
-    document.getElementById("ws-open").onclick = function () {
+    document.getElementById("ws-open-close").onclick = function () {
         manualOpen();
-    };
-
-    document.getElementById('ws-close').onclick = function () {
         manualClose();
     };
 

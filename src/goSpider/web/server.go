@@ -257,8 +257,10 @@ func html() string {
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
 
-	for i := len(spider.RecentFetchList); i > 0; i-- {
-		l := spider.RecentFetchList[i-1]
+	recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
+	copy(recentFetchList, spider.RecentFetchList)
+	for i := len(recentFetchList); i > 0; i-- {
+		l := recentFetchList[i-1]
 		if l.StatusCode == 0 && l.ConsumeTime != 0 {
 			html += "<tr style=\"background:#ff9d87\">"
 		} else if l.ConsumeTime == 0 {

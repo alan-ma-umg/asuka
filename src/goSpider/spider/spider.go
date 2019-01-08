@@ -29,6 +29,8 @@ import (
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
 var imageRegex, _ = regexp.Compile("(?i)(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)")
 
+const RecentFetchCount = 200
+
 type RecentFetch struct {
 	TransportName string
 	StatusCode    int // http response status code
@@ -138,9 +140,8 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
 
-		recentFetchCount := 200
-		if len(RecentFetchList) > recentFetchCount {
-			RecentFetchList = RecentFetchList[len(RecentFetchList)-recentFetchCount:]
+		if len(RecentFetchList) > RecentFetchCount {
+			RecentFetchList = RecentFetchList[len(RecentFetchList)-RecentFetchCount:]
 		}
 
 		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))

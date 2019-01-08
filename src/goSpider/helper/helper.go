@@ -157,6 +157,20 @@ func SpiderFailureRate(accessCount, failureCount int) float64 {
 	return math.Min(float64(failureCount)/float64(accessCount)*100, 100.0)
 }
 
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func MaxInt(a, b int) int {
+	if a < b {
+		return b
+	}
+	return a
+}
+
 func SSSubscriptionParse(rawUrl string) {
 	resp, err := http.Get(rawUrl)
 	if err != nil {

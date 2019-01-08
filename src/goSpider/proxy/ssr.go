@@ -81,11 +81,11 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 				if err, ok := err.(net.Error); ok && err.Timeout() {
 					continue
 				}
-				fmt.Println("UDP Associate End.")
+				log.Println("UDP Associate End.")
 				return
 			}
 		}
-		fmt.Println("failed to get target address: %v", err)
+		log.Println("failed to get target address: %v", err)
 		return
 	}
 
@@ -113,7 +113,7 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			return // ignore i/o timeout
 		}
-		fmt.Println("relay error: %v", err)
+		log.Println("relay error: %v", err)
 	}
 
 	//go bi.Pipe(src, dst)

@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 	"github.com/shadowsocks/go-shadowsocks2/socks"
 	"goSpider/helper"
@@ -134,14 +133,14 @@ func relay(left, right net.Conn) (int64, int64, error) {
 func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
 	l, err := net.Listen("tcp", ssAddr.ClientAddr)
 	if err != nil {
-		fmt.Println("failed to listen on %s: %v", ssAddr.ClientAddr, err)
+		log.Println("failed to listen on %s: %v", ssAddr.ClientAddr, err)
 		return
 	}
 
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			fmt.Println("failed to accept: %s", err)
+			log.Println("failed to accept: %s", err)
 			continue
 		}
 		go func() {
@@ -159,18 +158,18 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 						if err, ok := err.(net.Error); ok && err.Timeout() {
 							continue
 						}
-						fmt.Println("UDP Associate End.")
+						log.Println("UDP Associate End.")
 						return
 					}
 				}
 
-				fmt.Println("failed to get target address: %v", err)
+				log.Println("failed to get target address: %v", err)
 				return
 			}
 
 			rc, err := net.Dial("tcp", ssAddr.ServerAddr)
 			if err != nil {
-				fmt.Println("failed to connect to server %v: %v", ssAddr.ServerAddr, err)
+				log.Println("failed to connect to server %v: %v", ssAddr.ServerAddr, err)
 				return
 			}
 			defer rc.Close()
@@ -178,17 +177,17 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 			rc = shadow(rc)
 
 			if _, err = rc.Write(tgt); err != nil {
-				fmt.Println("failed to send target address: %v", err)
+				log.Println("failed to send target address: %v", err)
 				return
 			}
 
-			//fmt.Println("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt)
+			//log.Println("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt)
 			_, _, err = relay(rc, c)
 			if err != nil {
 				if err, ok := err.(net.Error); ok && err.Timeout() {
 					return // ignore i/o timeout
 				}
-				fmt.Println("relay error: %v", err)
+				log.Println("relay error: %v", err)
 			}
 		}()
 	}
