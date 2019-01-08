@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 	"goSpider/dispatcher"
 	"goSpider/project"
 	"goSpider/web"
-	"log"
-	"time"
 )
 
 func init() {

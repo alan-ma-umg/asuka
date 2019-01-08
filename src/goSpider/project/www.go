@@ -62,6 +62,5 @@ func (my *Www) Throttle(spider *spider.Spider) {
 	if spider.Transport.LoadRate(5) > 5.0 {
 		time.Sleep(60e9)
 	}
-
-	time.Sleep(0.4e9)
+	//time.Sleep(0.4e9)
 }

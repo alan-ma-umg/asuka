@@ -138,7 +138,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
 
-		recentFetchCount := 100
+		recentFetchCount := 200
 		if len(RecentFetchList) > recentFetchCount {
 			RecentFetchList = RecentFetchList[len(RecentFetchList)-recentFetchCount:]
 		}
@@ -231,7 +231,7 @@ func (spider *Spider) requestErrorHandler(err error) {
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
 		spider.ConnectFail = true
-		println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	}
 }
 
@@ -248,6 +248,7 @@ func (spider *Spider) responseErrorHandler(err error) {
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
 		if io.ErrUnexpectedEOF != err {
+			//2019/01/08 21:05:45 spider.go:252: Response Error hk-1a.mitsuha-node.com *errors.errorString:  gzip: invalid header http://www.s80.cc
 			//2019/01/08 19:23:55 spider.go:251: Response Error jp-2.mitsuha-node.com *errors.errorString:  malformed chunked encoding http://www.jygedu.net/
 			log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		}

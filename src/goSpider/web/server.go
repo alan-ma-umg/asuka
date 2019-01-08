@@ -143,21 +143,39 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th style="width:1px;padding:0 10px">#</th><th style="width:1px;padding:0 10px">Server</th><th style="width:1px;padding:0 10px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Access</th><th>Failure</th><th style="width:145px">Failure 60s</th></tr>`
+	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Access</th><th>Failure</th><th style="width:145px">Failure 60s</th></tr>`
 
 	start := time.Now()
 	avgLoad := 0.0
 	for index, s := range dispatcherObj.GetSpiders() {
 		avgLoad += s.Transport.LoadRate(5)
 		if s.ConnectFail {
-			html += "<tr style=\"background:yellow\">"
+			html += "<tr style=\"background:#ffffd2\">" //#fde8e8
 		} else {
 			html += "<tr>"
 		}
 
 		FailStr := ""
 		if s.Transport.GetAccessCount() > 0 {
-			FailStr = strconv.FormatFloat(helper.SpiderFailureRate(s.Transport.AccessCount(60)), 'f', 2, 64) + `%|` + strconv.FormatFloat(float64(s.Transport.GetFailureCount())/float64(s.Transport.GetAccessCount())*100, 'f', 2, 64) + "%"
+			failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
+			failureRate60 := strconv.FormatFloat(failureRate60Value, 'f', 2, 64)
+			failureRate60Html := ""
+			if failureRate60Value > 30.0 {
+				failureRate60Html = `<span style="color: rgb(` + failureRate60 + `%, 0%, 0%)">` + failureRate60 + `%</span>`
+			} else {
+				failureRate60Html = `<span style="color: rgb(0%, ` + strconv.FormatFloat(100.0-failureRate60Value, 'f', 2, 64) + `%, 0%)">` + failureRate60 + `%</span>`
+			}
+
+			failureRateAllValue := float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
+			failureRateAll := strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
+			failureRateAllHtml := ""
+			if failureRateAllValue > 30.0 {
+				failureRateAllHtml = `<span style="color: rgb(` + failureRateAll + `%, 0%, 0%)">` + failureRateAll + "%</span>"
+			} else {
+				failureRateAllHtml = `<span style="color: rgb(0%, ` + strconv.FormatFloat(100.0-failureRateAllValue, 'f', 2, 64) + `%, 0%)">` + failureRateAll + "%</span>"
+			}
+
+			FailStr = failureRate60Html + " | " + failureRateAllHtml
 		} else {
 			FailStr = strconv.FormatFloat(helper.SpiderFailureRate(s.Transport.AccessCount(60)), 'f', 2, 64)
 		}
@@ -216,13 +234,13 @@ func html() string {
 	<tr>
         <th>Goroutine</th>
         <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
-        <th>Sockets</th>
+        <th>Connection</th>
         <td>` + strconv.Itoa(helper.GetSocketEstablishedCountLazy()) + `</td>
         <th>WebSockets</th>
         <td>` + strconv.Itoa(webSocketConnections) + `</td>
         <th>Time</th>
         <td>` + time.Since(start).String() + `</td>
-        <th>Run</th>
+        <th>Uptime</th>
         <td>` + time.Since(startTime).Truncate(time.Second).String() + `</td>
     </tr>
 </table>
@@ -250,7 +268,7 @@ func html() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.Url.String() + "\">" + helper.TruncateStr(l.Url.String(), 50, "...("+strconv.Itoa(len(l.Url.String()))+")") + "</a></td>"
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.Url.String() + "\">" + helper.TruncateStr(l.Url.String(), 40, "...("+strconv.Itoa(len(l.Url.String()))+")") + "</a></td>"
 		html += "</tr>"
 	}
 	html += "</table>"
