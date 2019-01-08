@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"net/http"
 )
 
 // env config
@@ -158,7 +158,6 @@ func SpiderFailureRate(accessCount, failureCount int) float64 {
 }
 
 func SSSubscriptionParse(rawUrl string) {
-
 	resp, err := http.Get(rawUrl)
 	if err != nil {
 
@@ -170,8 +169,6 @@ func SSSubscriptionParse(rawUrl string) {
 	if err != nil {
 		return
 	}
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile) //todo remove
 
 	bStr, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(res))
 	if err != nil {
@@ -185,6 +182,9 @@ func SSSubscriptionParse(rawUrl string) {
 			//line=strings.Replace(line,"_","+",0)
 			line = strings.Replace(line, "_", "+", len(line))
 
+			if strings.Contains(line[6:], "/") || strings.Contains(line, "_") || strings.Contains(line, "-") {
+				log.Println(line)
+			}
 			dec, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(line[6:])
 			if err != nil {
 				log.Println(line[6:])
@@ -197,7 +197,7 @@ func SSSubscriptionParse(rawUrl string) {
 
 			password, _ := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(part5[0])
 
-			u, err := url.Parse(string(dec))
+			u, err := url.Parse(strings.Replace(string(dec), "/>", "/?", len(string(dec)))) //fix typo
 			if err != nil {
 				log.Println(err)
 				return
@@ -234,6 +234,10 @@ func SSSubscriptionParse(rawUrl string) {
 					return
 				}
 				ssServer.ProtocolParam = string(protoparam)
+			}
+			if ssServer.Protocol != "" && ssServer.ProtocolParam == "" {
+				log.Println(queryMap)
+				log.Println(string(dec))
 			}
 			SSServerArr = append(SSServerArr, ssServer)
 		}

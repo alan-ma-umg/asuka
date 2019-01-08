@@ -9,8 +9,11 @@ import (
 	"time"
 )
 
-func main() {
+func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
+func main() {
 	mainStart := time.Now()
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))

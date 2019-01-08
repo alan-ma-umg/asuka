@@ -1,17 +1,16 @@
 package helper
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestEnv(t *testing.T) {
-	fmt.Println(Env())
+	//fmt.Println(Env())
 }
 
 func TestDownloadPath(t *testing.T) {
 }
 
 func TestSSSubscriptionParse(t *testing.T) {
-	//SSSubscriptionParse()
+	//SSSubscriptionParse("")
 }
