@@ -113,9 +113,8 @@ func (transport *Transport) LoadRate(second int) float64 {
 	return rate / float64(times)
 }
 
-// FailureRate 获取指定秒数内的失败率.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
-func (transport *Transport) FailureRate(second int) float64 {
-	rate := 0.0
+//  获取指定秒数内的访问数/失败数量.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
+func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes int) {
 	failureCursor := transport.failureCountList.Back()
 	accessCursor := transport.accessCountList.Back()
 	times := int(math.Ceil(float64(second) / SecondInterval))
@@ -140,12 +139,11 @@ func (transport *Transport) FailureRate(second int) float64 {
 			}
 		}
 
-		if currentAccessNum-prevAccessNum != 0 { //todo validation
-			rate += float64(currentFailureNum-prevFailureNum/SecondInterval) / float64(currentAccessNum-prevAccessNum/SecondInterval)
-		}
+		accessTimes += currentAccessNum - prevAccessNum
+		failureTimes += currentFailureNum - prevFailureNum
 	}
 
-	return rate / float64(times)
+	return
 }
 
 func (transport *Transport) GetAccessCount() int {

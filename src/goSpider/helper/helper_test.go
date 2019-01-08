@@ -11,3 +11,7 @@ func TestEnv(t *testing.T) {
 
 func TestDownloadPath(t *testing.T) {
 }
+
+func TestSSSubscriptionParse(t *testing.T) {
+	//SSSubscriptionParse()
+}

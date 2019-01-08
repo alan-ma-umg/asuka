@@ -30,12 +30,12 @@ func TestTransport(t *testing.T) {
 		fmt.Println(time.Since(s))
 		//fmt.Println("Load: ", t1.LoadRate(5))
 		fmt.Println("Load: ", t1.LoadRate(5))
-		fmt.Println("Fail: ", t1.FailureRate(5))
+		//fmt.Println("Fail: ", t1.FailureRate(5))
 		fmt.Println("Load: ", t1.LoadRate(120))
-		fmt.Println("Fail: ", t1.FailureRate(120))
+		//fmt.Println("Fail: ", t1.FailureRate(120))
 		fmt.Println("Load: ", t1.LoadRate(300))
-		fmt.Println("Fail: ", t1.FailureRate(300))
+		//fmt.Println("Fail: ", t1.FailureRate(300))
 		fmt.Println("Load: ", t1.LoadRate(600))
-		fmt.Println("Fail: ", t1.FailureRate(600))
+		//fmt.Println("Fail: ", t1.FailureRate(600))
 	}
 }

@@ -1,11 +1,14 @@
 package helper
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/jpillora/go-tld"
 	"io/ioutil"
 	"log"
+	"math"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -142,4 +145,108 @@ func GetSocketEstablishedCountLazy() int {
 	}()
 
 	return GetSocketEstablishedCountLazyCacheCount
+}
+
+func SpiderFailureRate(accessCount, failureCount int) float64 {
+	if accessCount == 0 {
+		if failureCount > 0 {
+			return 100.0
+		}
+		return 0.0
+	}
+	return math.Min(float64(failureCount)/float64(accessCount)*100, 100.0)
+}
+
+func SSSubscriptionParse(rawUrl string) {
+
+	resp, err := http.Get(rawUrl)
+	if err != nil {
+
+		return
+	}
+	defer resp.Body.Close()
+
+	res, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile) //todo remove
+
+	bStr, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(res))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var SSServerArr []SsServer
+	for _, line := range strings.Split(string(bStr), "\n") {
+		if strings.HasPrefix(line, "ssr://") {
+			//line=strings.Replace(line,"_","+",0)
+			line = strings.Replace(line, "_", "+", len(line))
+
+			dec, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(line[6:])
+			if err != nil {
+				log.Println(line[6:])
+				log.Println(err)
+				return
+			}
+			s := strings.Split(string(dec), ":")
+
+			part5 := strings.Split(s[5], "/")
+
+			password, _ := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(part5[0])
+
+			u, err := url.Parse(string(dec))
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			queryMap := u.Query()
+
+			ssServer := SsServer{
+				Enable:     true,
+				Name:       s[0],
+				Server:     s[0],
+				ServerPort: s[1],
+				Password:   string(password),
+				Method:     s[3],
+				//	ssr only
+				Obfs: s[4],
+				//ObfsParam     string
+				//ProtocolParam string
+				Protocol: s[2],
+			}
+
+			if v, ok := queryMap["obfsparam"]; ok {
+				obfsparam, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(v[0]))
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				ssServer.ObfsParam = string(obfsparam)
+			}
+
+			if v, ok := queryMap["protoparam"]; ok {
+				protoparam, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(v[0]))
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				ssServer.ProtocolParam = string(protoparam)
+			}
+			SSServerArr = append(SSServerArr, ssServer)
+		}
+
+		if strings.HasPrefix(line, "ss://") {
+			//todo
+		}
+	}
+
+	b, err := json.Marshal(SSServerArr)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(b))
 }

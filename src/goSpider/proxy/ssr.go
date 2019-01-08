@@ -6,19 +6,19 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/sun8911879/shadowsocksR"
-	"github.com/sun8911879/shadowsocksR/tools/leakybuf"
-	ssSocks "github.com/shadowsocks/go-shadowsocks2/socks"
-	"github.com/sun8911879/shadowsocksR/tools/socks"
-	"log"
-	"io"
 	"errors"
-	"strings"
-	"strconv"
+	ssSocks "github.com/shadowsocks/go-shadowsocks2/socks"
+	"github.com/sun8911879/shadowsocksR"
 	"github.com/sun8911879/shadowsocksR/obfs"
-	"github.com/sun8911879/shadowsocksR/ssr"
 	"github.com/sun8911879/shadowsocksR/protocol"
+	"github.com/sun8911879/shadowsocksR/ssr"
+	"github.com/sun8911879/shadowsocksR/tools/leakybuf"
+	"github.com/sun8911879/shadowsocksR/tools/socks"
+	"io"
+	"log"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -94,7 +94,7 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			return
 		}
-		log.Println(reflect.TypeOf(err), err)
+		log.Println(bi.Address, reflect.TypeOf(err), err)
 		return //ignore i/o timeout
 	}
 	defer dst.Close()
@@ -213,7 +213,7 @@ func NewSSRClient(u *url.URL) (*shadowsocksr.SSTCPConn, error) {
 	}
 
 	dialer := net.Dialer{
-		Timeout:   time.Millisecond * 800,
+		//Timeout:   time.Millisecond * 700,
 		DualStack: true,
 	}
 	conn, err := dialer.Dial("tcp", u.Host)
