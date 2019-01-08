@@ -191,6 +191,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		reader, err = gzip.NewReader(resp.Body)
 		//*http.httpError todo  2019/01/05 14:58:53 Gzip Error:*http.httpError : read tcp 127.0.0.1:10281->127.0.0.1:10199: use of closed network connection (Client.Timeout exceeded while reading body)
 		if err != nil {
+			//2019/01/08 17:25:01 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:3531->127.0.0.1:10318: use of closed network connection (Client.Timeout exceeded while reading body)
+			//2019/01/08 17:25:09 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:3837->127.0.0.1:10341: use of closed network connection (Client.Timeout exceeded while reading body)
+			//2019/01/08 17:25:15 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:4122->127.0.0.1:10329: use of closed network connection (Client.Timeout exceeded while reading body)
+			//2019/01/08 17:25:37 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:4796->127.0.0.1:10329: use of closed network connection (Client.Timeout exceeded while reading body)
+			//2019/01/08 17:25:57 spider.go:194: Gzip Error:*http.htt
+			//2019/01/08 17:22:10 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:10710->127.0.0.1:10324: use of closed network connection (Client.Timeout exceeded while reading body)
+			//2019/01/08 17:22:11 spider.go:194: Gzip Error:*http.httpError : read tcp 127.0.0.1:10785->127.0.0.1:10316: use of closed network connection (Client.Timeout exceeded while reading body)
 			log.Println("Gzip Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
 		}
 		defer reader.Close()

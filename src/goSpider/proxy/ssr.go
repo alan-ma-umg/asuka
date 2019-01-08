@@ -94,6 +94,14 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			return
 		}
+		//2019/01/08 17:22:59 ssr.go:97: ru-3.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 103.102.4.19:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:01 ssr.go:97: hk-6.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 203.218.247.64:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:02 ssr.go:97: hk-2.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 218.102.182.182:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:03 ssr.go:97: jp-9.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 203.137.122.111:443: connectex: No connection could be made because the target machine actively refused it.
+		//2019/01/08 17:23:03 ssr.go:97: hk-24.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 47.52.214.162:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:03 ssr.go:97: ru-3.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 103.102.4.19:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:03 ssr.go:97: hk-10.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 42.98.194.185:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+		//2019/01/08 17:23:04 ssr.go:97: tw-1.mitsuha-node.com:443 *errors.errorString connectin
 		log.Println(bi.Address, reflect.TypeOf(err), err)
 		return //ignore i/o timeout
 	}
