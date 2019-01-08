@@ -114,7 +114,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -130,7 +130,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -143,11 +143,11 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th>Server</th><th>Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Dispatch</th><th>Access</th><th>Failure</th><th style="width:100px">Failure 60s</th></tr>`
+	html := `<table><tr><th style="width:1px;padding:0 10px">#</th><th style="width:1px;padding:0 10px">Server</th><th style="width:1px;padding:0 10px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Access</th><th>Failure</th><th style="width:145px">Failure 60s</th></tr>`
 
 	start := time.Now()
 	avgLoad := 0.0
-	for _, s := range dispatcherObj.GetSpiders() {
+	for index, s := range dispatcherObj.GetSpiders() {
 		avgLoad += s.Transport.LoadRate(5)
 		if s.ConnectFail {
 			html += "<tr style=\"background:yellow\">"
@@ -163,7 +163,8 @@ func html() string {
 		}
 
 		html += `
-<td>` + s.Transport.S.Name + ` </td>
+<td>` + strconv.Itoa(index+1) + ` </td>
+<td class="center">` + s.Transport.S.Name + ` </td>
 <td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</td>
@@ -171,7 +172,6 @@ func html() string {
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + `</td>
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + `</td>
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + `</td>
-<td>` + strconv.Itoa(s.Transport.LoopCount) + `</td>
 <td>` + strconv.Itoa(s.Transport.GetAccessCount()) + `</td>
 <td>` + strconv.Itoa(s.Transport.GetFailureCount()) + `</td>
 <td> ` + FailStr + `</td>`
