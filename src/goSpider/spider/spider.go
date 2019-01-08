@@ -57,7 +57,7 @@ type Spider struct {
 	TimeList     *list.List
 	TimeLenLimit int
 
-	ConnectFail bool
+	FailureLevel int
 
 	RequestStartTime time.Time
 }
@@ -71,17 +71,35 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 }
 
 func (spider *Spider) Throttle() {
-	if spider.ConnectFail {
+	if spider.FailureLevel > 0 {
 		time.Sleep(time.Minute)
-		spider.ConnectFail = false
 	}
 
 	accessCount, failureCount := spider.Transport.AccessCount(60)
-	if accessCount > 10 && helper.SpiderFailureRate(accessCount, failureCount) > 50.0 {
-		spider.ConnectFail = true
-		time.Sleep(time.Minute * 30)
-		spider.ConnectFail = false
+	if accessCount > 7 && helper.SpiderFailureRate(accessCount, failureCount) > 50.0 {
+		spider.FailureLevel = 100
+		accessCountAll := spider.Transport.GetAccessCount()
+		failureCountAll := spider.Transport.GetFailureCount()
+		failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
+		if accessCountAll > 40 && failureRateAll > 95 {
+			spider.FailureLevel = 100
+			time.Sleep(time.Hour * 2)
+		} else if accessCountAll > 40 && failureRateAll > 85 {
+			spider.FailureLevel = 80
+			time.Sleep(time.Minute * 40)
+		} else if accessCountAll > 30 && failureRateAll > 70 {
+			spider.FailureLevel = 60
+			time.Sleep(time.Minute * 10)
+		} else if accessCountAll > 30 && failureRateAll > 60 {
+			spider.FailureLevel = 40
+			time.Sleep(time.Minute * 5)
+		} else {
+			spider.FailureLevel = 20
+			time.Sleep(time.Minute * 2)
+		}
 	}
+
+	spider.FailureLevel = 0
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
@@ -231,7 +249,7 @@ func (spider *Spider) requestErrorHandler(err error) {
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
-		spider.ConnectFail = true
+		spider.FailureLevel = 10
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	}
 }

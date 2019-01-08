@@ -149,8 +149,8 @@ func html() string {
 	avgLoad := 0.0
 	for index, s := range dispatcherObj.GetSpiders() {
 		avgLoad += s.Transport.LoadRate(5)
-		if s.ConnectFail {
-			html += "<tr style=\"background:#ffffd2\">" //#fde8e8
+		if s.FailureLevel > 0 {
+			html += `<tr style="background:#ffffd2">`
 		} else {
 			html += "<tr>"
 		}
@@ -182,7 +182,7 @@ func html() string {
 
 		html += `
 <td>` + strconv.Itoa(index+1) + ` </td>
-<td class="center">` + s.Transport.S.Name + ` </td>
+<td class="center">` + helper.TruncateStr(s.Transport.S.Name, 10, "") + `(F. ` + strconv.Itoa(s.FailureLevel) + `) </td>
 <td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</td>
@@ -192,7 +192,7 @@ func html() string {
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + `</td>
 <td>` + strconv.Itoa(s.Transport.GetAccessCount()) + `</td>
 <td>` + strconv.Itoa(s.Transport.GetFailureCount()) + `</td>
-<td> ` + FailStr + `</td>`
+<td class="center"> ` + FailStr + `</td>`
 		html += "</tr>"
 	}
 
@@ -249,7 +249,7 @@ func html() string {
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
 	for _, s := range dispatcherObj.GetSpiders() {
-		if s.CurrentRequest != nil && !s.ConnectFail {
+		if s.CurrentRequest != nil && s.FailureLevel == 0 {
 			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr(s.CurrentRequest.URL.String(), 80, "...("+strconv.Itoa(len(s.CurrentRequest.URL.String()))+")") + "</a></td></tr>"
 		}
 	}
