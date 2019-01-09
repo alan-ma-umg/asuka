@@ -108,16 +108,16 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 	defer dst.Close()
 	//dst.(*net.TCPConn).SetKeepAlive(true)
 
-	tcpRelay(src, dst)
-	if err != nil {
-		if err, ok := err.(net.Error); ok && err.Timeout() {
-			return // ignore i/o timeout
-		}
-		log.Println("relay error: %v", err)
-	}
+	//n,n,err:=tcpRelay(src, dst)
+	//if err != nil {
+	//	if err, ok := err.(net.Error); ok && err.Timeout() {
+	//		return // ignore i/o timeout
+	//	}
+	//	log.Println("relay error: %v", err)
+	//}
 
-	//go bi.Pipe(src, dst)
-	//bi.Pipe(dst, src)
+	go bi.Pipe(src, dst)
+	bi.Pipe(dst, src)
 	//src.Close()
 	//dst.Close()
 }

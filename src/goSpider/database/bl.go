@@ -14,7 +14,7 @@ var bloomFilterInstance *bloom.BloomFilter
 func init() {
 	//save
 	go func() {
-		t := time.NewTicker(time.Second * 5)
+		t := time.NewTicker(time.Minute * 2)
 		for {
 			<-t.C
 			save()
