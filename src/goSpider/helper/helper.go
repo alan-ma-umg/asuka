@@ -72,7 +72,7 @@ func ByteCountBinary(b uint64) string {
 // https://www.domain.com => domain.com
 // http://c.a.b.domain.com => domain.com
 func TldDomain(u *url.URL) (str string, err error) {
-	return publicsuffix.EffectiveTLDPlusOne(u.String()) // fixme,  failure: netlify.com | s3-ap-northeast-1.amazonaws.com
+	return publicsuffix.EffectiveTLDPlusOne(u.Hostname()) // fixme,  failure: netlify.com | s3-ap-northeast-1.amazonaws.com
 }
 
 var OnlyDomainCharacter = regexp.MustCompile(`^[\-\.a-zA-Z0-9]+$`).MatchString
