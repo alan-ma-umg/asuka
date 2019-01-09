@@ -257,7 +257,7 @@ func (spider *Spider) requestErrorHandler(err error) {
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
 		return
 		if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
 			log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
@@ -283,7 +283,7 @@ func (spider *Spider) responseErrorHandler(err error) {
 		return
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
 		if !err.(net.Error).Timeout() && err != io.EOF {
 			log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		}
@@ -335,13 +335,17 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 						}
 						u, err := url.Parse(value)
 						if err != nil {
-							//log.Println("Url Parse: " + reflect.TypeOf(err).String() + " : " + value + " : " + err.Error() + " : from : " + spider.CurrentRequest.URL.String())
 							continue
 						}
 						addUrl := spider.CurrentRequest.URL.ResolveReference(u)
 						if addUrl.Scheme != "http" && addUrl.Scheme != "https" {
 							continue
 						}
+
+						if len(addUrl.Hostname()) < 4 || strings.Index(addUrl.Hostname(), ".") == -1 || !helper.OnlyDomainCharacter(addUrl.Hostname()) {
+							continue
+						}
+
 						res = append(res, addUrl)
 					}
 				}

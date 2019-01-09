@@ -17,6 +17,7 @@ import (
 	"time"
 	"net/http"
 	"golang.org/x/net/publicsuffix"
+	"regexp"
 )
 
 // env config
@@ -73,6 +74,8 @@ func ByteCountBinary(b uint64) string {
 func TldDomain(u *url.URL) (str string, err error) {
 	return publicsuffix.EffectiveTLDPlusOne(u.Hostname())
 }
+
+var OnlyDomainCharacter = regexp.MustCompile(`^[\-\.a-zA-Z0-9]+$`).MatchString
 
 func TruncateStr(str []rune, length int, postfix string) string {
 	cut := str
