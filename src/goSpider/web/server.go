@@ -114,7 +114,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -130,7 +130,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -217,35 +217,6 @@ func html() string {
 	}
 
 	html += "</table><br>"
-	overviewHtml := `
-<table>
-    <tr>
-        <th>Queue</th>
-        <td style="width:130px">` + strconv.Itoa(int(queueCount)) + `</td>
-        <th>Redis Mem</th>
-        <td style="width:130px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
-        <th>Bloom Filter</th>
-        <td style="width:130px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
-        <th>Load</th>
-        <td style="width:130px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
-        <th>Mem SYS</th>
-        <td style="width:130px">` + helper.ByteCountBinary(mem.Sys) + `</td>
-	</tr>
-	<tr>
-        <th>Goroutine</th>
-        <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
-        <th>Connection</th>
-        <td>` + strconv.Itoa(helper.GetSocketEstablishedCountLazy()) + `</td>
-        <th>WebSockets</th>
-        <td>` + strconv.Itoa(webSocketConnections) + `</td>
-        <th>Time</th>
-        <td>` + time.Since(start).String() + `</td>
-        <th>Uptime</th>
-        <td>` + time.Since(startTime).Truncate(time.Second).String() + `</td>
-    </tr>
-</table>
-<br>
-`
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
 	for _, s := range dispatcherObj.GetSpiders() {
@@ -274,5 +245,35 @@ func html() string {
 		html += "</tr>"
 	}
 	html += "</table>"
+
+	overviewHtml := `
+<table>
+    <tr>
+        <th>Queue</th>
+        <td style="width:130px">` + strconv.Itoa(int(queueCount)) + `</td>
+        <th>Redis Mem</th>
+        <td style="width:130px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
+        <th>Bloom Filter</th>
+        <td style="width:130px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
+        <th>Load</th>
+        <td style="width:130px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
+        <th>Mem SYS</th>
+        <td style="width:130px">` + helper.ByteCountBinary(mem.Sys) + `</td>
+	</tr>
+	<tr>
+        <th>Goroutine</th>
+        <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
+        <th>Connection</th>
+        <td>` + strconv.Itoa(helper.GetSocketEstablishedCountLazy()) + `</td>
+        <th>WebSockets</th>
+        <td>` + strconv.Itoa(webSocketConnections) + `</td>
+        <th>Time</th>
+        <td>` + time.Since(start).Truncate(time.Microsecond).String() + `</td>
+        <th>Uptime</th>
+        <td>` + time.Since(startTime).Truncate(time.Second).String() + `</td>
+    </tr>
+</table>
+<br>
+`
 	return overviewHtml + html
 }
