@@ -143,6 +143,9 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	spider.SetRequest(u, nil)
 
+	spider.ResponseStr = ""
+	spider.ResponseByte = []byte{}
+
 	//time
 	spider.RequestStartTime = time.Now()
 
@@ -193,6 +196,10 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	if !strings.Contains(resp.Header.Get("Content-type"), "text/html") {
 		return resp, errors.New("Content-type:Content-type must be text/html, " + resp.Header.Get("Content-type") + " given")
 	}
+	//todo remove
+	if strings.ToLower(resp.Header.Get("Content-Encoding")) != "gzip" {
+		return resp, err
+	}
 
 	resByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -217,6 +224,8 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 			log.Println("Gzip Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
 		}
 		defer reader.Close()
+	} else {
+		log.Println(" !!!!!!!!!!!!!!!!!! no gzip compression: content-encoding:" + resp.Header.Get("Content-Encoding") + " URL:" + spider.CurrentRequest.URL.String())
 	}
 
 	res, err := ioutil.ReadAll(reader)
@@ -250,6 +259,7 @@ func (spider *Spider) requestErrorHandler(err error) {
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
 		spider.FailureLevel = 10
+		//2019/01/09 11:00:19 spider.go:262: Request Error jp-4.mitsuha-node.com *errors.errorString:  http: no Host in request URL http:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	}
 }
@@ -267,8 +277,10 @@ func (spider *Spider) responseErrorHandler(err error) {
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
 		if io.ErrUnexpectedEOF != err {
+			//2019/01/09 11:37:09 spider.go:281: Response Error hk-8.mitsuha-node.com *errors.errorString:  gzip: invalid checksum http://www.fcx110.com/
 			//2019/01/08 21:05:45 spider.go:252: Response Error hk-1a.mitsuha-node.com *errors.errorString:  gzip: invalid header http://www.s80.cc
 			//2019/01/08 19:23:55 spider.go:251: Response Error jp-2.mitsuha-node.com *errors.errorString:  malformed chunked encoding http://www.jygedu.net/
+			//2019/01/09 11:11:36 spider.go:281: Response Error jp-b.mitsuha-node.com flate.CorruptInputError:  flate: corrupt input before offset 2168 http://www.wyzc.com/
 			log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		}
 	}
