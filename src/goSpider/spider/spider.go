@@ -72,6 +72,9 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 
 func (spider *Spider) Throttle() {
 	if spider.FailureLevel > 0 {
+		time.Sleep(time.Second)
+	}
+	if spider.FailureLevel > 1 {
 		time.Sleep(time.Minute)
 	}
 
@@ -245,6 +248,10 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 }
 
 func (spider *Spider) requestErrorHandler(err error) {
+	if spider.FailureLevel == 0 {
+		spider.FailureLevel = 1
+	}
+
 	switch err.(type) {
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
@@ -265,6 +272,10 @@ func (spider *Spider) requestErrorHandler(err error) {
 }
 
 func (spider *Spider) responseErrorHandler(err error) {
+	if spider.FailureLevel == 0 {
+		spider.FailureLevel = 1
+	}
+
 	switch err.(type) {
 	case *net.OpError:
 		return

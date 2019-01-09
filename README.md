@@ -9,3 +9,4 @@
 - 爬取结果的存储
 - 优化WebSocket响应速度
 - WebSocket响应JSON版本的数据
+- 视失败情况不计算请求耗时
