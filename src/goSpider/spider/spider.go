@@ -161,10 +161,9 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		if err != nil {
 			recentFetch.ErrType = reflect.TypeOf(err).String()
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
-			spider.TimeList.PushBack(time.Duration(0))
-		} else {
-			spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		}
+
+		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		if spider.TimeList.Len() > spider.TimeLenLimit {
 			spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
 		}
