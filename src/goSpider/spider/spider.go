@@ -257,6 +257,7 @@ func (spider *Spider) requestErrorHandler(err error) {
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue
 		return
 		if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
 			log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
@@ -282,6 +283,7 @@ func (spider *Spider) responseErrorHandler(err error) {
 		return
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue
 		if !err.(net.Error).Timeout() && err != io.EOF {
 			log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		}
@@ -384,7 +386,7 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 
 	u, err := url.Parse(link)
 	if err != nil {
-		log.Println("URL parse filed ", link, err)
+		log.Println("URL parse failed ", link, err)
 		return
 	}
 
