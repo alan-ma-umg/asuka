@@ -17,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"runtime/debug"
+	"fmt"
 )
 
 var upgrade = websocket.Upgrader{
@@ -68,23 +70,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	//const (
-	//	CloseNormalClosure           = 1000
-	//	CloseGoingAway               = 1001
-	//	CloseProtocolError           = 1002
-	//	CloseUnsupportedData         = 1003
-	//	CloseNoStatusReceived        = 1005
-	//	CloseAbnormalClosure         = 1006
-	//	CloseInvalidFramePayloadData = 1007
-	//	ClosePolicyViolation         = 1008
-	//	CloseMessageTooBig           = 1009
-	//	CloseMandatoryExtension      = 1010
-	//	CloseInternalServerErr       = 1011
-	//	CloseServiceRestart          = 1012
-	//	CloseTryAgainLater           = 1013
-	//	CloseTLSHandshake            = 1015
-	//)
-
 	refreshRateMin := 0.2
 	refreshRate := refreshRateMin
 	go func() {
@@ -95,6 +80,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			if messageType == 1 {
+
+				if string(b) == "free" {
+					debug.FreeOSMemory()
+					fmt.Println("debug.FreeOsMemory")
+					continue
+				}
+
 				refreshRate, _ = strconv.ParseFloat(string(b), 64)
 				if refreshRate < refreshRateMin {
 					refreshRate = refreshRateMin
@@ -114,7 +106,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
 }
 
 var dispatcherObj *dispatcher.Dispatcher
@@ -130,7 +122,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -146,9 +138,13 @@ func html() string {
 	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Access</th><th>Failure</th><th style="width:145px">Failure 60s</th></tr>`
 
 	start := time.Now()
-	avgLoad := 0.0
+	sumLoad := 0.0
+	var TrafficIn uint64 = 0
+	var TrafficOut uint64 = 0
 	for index, s := range dispatcherObj.GetSpiders() {
-		avgLoad += s.Transport.LoadRate(5)
+		sumLoad += s.Transport.LoadRate(5)
+		TrafficIn += s.Transport.TrafficIn
+		TrafficOut += s.Transport.TrafficOut
 		if s.FailureLevel > 0 {
 			html += `<tr style="background:#ffffd2">`
 		} else {
@@ -208,14 +204,6 @@ func html() string {
 		//fmt.Println(err)
 		redisMem = 0
 	}
-
-	//bloomFilter
-	var fileSize int64 = 0
-	fi, err := os.Stat(helper.Env().BloomFilterFile)
-	if err == nil {
-		fileSize = fi.Size()
-	}
-
 	html += "</table><br>"
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
@@ -250,15 +238,15 @@ func html() string {
 <table>
     <tr>
         <th>Queue</th>
-        <td style="width:130px">` + strconv.Itoa(int(queueCount)) + `</td>
+        <td style="width:140px">` + strconv.Itoa(int(queueCount)) + `</td>
         <th>Redis Mem</th>
-        <td style="width:130px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
-        <th>Bloom Filter</th>
-        <td style="width:130px">` + helper.ByteCountBinary(uint64(fileSize)) + `</td>
+        <td style="width:140px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
         <th>Load</th>
-        <td style="width:130px">` + strconv.FormatFloat(avgLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + `</td>
-        <th>Mem SYS</th>
-        <td style="width:130px">` + helper.ByteCountBinary(mem.Sys) + `</td>
+        <td style="width:140px">` + strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + ` | ` + strconv.FormatFloat(sumLoad, 'f', 2, 64) + `</td>
+        <th>Traffic</th>
+        <td style="width:140px">` + helper.ByteCountBinary(TrafficIn) + ` | ` + helper.ByteCountBinary(TrafficOut) + `</td>
+        <th>Mem.SYS</th>
+        <td style="width:140px">` + helper.ByteCountBinary(mem.Sys) + `</td>
 	</tr>
 	<tr>
         <th>Goroutine</th>

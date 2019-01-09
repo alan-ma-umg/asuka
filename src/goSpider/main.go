@@ -25,9 +25,5 @@ func main() {
 
 	c := &dispatcher.Dispatcher{}
 	c.Run(&project.Www{})
-	//go func() {
 	web.Server(c, ":666") // http://127.0.0.1:666
-	//}()
-
-	//time.Sleep(100e9)
 }
