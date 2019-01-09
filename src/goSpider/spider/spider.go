@@ -108,9 +108,10 @@ func (spider *Spider) Throttle() {
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
 func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 
-	tld, err := helper.TldDomain(url.String())
+	tld, err := helper.TldDomain(url)
 	if err != nil {
-		tld = url.String()
+		log.Println(err, err)
+		tld = "DefaultRequest"
 	}
 
 	r, ok := spider.RequestsMap[tld]

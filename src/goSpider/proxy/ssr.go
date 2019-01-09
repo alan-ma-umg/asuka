@@ -52,6 +52,7 @@ type BackendInfo struct {
 func (bi *BackendInfo) Listen(clientRawAddr string) {
 	listener, err := net.Listen("tcp", clientRawAddr)
 	if err != nil {
+		//2019/01/09 20:03:54 ssr.go:55: listen tcp 127.0.0.1:43307: bind: address already in use
 		log.Println(err)
 		return
 	}

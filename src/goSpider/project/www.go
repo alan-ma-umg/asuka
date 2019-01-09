@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"log"
+	"net/http/cookiejar"
 )
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
@@ -32,7 +34,10 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {
+
+	//free the memory
 	if len(spider.RequestsMap) > 10 {
+		spider.Client.Jar, _ = cookiejar.New(nil)
 		spider.RequestsMap = map[string]*http.Request{}
 	}
 }
@@ -40,8 +45,9 @@ func (my *Www) ResponseAfter(spider *spider.Spider) {
 // queue
 func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
-	tld, err := helper.TldDomain(l.String())
+	tld, err := helper.TldDomain(l)
 	if err != nil {
+		log.Println(err, l)
 		return false
 	}
 

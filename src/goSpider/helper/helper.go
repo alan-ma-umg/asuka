@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/jpillora/go-tld"
 	"io/ioutil"
 	"log"
 	"math"
@@ -17,6 +16,7 @@ import (
 	"sync"
 	"time"
 	"net/http"
+	"golang.org/x/net/publicsuffix"
 )
 
 // env config
@@ -70,24 +70,8 @@ func ByteCountBinary(b uint64) string {
 // TldDomain return the Second-level domain and Top-level domain from url string
 // https://www.domain.com => domain.com
 // http://c.a.b.domain.com => domain.com
-func TldDomain(rawUrl string) (str string, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			str = rawUrl
-		}
-	}()
-
-	tldU, err := tld.Parse(rawUrl)
-	if err != nil {
-		u, err := url.Parse(rawUrl)
-		if err != nil {
-			return "", err
-		}
-
-		return u.Hostname(), nil
-	}
-
-	return tldU.Domain + "." + tldU.TLD, nil
+func TldDomain(u *url.URL) (str string, err error) {
+	return publicsuffix.EffectiveTLDPlusOne(u.Hostname())
 }
 
 func TruncateStr(str []rune, length int, postfix string) string {

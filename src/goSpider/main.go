@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 	"goSpider/dispatcher"
 	"goSpider/project"
 	"goSpider/web"
-	"log"
-	"time"
 )
 
 func init() {
@@ -20,6 +20,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 		//pSt.Stop()
 	}()
+
 	//database.Bl().ClearAll()                             //todo for test
 	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
