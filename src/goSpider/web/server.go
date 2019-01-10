@@ -144,7 +144,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:100px">Ping/Lost</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:100px">Dispatch</th><th style="width:145px">Failure</th></tr>`
+	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:100px">Ping / Lost</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:100px">Dispatch</th><th style="width:145px">Failure</th></tr>`
 
 	start := time.Now()
 	sumLoad := 0.0
