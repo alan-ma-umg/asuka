@@ -321,6 +321,10 @@ func (spider *Spider) requestErrorHandler(err error) {
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
+		if strings.HasPrefix(err.Error(), "invalid URL") {
+			return
+		}
+
 		spider.FailureLevel = 10
 		//2019/01/09 11:00:19 spider.go:262: Request Error jp-4.mitsuha-node.com *errors.errorString:  http: no Host in request URL http:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
@@ -365,7 +369,6 @@ func (spider *Spider) responseErrorHandler(err error) {
 			return
 		}
 		if strings.HasPrefix(err.Error(), "invalid URL") {
-			//fmt.Println("invalid URL !!!!!!!!!!!")
 			return
 		}
 		if strings.HasPrefix(err.Error(), "http: unexpected EOF reading trailer") {
