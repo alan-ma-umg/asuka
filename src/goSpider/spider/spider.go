@@ -24,6 +24,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"crypto/tls"
+	"compress/flate"
+	"crypto/x509"
 )
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
@@ -140,6 +143,8 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 		spider.RequestsMap[tld] = r
 	}
 
+	//spider.CurrentRequest.Close = true // prevents re-use of TCP connections between requests to the same hosts
+
 	if header != nil {
 		for k := range *header {
 			spider.CurrentRequest.Header.Set(k, header.Get(k))
@@ -190,16 +195,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	//traffic
 	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
-	if err == nil {
-		spider.Transport.TrafficOut += uint64(len(dump))
-	} else {
-		spider.requestErrorHandler(err)
-	}
+	spider.requestErrorHandler(err)
+	spider.Transport.TrafficOut += uint64(len(dump))
 
-	resp, requestErr := spider.Client.Do(spider.CurrentRequest)
-	if requestErr != nil {
-		spider.requestErrorHandler(requestErr)
-		return resp, requestErr
+	resp, err = spider.Client.Do(spider.CurrentRequest)
+	if err != nil {
+		spider.requestErrorHandler(err)
+		return resp, err
 	}
 	defer resp.Body.Close()
 	recentFetch.StatusCode = resp.StatusCode
@@ -210,39 +212,32 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	}
 	//todo remove
 	if strings.ToLower(resp.Header.Get("Content-Encoding")) != "gzip" {
-		return resp, err
+		return resp, errors.New("Content-Encoding must be gzip , " + resp.Header.Get("Content-Encoding") + " given")
 	}
 
 	resByte, err := ioutil.ReadAll(resp.Body)
+	spider.responseErrorHandler(err)
 	if err != nil {
-		spider.responseErrorHandler(err)
 		return resp, err
 	}
 
 	//traffic
 	dump, err = httputil.DumpResponse(resp, false)
-	if err == nil {
-		recentFetch.ResponseSize = uint64(len(dump) + len(resByte))
-		spider.Transport.TrafficIn += recentFetch.ResponseSize
-	} else {
-		spider.responseErrorHandler(err)
-	}
+	spider.responseErrorHandler(err)
+	recentFetch.ResponseSize = uint64(len(dump) + len(resByte))
+	spider.Transport.TrafficIn += recentFetch.ResponseSize
 
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))
+	defer reader.Close()
 	if strings.ToLower(resp.Header.Get("Content-Encoding")) == "gzip" {
 		reader, err = gzip.NewReader(reader)
-		if err != nil {
-			log.Println("Gzip Error:" + reflect.TypeOf(err).String() + " : " + err.Error())
-		}
-		defer reader.Close()
-	} else {
-		log.Println(" !!!!!!!!!!!!!!!!!! no gzip compression: content-encoding:" + resp.Header.Get("Content-Encoding") + " URL:" + spider.CurrentRequest.URL.String())
+		spider.responseErrorHandler(err)
 	}
 
 	res, err := ioutil.ReadAll(reader)
+	spider.responseErrorHandler(err)
 	if err != nil {
-		spider.responseErrorHandler(err)
 		return resp, err
 	}
 
@@ -257,21 +252,72 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 }
 
 func (spider *Spider) requestErrorHandler(err error) {
+	if err == nil {
+		return
+	}
+
 	if spider.FailureLevel == 0 {
 		spider.FailureLevel = 1
 	}
 
 	switch err.(type) {
+	case x509.SystemRootsError:
+		return
+	case *x509.SystemRootsError:
+		return
+	case x509.UnknownAuthorityError:
+		return
+	case *x509.UnknownAuthorityError:
+		return
+	case x509.HostnameError:
+		return
+	case *x509.HostnameError:
+		return
+	case *net.DNSConfigError:
+		//An error reading the machine's DNS configuration.
+		return //todo 尝试一定次数后丢弃
+	case *net.DNSError:
+		return //DNSError represents a DNS lookup error
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
-		return
-		if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
-			log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
-			//fmt.Errorf()
-			//debug.PrintStack()
+		if err.(net.Error).Timeout() {
+			return //todo 尝试一定次数后丢弃
 		}
+		if io.EOF == err {
+			return
+		}
+		if io.ErrUnexpectedEOF == err {
+			return
+		}
+		if strings.Contains(err.Error(), "transport connection broken") {
+			return //todo 尝试一定次数后丢弃
+		}
+		if strings.Contains(err.Error(), "unexpected EOF") {
+			return
+		}
+		if strings.Contains(err.Error(), "x509: certificate") {
+			return
+		}
+		if strings.Contains(err.Error(), "no such host") {
+			return
+		}
+		if strings.Contains(err.Error(), ": EOF") {
+			return
+			//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+			//std := log.New(os.Stderr, "", log.Flags())
+			//std.Output(100, err.Error())
+			//debug.PrintStack()
+			//fmt.Println(debug.prin())
+		}
+
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
+		//return
+		//if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
+		log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		//fmt.Errorf()
+		//debug.PrintStack()
+		//}
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	default:
@@ -282,6 +328,10 @@ func (spider *Spider) requestErrorHandler(err error) {
 }
 
 func (spider *Spider) responseErrorHandler(err error) {
+	if err == nil {
+		return
+	}
+
 	if spider.FailureLevel == 0 {
 		spider.FailureLevel = 1
 	}
@@ -291,20 +341,61 @@ func (spider *Spider) responseErrorHandler(err error) {
 		return
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
-		if !err.(net.Error).Timeout() && err != io.EOF {
-			log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		if err.(net.Error).Timeout() {
+			return //todo 尝试一定次数后丢弃
 		}
+
+		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
+		//if !err.(net.Error).Timeout() && err != io.EOF {
+		log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		//}
 	case *url.Error:
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+	case tls.RecordHeaderError:
+		//2019/01/10 19:43:18 spider.go:306: Response Error hk-4.mitsuha-node.com tls.RecordHeaderError:  tls: received record with version fb2d when expecting version 303 http://gmail.com
+		//log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		return
+	case flate.CorruptInputError:
+		//2019/01/10 19:58:51 spider.go:306: Response Error us-7.mitsuha-node.com flate.CorruptInputError:  flate: corrupt input before offset 2446 http://www.woquzhe.com
+		//2019/01/10 19:45:38 spider.go:306: Response Error hk-6.mitsuha-node.com flate.CorruptInputError:  flate: corrupt input before offset 8407 http://top.200.net/
+		return
 	default:
-		if io.ErrUnexpectedEOF != err {
+		if strings.HasPrefix(err.Error(), "malformed chunked encoding") {
+			//2019/01/10 19:44:39 spider.go:306: Response Error sg-1.mitsuha-node.com *errors.errorString:  malformed chunked encoding http://wxip.me
+			return
+		}
+		if strings.HasPrefix(err.Error(), "invalid URL") {
+			//fmt.Println("invalid URL !!!!!!!!!!!")
+			return
+		}
+		if strings.HasPrefix(err.Error(), "http: unexpected EOF reading trailer") {
+			return
+		}
+		if strings.HasPrefix(err.Error(), "http:  reading trailer") {
+			//fmt.Println("http: unexpected EOF reading trailer !!!!!!!!!!!")
+			return
+		}
+		if gzip.ErrHeader == err {
+			//fmt.Println(err)
+			return
+		}
+		if gzip.ErrChecksum == err {
+			//fmt.Println(err)
+			return
+		}
+		if io.EOF == err {
+			return
+		}
+		if io.ErrUnexpectedEOF == err {
 			//2019/01/09 11:37:09 spider.go:281: Response Error hk-8.mitsuha-node.com *errors.errorString:  gzip: invalid checksum http://www.fcx110.com/
 			//2019/01/08 21:05:45 spider.go:252: Response Error hk-1a.mitsuha-node.com *errors.errorString:  gzip: invalid header http://www.s80.cc
 			//2019/01/08 19:23:55 spider.go:251: Response Error jp-2.mitsuha-node.com *errors.errorString:  malformed chunked encoding http://www.jygedu.net/
 			//2019/01/09 11:11:36 spider.go:281: Response Error jp-b.mitsuha-node.com flate.CorruptInputError:  flate: corrupt input before offset 2168 http://www.wyzc.com/
-			log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+			//log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+			return
 		}
+
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	}
 }
 
