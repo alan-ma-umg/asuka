@@ -49,6 +49,9 @@ type Transport struct {
 	//traffic size
 	TrafficIn  uint64
 	TrafficOut uint64
+
+	Ping            time.Duration
+	PingFailureRate float64
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {

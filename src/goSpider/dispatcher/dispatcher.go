@@ -7,7 +7,9 @@ import (
 	"goSpider/project"
 	"goSpider/proxy"
 	"goSpider/spider"
+	"net"
 	"sync"
+	"time"
 )
 
 type Dispatcher struct {
@@ -76,5 +78,31 @@ func (dispatcher *Dispatcher) Run(project project.Project) {
 				project.ResponseAfter(s)
 			}
 		}(s)
+
+		//ping
+		go func(s *spider.Spider) {
+			ipAddr, _ := lookIp(s.Transport.S.ServerAddr)
+			for {
+				if ipAddr == nil {
+					time.Sleep(time.Minute)
+					ipAddr, _ = lookIp(s.Transport.S.ServerAddr)
+				} else {
+					times := 3
+					rtt, fail := helper.Ping(ipAddr, times)
+					s.Transport.Ping = rtt
+					s.Transport.PingFailureRate = float64(fail) / float64(times)
+				}
+
+				time.Sleep(7)
+			}
+		}(s)
 	}
+}
+
+func lookIp(addr string) (*net.IPAddr, error) {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+	return net.ResolveIPAddr("ip4:icmp", host)
 }

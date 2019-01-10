@@ -144,7 +144,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:150px">Dispatch</th><th style="width:145px">Failure 60s</th></tr>`
+	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:100px">Ping/Lost</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:150px">Dispatch</th><th style="width:145px">Failure</th></tr>`
 
 	start := time.Now()
 	sumLoad := 0.0
@@ -188,6 +188,7 @@ func html() string {
 		html += `
 <td>` + strconv.Itoa(index+1) + ` </td>
 <td class="center">` + helper.TruncateStr([]rune(s.Transport.S.Name), 10, "") + `(F. ` + strconv.Itoa(s.FailureLevel) + `) </td>
+<td class="center">` + s.Transport.Ping.Truncate(time.Millisecond).String() + ` | ` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</td>
 <td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</td>

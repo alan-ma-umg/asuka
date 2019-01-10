@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tatsushid/go-fastping"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"log"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -105,7 +107,7 @@ var OnlyDomainCharacter = regexp.MustCompile(`^[\-\.a-zA-Z0-9]+$`).MatchString
 
 var OnlyAlphabetCharacter = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
 
-//IsIP  todo support IPv6
+//IsIP  todo support IPv6, net.ResolveIPAddr("ip4:icmp", "")
 func IsIP(host string) bool {
 	parts := strings.Split(host, ".")
 
@@ -301,4 +303,23 @@ func SSSubscriptionParse(rawUrl string) {
 		return
 	}
 	fmt.Println(string(b))
+}
+
+func Ping(ip *net.IPAddr, times int) (avgRtt time.Duration, failureTimes int) {
+	failureTimes = times
+	p := fastping.NewPinger()
+	p.AddIPAddr(ip)
+	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+		failureTimes--
+		avgRtt += rtt
+	}
+
+	for i := 0; i < times; i++ {
+		p.Run()
+	}
+	success := time.Duration(times - failureTimes)
+	if success > 0 {
+		avgRtt /= success
+	}
+	return
 }

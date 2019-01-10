@@ -4,13 +4,8 @@ import (
 	"testing"
 )
 
-func TestEnv(t *testing.T) {
-	//fmt.Println(Env())
-}
-
-func TestDownloadPath(t *testing.T) {
-}
-
 func TestSSSubscriptionParse(t *testing.T) {
-	//SSSubscriptionParse("")
+	//log.Println(net.LookupAddr("www.qq.com"))
+	//ip, _ := net.ResolveIPAddr("ip4:icmp", "qq.com")
+	//log.Println(Ping(ip, 2))
 }
