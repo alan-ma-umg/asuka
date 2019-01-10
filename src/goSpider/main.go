@@ -7,6 +7,8 @@ import (
 	"goSpider/dispatcher"
 	"goSpider/project"
 	"goSpider/web"
+	"goSpider/database"
+	"goSpider/helper"
 )
 
 func init() {
@@ -21,8 +23,8 @@ func main() {
 		//pSt.Stop()
 	}()
 
-	//database.Bl().ClearAll()                             //todo for test
-	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	database.Bl().ClearAll()                             //todo for test
+	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
 	c.Run(&project.Www{})
