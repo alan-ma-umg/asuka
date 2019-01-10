@@ -77,7 +77,7 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 			},
 		}
 	}
-	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 1}
+	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 0}
 	transportList = append(transportList, instance)
 	return instance, nil
 }
