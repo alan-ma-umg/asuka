@@ -144,7 +144,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:100px">Ping / Lost</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:100px">Dispatch</th><th style="width:145px">Failure</th></tr>`
+	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Ping / Lost</th><th style="width:1px">Avg Time</th><th style="width:1px">Traffic I / O</th><th>Load 5s / 60s / 15min / 30min</th><th style="width:1px">Dispatch</th><th style="width:145px">Failure</th><th style="width:1px">Status</th></tr>`
 
 	start := time.Now()
 	sumLoad := 0.0
@@ -160,32 +160,32 @@ func html() string {
 			html += "<tr>"
 		}
 
-		FailStr := ""
+		FailStr := "-"
 		if s.Transport.GetAccessCount() > 0 {
 			failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
 			failureRateAllValue := float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
-			FailStr = `<span style="color: hsl(` + strconv.Itoa(int(100-failureRate60Value)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRate60Value, 'f', 2, 64) + `%</span>` +
+			FailStr = `<div style="display:inline-block;width:50px" class="right"><span style="color: hsl(` + strconv.Itoa(int(100-failureRate60Value)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRate60Value, 'f', 2, 64) + `%</span></div>` +
 				" | " +
-				`<span style="color: hsl(` + strconv.Itoa(int(100-failureRateAllValue)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRateAllValue, 'f', 2, 64) + `%</span>`
-		} else {
-			FailStr = strconv.FormatFloat(helper.SpiderFailureRate(s.Transport.AccessCount(60)), 'f', 2, 64)
+				`<div style="display:inline-block;width:50px" class="left"><span style="color: hsl(` + strconv.Itoa(int(100-failureRateAllValue)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRateAllValue, 'f', 2, 64) + `%</span></div>`
 		}
 
 		html += `
 <td>` + strconv.Itoa(index+1) + ` </td>
-<td class="center">` + helper.TruncateStr([]rune(s.Transport.S.Name), 10, "") + `(F. ` + strconv.Itoa(s.FailureLevel) + `) </td>
+<td class="center">` + s.Transport.S.Name + `</td>
 <td class="center">
-	<span style="color: hsl(` + strconv.Itoa(helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))) + `, 100%, 35%);">` + s.Transport.Ping.Truncate(time.Millisecond).String() + `</span> | 
-<span style="color: hsl(` + strconv.Itoa(int(150-s.Transport.PingFailureRate*150)) + `, 100%, 35%);">` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</span></td>
+	<div style="display:inline-block;width:50px" class="right">
+	<span style="color: hsl(` + strconv.Itoa(helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))) + `, 100%, 35%);">` + s.Transport.Ping.Truncate(time.Millisecond).String() + `</span></div> | 
+<div style="display:inline-block;width:50px" class="left"><span style="color: hsl(` + strconv.Itoa(int(150-s.Transport.PingFailureRate*150)) + `, 100%, 35%);">` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</span></div></td>
 <td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
-<td>` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</td>
-<td>` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</td>
-<td> ` + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + `</td>
-<td> ` + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + `</td>
-<td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + `</td>
-<td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + `</td>
-<td class="center">` + strconv.Itoa(s.Transport.GetAccessCount()) + ` | ` + strconv.Itoa(s.Transport.GetFailureCount()) + `</td>
-<td class="center"> ` + FailStr + `</td>`
+<td class="center"><div style="display:inline-block;width:60px" class="right">` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</div> | <div style="display:inline-block;width:60px" class="left">` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</div></td>
+<td class="center"> ` + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + ` |
+ ` + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + ` |
+ ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + ` |
+ ` + strconv.FormatFloat(s.Transport.LoadRate(60*30), 'f', 2, 64) + `</td>
+<td class="center">	<div style="display:inline-block;width:50px" class="right">` + strconv.Itoa(s.Transport.GetAccessCount()) + `</div> | <div style="display:inline-block;width:50px" class="left">` + strconv.Itoa(s.Transport.GetFailureCount()) + `</div></td>
+<td class="center"> ` + FailStr + `</td>
+<td style="font-weight:800;color: hsl(` + strconv.Itoa(100-s.FailureLevel) + `, 100%, 35%);" class="center">` + strconv.Itoa(s.FailureLevel) + `</td>`
+
 		html += "</tr>"
 	}
 
