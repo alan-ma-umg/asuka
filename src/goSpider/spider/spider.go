@@ -60,6 +60,7 @@ type Spider struct {
 	FailureLevel int
 
 	RequestStartTime time.Time
+	Stop             bool
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
@@ -71,6 +72,14 @@ func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
 }
 
 func (spider *Spider) Throttle() {
+	for {
+		//todo make improvement
+		if !spider.Stop {
+			break
+		}
+		time.Sleep(2e9)
+	}
+
 	if spider.FailureLevel > 0 {
 		time.Sleep(time.Second)
 	}

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"goSpider/database"
+	"goSpider/dispatcher"
+	"goSpider/helper"
+	"goSpider/project"
+	"goSpider/web"
 	"log"
 	"time"
-	"net/url"
-	"goSpider/helper"
-	"golang.org/x/net/publicsuffix"
 )
 
 func init() {
@@ -21,19 +23,10 @@ func main() {
 		//pSt.Stop()
 	}()
 
-	//database.Bl().ClearAll()                             //todo for test
-	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	database.Bl().ClearAll()                             //todo for test
+	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
-	//c := &dispatcher.Dispatcher{}
-	//c.Run(&project.Www{})
-	//web.Server(c, ":666") // http://127.0.0.1:666
-
-
-	u,_:=url.Parse("http://www.b11a24ij16i.com.cngoods-6461.html/")//fixme
-	fmt.Println(u.Hostname())
-	fmt.Println(publicsuffix.PublicSuffix(u.Hostname()))
-	fmt.Println(helper.TldDomain(u))
-	fmt.Println(u.Hostname())
-
+	c := &dispatcher.Dispatcher{}
+	c.Run(&project.Www{})
+	web.Server(c, ":666") // http://127.0.0.1:666
 }
-

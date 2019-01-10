@@ -3,21 +3,22 @@ package helper
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"log"
 	"math"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"net/http"
-	"golang.org/x/net/publicsuffix"
-	"regexp"
 )
 
 // env config
@@ -71,11 +72,58 @@ func ByteCountBinary(b uint64) string {
 // TldDomain return the Second-level domain and Top-level domain from url string
 // https://www.domain.com => domain.com
 // http://c.a.b.domain.com => domain.com
-func TldDomain(u *url.URL) (str string, err error) {
-	return publicsuffix.EffectiveTLDPlusOne(u.Hostname()) // fixme,  failure: netlify.com | s3-ap-northeast-1.amazonaws.com
+func TldDomain(u *url.URL) (tld string, err error) {
+	hostname := u.Hostname()
+	if IsIP(hostname) {
+		return hostname, nil
+	}
+
+	tld, err = publicsuffix.EffectiveTLDPlusOne(hostname) // fixme,  failure: netlify.com | s3-ap-northeast-1.amazonaws.com
+	if err != nil {
+		return
+	}
+
+	s := strings.Split(tld, ".")
+
+	if len(s) == 1 {
+		return "", errors.New("tld长度不正确: " + tld)
+	}
+
+	last := strings.ToLower(s[len(s)-1])
+	if !OnlyAlphabetCharacter(last) {
+		return "", errors.New("顶级域名中包含非字母") //fixme 会导致不支持中文域名等
+	}
+
+	if last == "html" || last == "htm" || last == "php" || last == "jsp" || last == "json" || last == "xml" || last == "txt" || last == "shtml" || len(last) == 1 {
+		return "", errors.New("无效tld: " + tld)
+	}
+
+	return
 }
 
 var OnlyDomainCharacter = regexp.MustCompile(`^[\-\.a-zA-Z0-9]+$`).MatchString
+
+var OnlyAlphabetCharacter = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
+
+//IsIP  todo support IPv6
+func IsIP(host string) bool {
+	parts := strings.Split(host, ".")
+
+	if len(parts) < 4 {
+		return false
+	}
+
+	for _, x := range parts {
+		if i, err := strconv.Atoi(x); err == nil {
+			if i < 0 || i > 255 {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
+}
 
 func TruncateStr(str []rune, length int, postfix string) string {
 	cut := str

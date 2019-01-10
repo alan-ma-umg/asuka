@@ -2,6 +2,7 @@ package web
 
 import (
 	"compress/gzip"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"goSpider/database"
 	"goSpider/dispatcher"
@@ -14,11 +15,10 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
-	"runtime/debug"
-	"fmt"
 )
 
 var upgrade = websocket.Upgrader{
@@ -27,6 +27,7 @@ var upgrade = websocket.Upgrader{
 var startTime = time.Now()
 var webSocketConnections = 0
 var pwd, _ = os.Getwd()
+var dispatcherObj *dispatcher.Dispatcher
 
 type gzipResponseWriter struct {
 	io.Writer
@@ -81,15 +82,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 			if messageType == 1 {
 
-				if string(b) == "free" {
+				switch strings.TrimSpace(string(b)) {
+				case "free":
 					debug.FreeOSMemory()
 					fmt.Println("debug.FreeOsMemory")
-					continue
-				}
-
-				refreshRate, _ = strconv.ParseFloat(string(b), 64)
-				if refreshRate < refreshRateMin {
-					refreshRate = refreshRateMin
+				case "stop":
+					for _, s := range dispatcherObj.GetSpiders() {
+						s.Stop = true
+					}
+					fmt.Println("spider stop")
+				case "start":
+					for _, s := range dispatcherObj.GetSpiders() {
+						s.Stop = false
+					}
+					fmt.Println("spider start")
+				default:
+					refreshRate, _ = strconv.ParseFloat(string(b), 64)
+					if refreshRate < refreshRateMin {
+						refreshRate = refreshRateMin
+					}
 				}
 			}
 		}
@@ -106,13 +117,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
 }
 
-var dispatcherObj *dispatcher.Dispatcher
-
 func Server(d *dispatcher.Dispatcher, address string) {
-	dispatcherObj = d
+	dispatcherObj = d //todo
 	http.HandleFunc("/queue", commonHandler(queue))
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", commonHandler(home))
@@ -122,7 +131,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
