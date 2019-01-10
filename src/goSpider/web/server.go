@@ -163,24 +163,10 @@ func html() string {
 		FailStr := ""
 		if s.Transport.GetAccessCount() > 0 {
 			failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
-			failureRate60 := strconv.FormatFloat(failureRate60Value, 'f', 2, 64)
-			failureRate60Html := ""
-			if failureRate60Value > 30.0 {
-				failureRate60Html = `<span style="color: rgb(` + failureRate60 + `%, 0%, 0%)">` + failureRate60 + `%</span>`
-			} else {
-				failureRate60Html = `<span style="color: rgb(0%, ` + strconv.FormatFloat(100.0-failureRate60Value, 'f', 2, 64) + `%, 0%)">` + failureRate60 + `%</span>`
-			}
-
 			failureRateAllValue := float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
-			failureRateAll := strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
-			failureRateAllHtml := ""
-			if failureRateAllValue > 30.0 {
-				failureRateAllHtml = `<span style="color: rgb(` + failureRateAll + `%, 0%, 0%)">` + failureRateAll + "%</span>"
-			} else {
-				failureRateAllHtml = `<span style="color: rgb(0%, ` + strconv.FormatFloat(100.0-failureRateAllValue, 'f', 2, 64) + `%, 0%)">` + failureRateAll + "%</span>"
-			}
-
-			FailStr = failureRate60Html + " | " + failureRateAllHtml
+			FailStr = `<span style="color: hsl(` + strconv.Itoa(int(100-failureRate60Value)) + `, 100%, 30%);">` + strconv.FormatFloat(failureRate60Value, 'f', 2, 64) + `%</span>` +
+				" | " +
+				`<span style="color: hsl(` + strconv.Itoa(int(100-failureRateAllValue)) + `, 100%, 30%);">` + strconv.FormatFloat(failureRateAllValue, 'f', 2, 64) + `%</span>`
 		} else {
 			FailStr = strconv.FormatFloat(helper.SpiderFailureRate(s.Transport.AccessCount(60)), 'f', 2, 64)
 		}
@@ -188,7 +174,8 @@ func html() string {
 		html += `
 <td>` + strconv.Itoa(index+1) + ` </td>
 <td class="center">` + helper.TruncateStr([]rune(s.Transport.S.Name), 10, "") + `(F. ` + strconv.Itoa(s.FailureLevel) + `) </td>
-<td class="center">` + s.Transport.Ping.Truncate(time.Millisecond).String() + ` | ` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</td>
+<td class="center">
+	<span style="color: hsl(150, 100%, 40%);">` + s.Transport.Ping.Truncate(time.Millisecond).String() + `</span> | ` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</td>
 <td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</td>
 <td>` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</td>
