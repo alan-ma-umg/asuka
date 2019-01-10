@@ -16,7 +16,6 @@ import (
 	"github.com/sun8911879/shadowsocksR/tools/socks"
 	"io"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -103,7 +102,7 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		//2019/01/08 17:23:03 ssr.go:97: ru-3.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 103.102.4.19:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 		//2019/01/08 17:23:03 ssr.go:97: hk-10.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 42.98.194.185:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 		//2019/01/08 17:23:04 ssr.go:97: tw-1.mitsuha-node.com:443 *errors.errorString connectin
-		log.Println(bi.Address, reflect.TypeOf(err), err)
+		//log.Println(bi.Address, reflect.TypeOf(err), err)
 		return //ignore i/o timeout
 	}
 	defer dst.Close()

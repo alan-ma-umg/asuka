@@ -144,7 +144,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 }
 
 func html() string {
-	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th>Access</th><th>Failure</th><th style="width:145px">Failure 60s</th></tr>`
+	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Avg Time</th><th>Traffic In</th><th>Traffic Out</th><th>Load 5s</th><th>60s</th><th>5min</th><th>15min</th><th style="width:150px">Dispatch</th><th style="width:145px">Failure 60s</th></tr>`
 
 	start := time.Now()
 	sumLoad := 0.0
@@ -195,8 +195,7 @@ func html() string {
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + `</td>
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*5), 'f', 2, 64) + `</td>
 <td> ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + `</td>
-<td>` + strconv.Itoa(s.Transport.GetAccessCount()) + `</td>
-<td>` + strconv.Itoa(s.Transport.GetFailureCount()) + `</td>
+<td class="center">` + strconv.Itoa(s.Transport.LoopCount) + ` | ` + strconv.Itoa(s.Transport.GetAccessCount()) + ` | ` + strconv.Itoa(s.Transport.GetFailureCount()) + `</td>
 <td class="center"> ` + FailStr + `</td>`
 		html += "</tr>"
 	}
