@@ -43,12 +43,6 @@
         padding: 8px 20px;
     }
 
-    button {
-        background: #4CAF50;
-        color: #fff;
-        border: 1px solid #4CAF50;
-    }
-
     a:hover, a:focus {
         color: #000;
     }
@@ -116,8 +110,9 @@
 <body>
 <div style="margin: 10px auto;max-width:1400px">
     <div class="ctrl-wrap">
-        <input type="text" id="refresh-value" placeholder="Refresh Rate" value="0.5">
-        <button id="ws-open-close">On / Off</button>
+        <input type="text" id="send-value" placeholder="Command" value="0.5">
+        <button id="ws-send" style="background: #4CAF50;border: 1px solid #4CAF50;color: #fff">Send</button>
+        <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     </div>
     <div id="inject-point"></div>
 </div>
@@ -125,20 +120,14 @@
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
     handlerSocket();
 
-    document.body.onkeypress = function (evt) {
-        if (evt.srcElement.tagName.toLocaleLowerCase() === "input") {
-            changeRefreshRate();
-            return
-        }
+    document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-            manualOpen();
-            manualClose();
-            return
+            sendMessage();
         }
     };
 
-    document.getElementById("refresh-value").onblur = function () {
-        changeRefreshRate()
+    document.getElementById("ws-send").onclick = function () {
+        sendMessage()
     };
 
     document.getElementById("ws-open-close").onclick = function () {
@@ -146,7 +135,7 @@
         manualClose();
     };
 
-    function changeRefreshRate() {
+    function sendMessage() {
         if (!ws) {
             return;
         }
@@ -155,7 +144,7 @@
             return;
         }
 
-        ws.send(document.getElementById("refresh-value").value);
+        ws.send(document.getElementById("send-value").value);
     }
 
     function reconnectSocket() {
@@ -197,7 +186,7 @@
             injectPoint.innerHTML = evt.data
         };
         ws.onopen = function () {
-            changeRefreshRate();
+            sendMessage();
             document.body.style = "background:none";
             document.title = "Monitor Good";
         };
