@@ -5,11 +5,10 @@ import (
 	"goSpider/helper"
 	"goSpider/spider"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
-	"log"
-	"net/http/cookiejar"
 )
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
@@ -47,7 +46,6 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 	tld, err := helper.TldDomain(l)
 	if err != nil {
-		log.Println(err, l)
 		return false
 	}
 

@@ -119,7 +119,6 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 
 	tld, err := helper.TldDomain(url)
 	if err != nil {
-		log.Println(err, err)
 		tld = "DefaultRequest"
 	}
 
