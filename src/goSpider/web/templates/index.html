@@ -27,7 +27,7 @@
     }
 
     a {
-        color: #444;
+        color: #00af4c;
         text-decoration: none;
     }
 
@@ -41,10 +41,6 @@
         border-radius: 0;
         border: 1px solid #ccc;
         padding: 8px 20px;
-    }
-
-    a:hover, a:focus {
-        color: #000;
     }
 
     li {
@@ -111,7 +107,6 @@
 <div style="margin: 10px auto;max-width:1400px">
     <div class="ctrl-wrap">
         <input type="text" id="send-value" placeholder="Command" value="0.5">
-        <button id="ws-send" style="background: #4CAF50;border: 1px solid #4CAF50;color: #fff">Send</button>
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     </div>
     <div id="inject-point"></div>
@@ -124,10 +119,6 @@
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
             sendMessage();
         }
-    };
-
-    document.getElementById("ws-send").onclick = function () {
-        sendMessage()
     };
 
     document.getElementById("ws-open-close").onclick = function () {

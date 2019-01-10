@@ -10,3 +10,7 @@
 - 优化WebSocket响应速度
 - WebSocket响应JSON版本的数据
 - 视失败情况不计算请求耗时
+
+### Bugs
+
+- GetFreePort 获得的端口不一定可用

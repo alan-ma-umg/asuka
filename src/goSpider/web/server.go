@@ -247,7 +247,7 @@ func html() string {
 <table>
     <tr>
         <th>Queue</th>
-        <td style="width:140px">` + strconv.Itoa(int(queueCount)) + `</td>
+        <td style="width:140px"><a href="/queue">` + strconv.Itoa(int(queueCount)) + `</a></td>
         <th>Redis Mem</th>
         <td style="width:140px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
         <th>Load</th>
