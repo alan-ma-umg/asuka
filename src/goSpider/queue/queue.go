@@ -19,13 +19,13 @@ type Queue struct {
 func NewQueue() (q *Queue) {
 	q = &Queue{enqueueForFailureMutex: &sync.Mutex{}}
 
-	go func() {
+	go func(q *Queue) {
 		t := time.NewTicker(time.Minute * 3) //todo
 		for {
 			<-t.C
 			q.blSave()
 		}
-	}()
+	}(q)
 	return
 }
 
