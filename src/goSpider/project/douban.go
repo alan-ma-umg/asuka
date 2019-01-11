@@ -78,5 +78,5 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
-	time.Sleep(5e9)
+	time.Sleep(10e9)
 }
