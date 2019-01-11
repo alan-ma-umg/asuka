@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"fmt"
 	"github.com/willf/bloom"
 	"goSpider/database"
 	"goSpider/helper"
@@ -21,11 +20,10 @@ func NewQueue() (q *Queue) {
 	q = &Queue{enqueueForFailureMutex: &sync.Mutex{}}
 
 	go func() {
-		t := time.NewTicker(time.Second * 5) //todo
+		t := time.NewTicker(time.Minute * 3) //todo
 		for {
 			<-t.C
 			q.blSave()
-			fmt.Println("saved")
 		}
 	}()
 	return
