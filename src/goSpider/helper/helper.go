@@ -246,9 +246,11 @@ func SSSubscriptionParse(rawUrl string) {
 			part5 := strings.Split(s[5], "/")
 
 			password, _ := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(part5[0])
+			//fmt.Println(password)
 
-			u, err := url.Parse(strings.Replace(string(dec), "/>", "/?", len(string(dec)))) //fix typo
+			u, err := url.Parse(strings.Replace(strings.TrimSpace(s[5]), "/>", "/?", len(s[5]))) //fix typo
 			if err != nil {
+				log.Println(string(dec))
 				log.Println(err)
 				return
 			}
