@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"goSpider/database"
+	"goSpider/dispatcher"
+	"goSpider/helper"
+	"goSpider/project"
+	"goSpider/queue"
+	"goSpider/web"
 	"log"
 	"time"
-	"goSpider/dispatcher"
-	"goSpider/project"
-	"goSpider/web"
-	"goSpider/database"
-	"goSpider/helper"
 )
 
 func init() {
@@ -27,6 +28,6 @@ func main() {
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
-	c.Run(&project.Www{})
+	c.Run(&project.Www{}, queue.NewQueue())
 	web.Server(c, ":666") // http://127.0.0.1:666
 }

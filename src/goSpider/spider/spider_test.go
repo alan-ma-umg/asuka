@@ -1,44 +1,20 @@
 package spider
 
 import (
+	"bytes"
 	"fmt"
-	"goSpider/proxy"
+	"golang.org/x/net/html"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"regexp"
 	"testing"
 	"time"
-	"net/http"
-	"log"
-	"io"
-	"golang.org/x/net/html"
-	"net/url"
-	"io/ioutil"
-	"bytes"
-	"regexp"
 )
 
 func TestSpider_Crawl(t *testing.T) {
-	var transportArr []*proxy.Transport
-	for _, ssAddr := range proxy.SSLocalHandler() {
-		fmt.Println(ssAddr)
-		t, err := proxy.NewTransport(ssAddr)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		transportArr = append(transportArr, t)
-	}
-
-	for _, t := range transportArr {
-		go func(t *proxy.Transport) {
-			//r, _ := http.NewRequest("GET", link.String(), nil)
-			New(t, nil).Crawl(nil)
-		}(t)
-	}
-
-	time.Sleep(time.Hour * 24)
-
-	//u, _ := url.Parse("http://www.baidu.com")
-	//sp := New(u)
-	//sp.Fetch()
 }
 
 func TestSpider_Fetch(tt *testing.T) {
@@ -131,7 +107,6 @@ func getLinksByTokenizer(body io.Reader) (res []string) {
 			if token.Data == "a" {
 				for _, attr := range token.Attr {
 					if attr.Key == "href" {
-
 
 						res = append(res, attr.Val)
 					}

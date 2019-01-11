@@ -6,6 +6,7 @@ import (
 	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/proxy"
+	"goSpider/queue"
 	"goSpider/spider"
 	"net"
 	"sync"
@@ -23,10 +24,10 @@ func (dispatcher *Dispatcher) GetSpiders() []*spider.Spider {
 	return dispatcher.spiderArr
 }
 
-func (dispatcher *Dispatcher) InitSpider() []*spider.Spider {
+func (dispatcher *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
 	dispatcher.initSpiderOnce.Do(func() {
 		for _, t := range dispatcher.InitTransport() {
-			s := spider.New(t, nil)
+			s := spider.New(t, nil, queue)
 			dispatcher.spiderArr = append(dispatcher.spiderArr, s)
 		}
 	})
@@ -61,14 +62,15 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 	return dispatcher.transportArr
 }
 
-func (dispatcher *Dispatcher) Run(project project.Project) {
+func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
+
 	for _, l := range project.EntryUrl() {
 		if !database.BlTestString(l) {
-			database.AddUrlQueue(l)
+			queue.Enqueue(l)
 		}
 	}
 
-	for _, s := range dispatcher.InitSpider() {
+	for _, s := range dispatcher.InitSpider(queue) {
 		go func(s *spider.Spider) {
 			for {
 				s.Throttle()

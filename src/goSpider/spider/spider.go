@@ -12,6 +12,7 @@ import (
 	"goSpider/database"
 	"goSpider/helper"
 	"goSpider/proxy"
+	"goSpider/queue"
 	"golang.org/x/net/html"
 	"io"
 	"io/ioutil"
@@ -64,14 +65,16 @@ type Spider struct {
 
 	RequestStartTime time.Time
 	Stop             bool
+
+	Queue *queue.Queue
 }
 
-func New(t *proxy.Transport, j *cookiejar.Jar) *Spider {
+func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
 	if j == nil {
 		j, _ = cookiejar.New(nil)
 	}
 	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 30}
-	return &Spider{Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+	return &Spider{Queue: queue, Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
 }
 
 func (spider *Spider) Throttle() {
@@ -275,14 +278,16 @@ func (spider *Spider) requestErrorHandler(err error) {
 		return
 	case *net.DNSConfigError:
 		//An error reading the machine's DNS configuration.
-		return //todo 尝试一定次数后丢弃
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+		return
 	case *net.DNSError:
 		return //DNSError represents a DNS lookup error
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 	case net.Error:
 		if err.(net.Error).Timeout() {
-			return //todo 尝试一定次数后丢弃
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			return
 		}
 		if io.EOF == err {
 			return
@@ -291,7 +296,8 @@ func (spider *Spider) requestErrorHandler(err error) {
 			return
 		}
 		if strings.Contains(err.Error(), "transport connection broken") {
-			return //todo 尝试一定次数后丢弃
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+			return
 		}
 		if strings.Contains(err.Error(), "unexpected EOF") {
 			return
@@ -304,14 +310,10 @@ func (spider *Spider) requestErrorHandler(err error) {
 		}
 		if strings.Contains(err.Error(), ": EOF") {
 			return
-			//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
-			//std := log.New(os.Stderr, "", log.Flags())
-			//std.Output(100, err.Error())
-			//debug.PrintStack()
-			//fmt.Println(debug.prin())
 		}
 
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+
 		//return
 		//if !err.(net.Error).Timeout() && err != io.EOF && !strings.Contains(err.Error(), "nection was forcibly closed by the remote ho") && !strings.Contains(err.Error(), "EOF") && !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "nnection could be made because the target machine actively refus") {
 		log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
@@ -342,14 +344,14 @@ func (spider *Spider) responseErrorHandler(err error) {
 
 	switch err.(type) {
 	case *net.OpError:
-		return
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		return
 	case net.Error:
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 		if err.(net.Error).Timeout() {
-			return //todo 尝试一定次数后丢弃
+			return
 		}
 
-		database.AddUrlQueue(spider.CurrentRequest.URL.String()) //enqueue fixme 要根据判断是代理网络错误还是目标网站的服务器错误,前者直接enqueue后者尝试一定次数后丢弃
 		//if !err.(net.Error).Timeout() && err != io.EOF {
 		log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		//}
@@ -484,7 +486,7 @@ func (spider *Spider) GetImageLinks() (arr []*url.URL) {
 }
 
 func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
-	link, err := database.PopUrlQueue()
+	link, err := spider.Queue.Dequeue()
 	if err != nil {
 		time.Sleep(time.Second * 5)
 		return
@@ -518,7 +520,7 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 			continue
 		}
 
-		database.AddUrlQueue(strings.TrimSpace(l.String()))
+		spider.Queue.Enqueue(strings.TrimSpace(l.String()))
 	}
 }
 
