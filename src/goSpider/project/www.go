@@ -8,10 +8,12 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
+var tldFilterMutex = &sync.Mutex{}
 
 type Www struct {
 }
@@ -53,6 +55,8 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 		return false
 	}
 
+	tldFilterMutex.Lock()
+	defer tldFilterMutex.Unlock()
 	if tldFilter.TestAndAddString(tld) {
 		return false
 	}

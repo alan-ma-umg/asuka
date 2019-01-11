@@ -2,8 +2,11 @@ package spider
 
 import (
 	"bytes"
+	"compress/flate"
 	"compress/gzip"
 	"container/list"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"goSpider/database"
@@ -24,9 +27,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"crypto/tls"
-	"compress/flate"
-	"crypto/x509"
 )
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
@@ -514,7 +514,7 @@ func (spider *Spider) Crawl(filter func(spider *Spider, l *url.URL) bool) {
 			continue
 		}
 
-		if database.Bl().TestAndAddString(l.String()) {
+		if database.BlTestAndAddString(l.String()) {
 			continue
 		}
 

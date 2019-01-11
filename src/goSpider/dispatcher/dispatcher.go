@@ -63,7 +63,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 
 func (dispatcher *Dispatcher) Run(project project.Project) {
 	for _, l := range project.EntryUrl() {
-		if !database.Bl().TestString(l) {
+		if !database.BlTestString(l) {
 			database.AddUrlQueue(l)
 		}
 	}
