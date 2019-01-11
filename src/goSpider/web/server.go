@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"encoding/json"
 )
 
 var upgrade = websocket.Upgrader{
@@ -38,7 +39,7 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
-func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
+func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			fn(w, r)
@@ -49,13 +50,43 @@ func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 			w.Header().Set("Content-Type", "text/html")
 		}
 		w.Header().Set("Connection", "keep-alive")
-		w.Header().Set("Server", "spider")
+		w.Header().Set("Server", "Asuka")
 		w.Header().Set("Content-Encoding", "gzip")
 		gz := gzip.NewWriter(w)
 		defer gz.Close()
 		gzr := gzipResponseWriter{Writer: gz, ResponseWriter: w}
 		fn(gzr, r)
 	}
+}
+
+func commonHandle(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if w.Header().Get("Content-Type") == "" {
+			w.Header().Set("Content-Type", "application/javascript")
+		}
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Server", "Asuka")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		gzr := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		h.ServeHTTP(gzr, r)
+	})
+}
+
+func Server(d *dispatcher.Dispatcher, address string) {
+	dispatcherObj = d //todo
+	http.HandleFunc("/queue", commonHandleFunc(queue))
+	http.HandleFunc("/echo", echo)
+	http.HandleFunc("/socket.io", IO)
+	http.HandleFunc("/", commonHandleFunc(index))
+	http.HandleFunc("/monitor/", commonHandleFunc(monitor))
+	http.HandleFunc("/forever/", forever)
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
+	})
+	http.Handle("/js/", commonHandle(http.StripPrefix("/js", http.FileServer(http.Dir(helper.Env().TemplatePath+"js")))))
+
+	log.Fatal(http.ListenAndServe(address, nil))
 }
 
 func echo(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +138,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	for {
-		err = c.WriteMessage(websocket.TextMessage, []byte(html()))
+		err = c.WriteMessage(websocket.TextMessage, []byte(responseHtml()))
 		if err != nil {
 			log.Println("write:", err)
 			break
@@ -116,17 +147,68 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
+func monitor(w http.ResponseWriter, r *http.Request) {
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "monitor.html")).Execute(w, nil)
+}
+func index(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
 }
+func IO(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	webSocketConnections++
 
-func Server(d *dispatcher.Dispatcher, address string) {
-	dispatcherObj = d //todo
-	http.HandleFunc("/queue", commonHandler(queue))
-	http.HandleFunc("/echo", echo)
-	http.HandleFunc("/", commonHandler(home))
-	http.HandleFunc("/forever/", forever)
-	log.Fatal(http.ListenAndServe(address, nil))
+	defer func() {
+		webSocketConnections--
+		c.Close()
+	}()
+
+	refreshRateMin := 0.2
+	refreshRate := refreshRateMin
+	go func() {
+		for {
+			messageType, b, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				break
+			}
+			if messageType == 1 {
+
+				switch strings.TrimSpace(string(b)) {
+				case "free":
+					debug.FreeOSMemory()
+					fmt.Println("debug.FreeOsMemory")
+				case "stop":
+					for _, s := range dispatcherObj.GetSpiders() {
+						s.Stop = true
+					}
+					fmt.Println("spider stop")
+				case "start":
+					for _, s := range dispatcherObj.GetSpiders() {
+						s.Stop = false
+					}
+					fmt.Println("spider start")
+				default:
+					refreshRate, _ = strconv.ParseFloat(string(b), 64)
+					if refreshRate < refreshRateMin {
+						refreshRate = refreshRateMin
+					}
+				}
+			}
+		}
+	}()
+
+	for {
+		err = c.WriteMessage(websocket.TextMessage, responseJson())
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+		time.Sleep(time.Duration(refreshRate * 1e9))
+	}
 }
 
 func queue(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +225,80 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
-func html() string {
+func responseJson() []byte {
+	start := time.Now()
+	var jsonMap = map[string]interface{}{
+		"basic":   map[string]interface{}{},
+		"servers": []map[string]interface{}{},
+	}
+	sumLoad := 0.0
+	var TrafficIn uint64 = 0
+	var TrafficOut uint64 = 0
+	for index, s := range dispatcherObj.GetSpiders() {
+		sumLoad += s.Transport.LoadRate(5)
+		TrafficIn += s.Transport.TrafficIn
+		TrafficOut += s.Transport.TrafficOut
+		failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
+		failureRateAllValue := .0
+		if s.Transport.GetAccessCount() > 0 {
+			failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
+		}
+
+		server := map[string]interface{}{}
+		server["failure_60"] = strconv.FormatFloat(failureRate60Value, 'f', 2, 64)
+		server["failure_60_hsl"] = strconv.Itoa(int(100 - failureRate60Value))
+		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
+		server["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue))
+		server["failure_level"] = s.FailureLevel
+		server["failure_level_hsl"] = 100 - s.FailureLevel
+		server["index"] = index
+		server["name"] = s.Transport.S.Name
+		server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
+		server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
+		server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
+		server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
+		server["avg_time"] = s.GetAvgTime().Truncate(time.Millisecond).String()
+		server["getting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
+		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
+		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
+		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)        //todo slowly, make improvement
+		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64)      //todo slowly, make improvement
+		server["load_15min"] = strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) //todo slowly, make improvement
+		server["load_30min"] = strconv.FormatFloat(s.Transport.LoadRate(60*30), 'f', 2, 64) //todo slowly, make improvement
+		server["access_count"] = s.Transport.GetAccessCount()
+		server["failure_count"] = s.Transport.GetFailureCount()
+		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
+	}
+
+	//memory
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+
+	//redis
+	queueCount, _ := database.Redis().LLen(helper.Env().Redis.URLQueueKey).Result()      //about 1ms
+	redisMem, _ := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result() //about 1ms
+	//basic
+	jsonMap["basic"].(map[string]interface{})["queue"] = strconv.Itoa(int(queueCount))
+	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
+	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
+	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
+	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)
+	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
+	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
+	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
+	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(startTime).Truncate(time.Second).String()
+	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return b
+}
+
+func responseHtml() string {
 	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Ping / Lost</th><th style="width:1px">Avg Time</th><th style="width:1px">Traffic I / O</th><th>Load 5s / 60s / 15min / 30min</th><th style="width:1px">Dispatch</th><th style="width:145px">Failure</th><th style="width:1px">Status</th></tr>`
 
 	start := time.Now()
@@ -202,14 +357,14 @@ func html() string {
 		redisMem = 0
 	}
 	html += "</table><br>"
-
-	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
-	for _, s := range dispatcherObj.GetSpiders() {
-		if s.CurrentRequest != nil && s.FailureLevel == 0 {
-			html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr([]rune(s.CurrentRequest.URL.String()), 60, "...("+strconv.Itoa(len([]rune(s.CurrentRequest.URL.String())))+")") + "</a></td></tr>"
-		}
-	}
-	html += "</table><br>"
+	//
+	//html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
+	//for _, s := range dispatcherObj.GetSpiders() {
+	//	if s.CurrentRequest != nil && s.FailureLevel == 0 {
+	//		html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr([]rune(s.CurrentRequest.URL.String()), 60, "...("+strconv.Itoa(len([]rune(s.CurrentRequest.URL.String())))+")") + "</a></td></tr>"
+	//	}
+	//}
+	//html += "</table><br>"
 
 	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
 

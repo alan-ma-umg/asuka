@@ -3,9 +3,9 @@
 <head>
     <title>Monitor</title>
     <meta charset="utf-8">
+    <script src="/js/vue.js"></script>
 </head>
 <style>
-
     * {
         padding: 0;
         margin: 0;
@@ -102,15 +102,117 @@
         right: 10px;
         z-index: 1;
     }
+
+    .failure {
+        background: rgb(255, 248, 228) !important;
+    }
 </style>
 <body>
-<div style="margin: 10px auto;max-width:1400px">
+<div style="margin: 10px auto;max-width:1400px" id="vue-content">
     <div class="ctrl-wrap">
         <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     </div>
-    <div id="inject-point"></div>
+    <table v-if="ws.basic.time">
+        <tbody>
+        <tr>
+            <th>Queue</th>
+            <td style="width:140px"><a href="/queue">{{"{{ws.basic.queue}}"}}</a></td>
+            <th>Redis Mem</th>
+            <td style="width:140px">{{"{{ws.basic.redis_mem}}"}}</td>
+            <th>Load</th>
+            <td style="width:140px">{{"{{ws.basic.load_avg}}"}} | {{"{{ws.basic.load_sum}}"}}</td>
+            <th>Traffic</th>
+            <td style="width:140px">{{"{{ws.basic.traffic_in}}"}} | {{"{{ws.basic.traffic_out}}"}}</td>
+            <th>Mem.SYS</th>
+            <td style="width:140px">{{"{{ws.basic.mem_sys}}"}}</td>
+        </tr>
+        <tr>
+            <th>Goroutine</th>
+            <td>{{"{{ws.basic.goroutine}}"}}</td>
+            <th>Connection</th>
+            <td>{{"{{ws.basic.connections}}"}}</td>
+            <th>WebSockets</th>
+            <td>{{"{{ws.basic.ws_connections}}"}}</td>
+            <th>Time</th>
+            <td>{{"{{ws.basic.time}}"}}</td>
+            <th>Uptime</th>
+            <td>{{"{{ws.basic.uptime}}"}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+    <table v-if="ws.servers">
+        <thead>
+        <tr>
+            <th style="width:1px"></th>
+            <th style="width:1px">Server</th>
+            <th style="width:1px">Ping / Lost</th>
+            <th style="width:1px">Avg Time</th>
+            <th style="width:100px">Getting</th>
+            <th style="width:1px">Traffic I / O</th>
+            <th>Load 5s / 60s / 15min / 30min</th>
+            <th style="width:1px">Dispatch</th>
+            <th style="width:145px">Failure</th>
+            <th style="width:1px">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="server in ws.servers" :class="{failure:server.failure_level}">
+            <td>{{"{{server.index+1}}"}}</td>
+            <td class="center">{{"{{server.name}}"}}</td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">
+                    <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
+                </div>
+                |
+                <div style="display:inline-block;width:50px" class="left">
+                    <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
+                    {{"{{server.ping_failure}}"}} %
+                    </span>
+                </div>
+            </td>
+            <td>{{"{{server.avg_time}}"}}</td>
+            <td>{{"{{server.getting}}"}}</td>
+            <td class="center">
+                <div style="display:inline-block;width:60px" class="right">{{"{{server.traffic_in}}"}}</div>
+                |
+                <div style="display:inline-block;width:60px" class="left">{{"{{server.traffic_out}}"}}</div>
+            </td>
+            <td class="center">
+            {{"{{server.load_5s}}"}} |
+            {{"{{server.load_60s}}"}} |
+            {{"{{server.load_15min}}"}} |
+            {{"{{server.load_30min}}"}}
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">
+                    <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}</span>
+                </div>
+                |
+                <div style="display:inline-block;width:50px" class="left">
+                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}</span>
+                </div>
+            </td>
+            <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
+                class="center">
+            {{"{{server.failure_level}}"}}
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
+<script>
+    let vueContent = new Vue({
+        el: "#vue-content",
+        data: {ws: {basic: {}}},
+    })
+</script>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
     handlerSocket();
@@ -172,9 +274,10 @@
 
     function handlerSocket() {
         let injectPoint = document.getElementById("inject-point");
-        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/echo");
+        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/socket.io");
         ws.onmessage = function (evt) {
-            injectPoint.innerHTML = evt.data
+            vueContent.$data.ws = JSON.parse(evt.data);
+            document.title = "Asuka " + vueContent.$data.ws.basic.load_avg + " / " + vueContent.$data.ws.basic.load_sum + " / " + vueContent.$data.ws.basic.time;
         };
         ws.onopen = function () {
             sendMessage();

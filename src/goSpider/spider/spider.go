@@ -211,11 +211,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	//todo remove
 	if !strings.Contains(resp.Header.Get("Content-type"), "text/html") {
-		return resp, errors.New("Content-type:Content-type must be text/html, " + resp.Header.Get("Content-type") + " given")
+		//return resp, errors.New("Content-type:Content-type must be text/html, " + resp.Header.Get("Content-type") + " given")
 	}
 	//todo remove
 	if strings.ToLower(resp.Header.Get("Content-Encoding")) != "gzip" {
-		return resp, errors.New("Content-Encoding must be gzip , " + resp.Header.Get("Content-Encoding") + " given")
+		//return resp, errors.New("Content-Encoding must be gzip , " + resp.Header.Get("Content-Encoding") + " given")
 	}
 
 	resByte, err := ioutil.ReadAll(resp.Body)

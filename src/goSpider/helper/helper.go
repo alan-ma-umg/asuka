@@ -291,6 +291,11 @@ func SSSubscriptionParse(rawUrl string) {
 				log.Println(queryMap)
 				log.Println(string(dec))
 			}
+
+			if strings.ToLower(ssServer.Method) == "chacha20" {
+				log.Println("chacha20: Not support yet.")
+				continue
+			}
 			SSServerArr = append(SSServerArr, ssServer)
 		}
 
