@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Monitor</title>
+    <title>Asuka</title>
     <meta charset="utf-8">
     <script src="/js/vue.min.js"></script>
 </head>
@@ -282,17 +282,17 @@
         ws.onopen = function () {
             sendMessage();
             document.body.style = "background:none";
-            document.title = "Monitor Good";
+            document.title = "Asuka Good";
         };
         ws.onerror = function () {
             document.body.style = "background:yellow";
-            document.title = "Monitor Error !";
+            document.title = "Asuka Error !";
             ws && ws.close();
             reconnectSocket()
         };
         ws.onclose = function () {
             document.body.style = "background:#E6E6E6";
-            document.title = "Monitor Closed !";
+            document.title = "Asuka Closed !";
             ws && ws.close();
             reconnectSocket()
         };
