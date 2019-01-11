@@ -12,29 +12,27 @@ var bloomFilterOnce sync.Once
 var bloomFilterMutex = &sync.Mutex{}
 var bloomFilterInstance *bloom.BloomFilter
 
-func init() {
-	//save
-	go func() {
-		t := time.NewTicker(time.Minute * 2)
-		for {
-			<-t.C
-			save()
-		}
-	}()
-}
-
 func Bl() *bloom.BloomFilter {
 	bloomFilterOnce.Do(func() {
 		bloomFilterInstance = bloom.NewWithEstimates(10000000, 0.001)
-		f, _ := os.Open(helper.Env().BloomFilterFile)
+		f, _ := os.Open(helper.Env().BloomFilterPath + "enqueue.db")
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()
+
+		//save
+		go func() {
+			t := time.NewTicker(time.Minute * 2)
+			for {
+				<-t.C
+				save()
+			}
+		}()
 	})
 	return bloomFilterInstance
 }
 
 func save() {
-	f, _ := os.Create(helper.Env().BloomFilterFile)
+	f, _ := os.Create(helper.Env().BloomFilterPath + "enqueue.db")
 	Bl().WriteTo(f)
 	f.Close()
 }

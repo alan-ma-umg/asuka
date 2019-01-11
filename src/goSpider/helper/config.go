@@ -2,7 +2,7 @@ package helper
 
 type EnvConfig struct {
 	TemplatePath    string
-	BloomFilterFile string
+	BloomFilterPath string
 	LocalTransport  LocalTransport //using http.DefaultTransport
 	SsServers       []SsServer
 	Redis           Redis
@@ -29,7 +29,7 @@ type SsServer struct {
 }
 
 type Redis struct {
-	Server        string
+	Server      string
 	DB          int
 	URLQueueKey string
 }
