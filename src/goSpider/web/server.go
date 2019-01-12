@@ -316,18 +316,22 @@ func homeJson(sType string) []byte {
 func responseJsonCommon(jsonMap map[string]interface{}) {
 	sumLoad := .0
 	pingFailureAvg := .0
+	failureLevelZeroCount := 0
 	var pingAvg time.Duration
 	var waitingAvg time.Duration
 	var avgTimeAvg time.Duration
 	var TrafficIn uint64
 	var TrafficOut uint64
 	for _, s := range dispatcherObj.GetSpiders() {
-		if !s.RequestStartTime.IsZero() {
-			waitingAvg += time.Since(s.RequestStartTime)
+		if s.FailureLevel == 0 {
+			failureLevelZeroCount++
+			if !s.RequestStartTime.IsZero() {
+				waitingAvg += time.Since(s.RequestStartTime)
+			}
+			avgTimeAvg += s.GetAvgTime()
 		}
+
 		load5s := s.Transport.LoadRate(5)
-		avgTime := s.GetAvgTime()
-		avgTimeAvg += avgTime
 		pingFailureAvg += s.Transport.PingFailureRate
 		pingAvg += s.Transport.Ping
 		sumLoad += load5s
@@ -344,10 +348,10 @@ func responseJsonCommon(jsonMap map[string]interface{}) {
 	//basic
 	jsonMap["basic"].(map[string]interface{})["queue"] = strconv.Itoa(int(queueCount))
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
-	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String() //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()  //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()        //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)      //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()      //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()       //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()   //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
