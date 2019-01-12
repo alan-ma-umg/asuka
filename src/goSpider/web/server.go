@@ -113,7 +113,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			if messageType == 1 {
-
 				switch strings.TrimSpace(string(b)) {
 				case "free":
 					debug.FreeOSMemory()
@@ -167,7 +166,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	refreshRateMin := 0.5
+	refreshRateMin := 0.2
 	refreshRate := refreshRateMin
 	responseContent := "home"
 	var recentFetchIndex int64 = 0
@@ -243,33 +242,18 @@ func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 		"fetched": []*spider.RecentFetch{},
 	}
 
-	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
-	//copy(recentFetchList, spider.RecentFetchList)
-	//var lastIndex int64
-	//for i := len(recentFetchList); i > 0; i-- {
-	//	l := recentFetchList[i-1]
-	//	if l.Index > recentFetchIndex {
-	//		jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
-	//		lastIndex = helper.MaxInt64(lastIndex, l.Index)
-	//	}
-	//}
-
-	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
-	//copy(recentFetchList, spider.RecentFetchList)
 	var lastIndex int64
 	for _, l := range spider.RecentFetchList {
+		if l == nil { //Change frequently, prevent nil pointer
+			continue
+		}
 		if l.Index > recentFetchIndex {
 			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
 			lastIndex = helper.MaxInt64(lastIndex, l.Index)
 		}
 	}
 
-	sumLoad := 0.0
-	for _, s := range dispatcherObj.GetSpiders() {
-		sumLoad += s.Transport.LoadRate(5)
-	}
-	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
-	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)
+	responseJsonCommon(jsonMap)
 	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
@@ -284,22 +268,9 @@ func homeJson(sType string) []byte {
 		"basic":   map[string]interface{}{},
 		"servers": []map[string]interface{}{},
 	}
-	sumLoad := .0
-	pingFailureAvg := .0
-	var pingAvg time.Duration
-	var waitingAvg time.Duration
-	var avgTimeAvg time.Duration
-	var TrafficIn uint64
-	var TrafficOut uint64
 	for index, s := range dispatcherObj.GetSpiders() {
 		load5s := s.Transport.LoadRate(5)
 		avgTime := s.GetAvgTime()
-		avgTimeAvg += avgTime
-		pingFailureAvg += s.Transport.PingFailureRate
-		pingAvg += s.Transport.Ping
-		sumLoad += load5s
-		TrafficIn += s.Transport.TrafficIn
-		TrafficOut += s.Transport.TrafficOut
 		failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
 		failureRateAllValue := .0
 		if s.Transport.GetAccessCount() > 0 {
@@ -322,7 +293,6 @@ func homeJson(sType string) []byte {
 		server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
 		server["waiting"] = "0s"
 		if !s.RequestStartTime.IsZero() {
-			waitingAvg += time.Since(s.RequestStartTime)
 			server["waiting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
 		}
 		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
@@ -334,7 +304,37 @@ func homeJson(sType string) []byte {
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
 	}
 
-	//memory
+	//basic
+	responseJsonCommon(jsonMap)
+	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return b
+}
+func responseJsonCommon(jsonMap map[string]interface{}) {
+	sumLoad := .0
+	pingFailureAvg := .0
+	var pingAvg time.Duration
+	var waitingAvg time.Duration
+	var avgTimeAvg time.Duration
+	var TrafficIn uint64
+	var TrafficOut uint64
+	for _, s := range dispatcherObj.GetSpiders() {
+		if !s.RequestStartTime.IsZero() {
+			waitingAvg += time.Since(s.RequestStartTime)
+		}
+		load5s := s.Transport.LoadRate(5)
+		avgTime := s.GetAvgTime()
+		avgTimeAvg += avgTime
+		pingFailureAvg += s.Transport.PingFailureRate
+		pingAvg += s.Transport.Ping
+		sumLoad += load5s
+		TrafficIn += s.Transport.TrafficIn
+		TrafficOut += s.Transport.TrafficOut
+	}
+
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 
@@ -357,13 +357,6 @@ func homeJson(sType string) []byte {
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(startTime).Truncate(time.Second).String()
-	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
-
-	b, err := json.Marshal(jsonMap)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return b
 }
 
 func responseHtml() string {
@@ -434,25 +427,25 @@ func responseHtml() string {
 	//}
 	//html += "</table><br>"
 
-	html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
-
-	recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
-	copy(recentFetchList, spider.RecentFetchList)
-	for i := len(recentFetchList); i > 0; i-- {
-		l := recentFetchList[i-1]
-		if l.StatusCode == 0 && l.ConsumeTime != 0 {
-			html += "<tr style=\"background:#ff9d87\">"
-		} else if l.ConsumeTime == 0 {
-			html += "<tr style=\"background:#f2f2f2\">"
-		} else if l.StatusCode != 200 {
-			html += "<tr style=\"background:yellow\">"
-		} else {
-			html += "<tr>"
-		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.RawUrl + "\">" + helper.TruncateStr([]rune(l.RawUrl), 40, "...("+strconv.Itoa(len([]rune(l.RawUrl)))+")") + "</a></td>"
-		html += "</tr>"
-	}
-	html += "</table>"
+	//html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
+	//
+	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
+	//copy(recentFetchList, spider.RecentFetchList)
+	//for i := len(recentFetchList); i > 0; i-- {
+	//	l := recentFetchList[i-1]
+	//	if l.StatusCode == 0 && l.ConsumeTime != 0 {
+	//		html += "<tr style=\"background:#ff9d87\">"
+	//	} else if l.ConsumeTime == 0 {
+	//		html += "<tr style=\"background:#f2f2f2\">"
+	//	} else if l.StatusCode != 200 {
+	//		html += "<tr style=\"background:yellow\">"
+	//	} else {
+	//		html += "<tr>"
+	//	}
+	//	html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.RawUrl + "\">" + helper.TruncateStr([]rune(l.RawUrl), 40, "...("+strconv.Itoa(len([]rune(l.RawUrl)))+")") + "</a></td>"
+	//	html += "</tr>"
+	//}
+	//html += "</table>"
 
 	overviewHtml := `
 <table>

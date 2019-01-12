@@ -119,31 +119,31 @@
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
         <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
     </div>
-    <table v-if="home.basic.time" style="width: 100%">
+    <table v-if="basic.time" style="width: 100%">
         <tbody>
         <tr>
             <th style="width:8%">Queue</th>
-            <td style="width:12%"><a href="/queue">{{"{{home.basic.queue}}"}}</a></td>
+            <td style="width:12%"><a href="/queue">{{"{{basic.queue}}"}}</a></td>
             <th style="width:8%">Redis Mem</th>
-            <td style="width:12%">{{"{{home.basic.redis_mem}}"}}</td>
+            <td style="width:12%">{{"{{basic.redis_mem}}"}}</td>
             <th style="width:8%">Load</th>
-            <td style="width:12%">{{"{{home.basic.load_avg}}"}} | {{"{{home.basic.load_sum}}"}}</td>
+            <td style="width:12%">{{"{{basic.load_avg}}"}} | {{"{{basic.load_sum}}"}}</td>
             <th style="width:8%">Traffic I/O</th>
-            <td style="width:12%">{{"{{home.basic.traffic_in}}"}} | {{"{{home.basic.traffic_out}}"}}</td>
+            <td style="width:12%">{{"{{basic.traffic_in}}"}} | {{"{{basic.traffic_out}}"}}</td>
             <th style="width:8%">Mem.SYS</th>
-            <td style="width:12%">{{"{{home.basic.mem_sys}}"}}</td>
+            <td style="width:12%">{{"{{basic.mem_sys}}"}}</td>
         </tr>
         <tr>
             <th>Goroutine</th>
-            <td>{{"{{home.basic.goroutine}}"}}</td>
+            <td>{{"{{basic.goroutine}}"}}</td>
             <th>Connection</th>
-            <td>{{"{{home.basic.connections}}"}}</td>
+            <td>{{"{{basic.connections}}"}}</td>
             <th>WebSockets</th>
-            <td>{{"{{home.basic.ws_connections}}"}}</td>
+            <td>{{"{{basic.ws_connections}}"}}</td>
             <th>Time</th>
-            <td>{{"{{home.basic.time}}"}}</td>
+            <td>{{"{{basic.time}}"}}</td>
             <th>Uptime</th>
-            <td>{{"{{home.basic.uptime}}"}}</td>
+            <td>{{"{{basic.uptime}}"}}</td>
         </tr>
         </tbody>
     </table>
@@ -152,17 +152,17 @@
         <thead>
         <tr>
             <th></th>
-            <th>Server</th>
+            <th class="center">Server</th>
             <th>Add Time</th>
             <th>Consume Time</th>
-            <th>HTTP Code</th>
+            <th>Status</th>
             <th>Size</th>
             <th>Error</th>
             <th>Url</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in fetchList">
+        <tr v-for="item in fetchList" :class="{failure:!item.StatusCode || item.StatusCode != 200}">
             <td>{{"{{item.Index}}"}}</td>
             <td>{{"{{item.TransportName}}"}}</td>
             <td>{{"{{item.AddTime}}"}}</td>
@@ -191,16 +191,16 @@
         <tr style="background:#e6e6e6">
             <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows</td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{home.basic.ping_avg}}"}}</div>
+                <div style="display:inline-block;width:50px" class="right">{{"{{basic.ping_avg}}"}}</div>
                 |
-                <div style="display:inline-block;width:50px" class="left">{{"{{home.basic.ping_failure_avg}}"}}%</div>
+                <div style="display:inline-block;width:50px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
             </td>
-            <td>{{"{{home.basic.avg_time_avg}}"}}</td>
-            <td>{{"{{home.basic.waiting_avg}}"}}</td>
+            <td>{{"{{basic.avg_time_avg}}"}}</td>
+            <td>{{"{{basic.waiting_avg}}"}}</td>
             <td class="center">
-                <div style="display:inline-block;width:60px" class="right">{{"{{home.basic.traffic_in}}"}}</div>
+                <div style="display:inline-block;width:60px" class="right">{{"{{basic.traffic_in}}"}}</div>
                 |
-                <div style="display:inline-block;width:60px" class="left">{{"{{home.basic.traffic_out}}"}}</div>
+                <div style="display:inline-block;width:60px" class="left">{{"{{basic.traffic_out}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{load5sSum}}"}}</div>
@@ -278,7 +278,8 @@
     let vueContent = new Vue({
         el: "#vue-content",
         data: {
-            home: {basic: {}}, recent: {basic: {}},
+            home: {}, recent: {},
+            basic: {},
             fetchList: [],
             action: "home",
         },
@@ -394,7 +395,8 @@
         ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/socket.io");
         ws.onmessage = function (evt) {
             let data = JSON.parse(evt.data);
-            vueContent.$data[data.type] = data;
+            vueContent.$data[data.type] = data[data.type];
+            vueContent.$data.basic = data.basic;
             document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
             ws.send("")
         };
