@@ -45,7 +45,7 @@
         -webkit-appearance: none;
         border-radius: 0;
         border: 1px solid #ccc;
-        padding: 6px 10px;
+        padding: 10px 15px;
     }
 
     li {
@@ -170,7 +170,7 @@
             <td>{{"{{item.StatusCode}}"}}</td>
             <td>{{"{{item.ResponseSize}}"}}</td>
             <td>{{"{{item.ErrType}}"}}</td>
-            <td><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl}}"}}</a></td>
+            <td><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
         </tr>
         </tbody>
     </table>
@@ -275,7 +275,8 @@
 <br>
 <br>
 <script>
-    let vueContent = new Vue({
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
+    vueContent = new Vue({
         el: "#vue-content",
         data: {
             home: {}, recent: {},
@@ -305,6 +306,17 @@
             load60sSum: function () {
                 return total(this.home.servers, "load_60s").toFixed(2)
             }
+        },
+        filters: {
+            urlTruncate: function (str) {
+                if (str.length > 40) {
+                    return str.substring(0, 40) + "..(" + str.length + ")"
+                }
+                return str
+            }
+        },
+        mounted: function () {
+            handlerSocket();
         }
     });
 
@@ -327,9 +339,6 @@
         }
         return total;
     }
-
-    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
-    handlerSocket();
 
     document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
@@ -395,7 +404,7 @@
         ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/socket.io");
         ws.onmessage = function (evt) {
             let data = JSON.parse(evt.data);
-            vueContent.$data[data.type] = data[data.type];
+            vueContent.$data[data.type] = data;
             vueContent.$data.basic = data.basic;
             document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
             ws.send("")
