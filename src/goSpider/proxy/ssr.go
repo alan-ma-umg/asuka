@@ -7,22 +7,16 @@ import (
 	"time"
 
 	"errors"
-	ssSocks "github.com/shadowsocks/go-shadowsocks2/socks"
-	"github.com/sun8911879/shadowsocksR"
-	"github.com/sun8911879/shadowsocksR/obfs"
-	"github.com/sun8911879/shadowsocksR/protocol"
-	"github.com/sun8911879/shadowsocksR/ssr"
-	"github.com/sun8911879/shadowsocksR/tools/leakybuf"
-	"github.com/sun8911879/shadowsocksR/tools/socks"
+	"github.com/chenset/shadowsocksR-go"
+	"github.com/chenset/shadowsocksR-go/obfs"
+	"github.com/chenset/shadowsocksR-go/protocol"
+	"github.com/chenset/shadowsocksR-go/ssr"
+	"github.com/chenset/shadowsocksR-go/tools/socks"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-)
-
-var (
-	readTimeout = 600 * time.Second
 )
 
 // SSInfo fields that shadowsocks/shadowsocksr used only
@@ -68,11 +62,10 @@ func (bi *BackendInfo) Listen(clientRawAddr string) {
 
 func (bi *BackendInfo) Handle(src net.Conn) {
 	defer src.Close()
-	//src.SetKeepAlive(true)
 	src.(*net.TCPConn).SetKeepAlive(true)
 
 	socks.ReadAddr(src)
-	rawaddr, err := ssSocks.Handshake(src)
+	rawaddr, err := socks.Handshake(src)
 	if err != nil {
 		// UDP: keep the connection until disconnect then free the UDP socket
 		if err == socks.Error(9) {
@@ -96,32 +89,16 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			return
 		}
-		//2019/01/08 17:22:59 ssr.go:97: ru-3.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 103.102.4.19:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:01 ssr.go:97: hk-6.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 203.218.247.64:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:02 ssr.go:97: hk-2.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 218.102.182.182:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:03 ssr.go:97: jp-9.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 203.137.122.111:443: connectex: No connection could be made because the target machine actively refused it.
-		//2019/01/08 17:23:03 ssr.go:97: hk-24.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 47.52.214.162:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:03 ssr.go:97: ru-3.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 103.102.4.19:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:03 ssr.go:97: hk-10.mitsuha-node.com:443 *errors.errorString connecting to SSR server failed :dial tcp 42.98.194.185:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-		//2019/01/08 17:23:04 ssr.go:97: tw-1.mitsuha-node.com:443 *errors.errorString connectin
-		//log.Println(bi.Address, reflect.TypeOf(err), err)
 		return //ignore i/o timeout
 	}
 	defer dst.Close()
-	//dst.(*net.TCPConn).SetKeepAlive(true)
-
-	//n,n,err:=tcpRelay(src, dst)
-	//if err != nil {
-	//	if err, ok := err.(net.Error); ok && err.Timeout() {
-	//		return // ignore i/o timeout
-	//	}
-	//	log.Println("relay error: %v", err)
-	//}
-
-	go bi.Pipe(src, dst)
-	bi.Pipe(dst, src)
-	//src.Close()
-	//dst.Close()
+	_, _, err = tcpRelay(src, dst)
+	if err != nil {
+		if err, ok := err.(net.Error); ok && err.Timeout() {
+			return // ignore i/o timeout
+		}
+		log.Println("relay error: %v", err)
+	}
 }
 
 func (bi *BackendInfo) DialSSRConn(rawaddr socks.Addr) (net.Conn, error) {
@@ -185,32 +162,6 @@ func tcpRelay(left, right net.Conn) (int64, int64, error) {
 		err = rs.Err
 	}
 	return n, rs.N, err
-}
-
-// PipeThenClose copies data from src to dst, closes dst when done.
-func (bi *BackendInfo) Pipe(src, dst net.Conn) error {
-	buf := leakybuf.GlobalLeakyBuf.Get()
-	for {
-		src.SetReadDeadline(time.Now().Add(readTimeout))
-		n, err := src.Read(buf)
-		// read may return EOF with n > 0
-		// should always process n > 0 bytes before handling error
-		if n > 0 {
-			// Note: avoid overwrite err returned by Read.
-			if _, err := dst.Write(buf[0:n]); err != nil {
-				break
-			}
-		}
-		if err != nil {
-			// Always "use of closed network connection", but no easy way to
-			// identify this specific error. So just leave the error along for now.
-			// More info here: https://code.google.com/p/go/issues/detail?id=4373
-			break
-		}
-	}
-	leakybuf.GlobalLeakyBuf.Put(buf)
-	dst.Close()
-	return nil
 }
 
 func NewSSRClient(u *url.URL) (*shadowsocksr.SSTCPConn, error) {

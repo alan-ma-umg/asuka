@@ -231,6 +231,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	io.WriteString(w, str)
 }
+
 func recentJson(sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
@@ -285,7 +286,10 @@ func homeJson(sType string) []byte {
 		server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
 		server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
 		server["avg_time"] = s.GetAvgTime().Truncate(time.Millisecond).String()
-		server["getting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
+		server["waiting"] = "0s"
+		if !s.RequestStartTime.IsZero() {
+			server["waiting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
+		}
 		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
 		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)   //todo slowly, make improvement
