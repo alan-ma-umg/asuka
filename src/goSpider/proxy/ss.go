@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"github.com/phayes/freeport"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 	"github.com/shadowsocks/go-shadowsocks2/socks"
 	"goSpider/helper"
@@ -27,7 +26,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 		if !server.Enable {
 			continue
 		}
-		listenPort, err := freeport.GetFreePort()
+		listenPort, err := helper.GetFreePort()
 		if err != nil {
 			log.Fatal(err)
 		}
