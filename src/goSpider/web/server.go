@@ -152,7 +152,7 @@ func monitor(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles(helper.Env().TemplatePath+"monitor.html")).Execute(w, nil)
 }
 func index(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, runtime.GOOS)
 }
 func IO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -259,11 +259,20 @@ func homeJson(sType string) []byte {
 		"basic":   map[string]interface{}{},
 		"servers": []map[string]interface{}{},
 	}
-	sumLoad := 0.0
-	var TrafficIn uint64 = 0
-	var TrafficOut uint64 = 0
+	sumLoad := .0
+	pingFailureAvg := .0
+	var pingAvg time.Duration
+	var waitingAvg time.Duration
+	var avgTimeAvg time.Duration
+	var TrafficIn uint64
+	var TrafficOut uint64
 	for index, s := range dispatcherObj.GetSpiders() {
-		sumLoad += s.Transport.LoadRate(5)
+		load5s := s.Transport.LoadRate(5)
+		avgTime := s.GetAvgTime()
+		avgTimeAvg += avgTime
+		pingFailureAvg += s.Transport.PingFailureRate
+		pingAvg += s.Transport.Ping
+		sumLoad += load5s
 		TrafficIn += s.Transport.TrafficIn
 		TrafficOut += s.Transport.TrafficOut
 		failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
@@ -285,14 +294,15 @@ func homeJson(sType string) []byte {
 		server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
 		server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
 		server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
-		server["avg_time"] = s.GetAvgTime().Truncate(time.Millisecond).String()
+		server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
 		server["waiting"] = "0s"
 		if !s.RequestStartTime.IsZero() {
+			waitingAvg += time.Since(s.RequestStartTime)
 			server["waiting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
 		}
 		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
-		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)   //todo slowly, make improvement
+		server["load_5s"] = strconv.FormatFloat(load5s, 'f', 2, 64)                    //todo slowly, make improvement
 		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) //todo slowly, make improvement
 		server["access_count"] = s.Transport.GetAccessCount()
 		server["failure_count"] = s.Transport.GetFailureCount()
@@ -309,8 +319,12 @@ func homeJson(sType string) []byte {
 	//basic
 	jsonMap["basic"].(map[string]interface{})["queue"] = strconv.Itoa(int(queueCount))
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
+	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String() //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()  //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()        //fixme Divide by Zero
+	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)      //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
-	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)

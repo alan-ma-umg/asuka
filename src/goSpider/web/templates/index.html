@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Asuka</title>
-    <meta charset="utf-8">
+    <title>Asuka connecting..</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+{{if eq . "windows"}}
     <script src="/js/vue.js"></script>
+{{else}}
+    <script src="/js/vue.min.js"></script>
+{{end}}
 </head>
 <style>
     * {
@@ -68,7 +73,6 @@
     th, td {
         padding: 5px 10px;
         border: 1px solid #ccc;
-        max-width: 860px;
         white-space: nowrap;
     }
 
@@ -84,8 +88,8 @@
         text-align: right;
     }
 
-    tr td:first-child {
-        text-align: center;
+    .inline-block {
+        display: inline-block;
     }
 
     .text-ellipsis {
@@ -108,24 +112,24 @@
     }
 </style>
 <body>
-<div style="margin: 10px auto;max-width:1400px" id="vue-content">
+<div style="margin: 10px auto;min-width:1100px;max-width: 1300px" id="vue-content">
     <div class="ctrl-wrap">
         <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     </div>
-    <table v-if="home.basic.time">
+    <table v-if="home.basic.time" style="width: 100%">
         <tbody>
         <tr>
-            <th>Queue</th>
-            <td style="width:140px"><a href="/queue">{{"{{home.basic.queue}}"}}</a></td>
-            <th>Redis Mem</th>
-            <td style="width:140px">{{"{{home.basic.redis_mem}}"}}</td>
-            <th>Load</th>
-            <td style="width:140px">{{"{{home.basic.load_avg}}"}} | {{"{{home.basic.load_sum}}"}}</td>
-            <th>Traffic</th>
-            <td style="width:140px">{{"{{home.basic.traffic_in}}"}} | {{"{{home.basic.traffic_out}}"}}</td>
-            <th>Mem.SYS</th>
-            <td style="width:140px">{{"{{home.basic.mem_sys}}"}}</td>
+            <th style="width:8%">Queue</th>
+            <td style="width:12%"><a href="/queue">{{"{{home.basic.queue}}"}}</a></td>
+            <th style="width:8%">Redis Mem</th>
+            <td style="width:12%">{{"{{home.basic.redis_mem}}"}}</td>
+            <th style="width:8%">Load</th>
+            <td style="width:12%">{{"{{home.basic.load_avg}}"}} | {{"{{home.basic.load_sum}}"}}</td>
+            <th style="width:8%">Traffic I/O</th>
+            <td style="width:12%">{{"{{home.basic.traffic_in}}"}} | {{"{{home.basic.traffic_out}}"}}</td>
+            <th style="width:8%">Mem.SYS</th>
+            <td style="width:12%">{{"{{home.basic.mem_sys}}"}}</td>
         </tr>
         <tr>
             <th>Goroutine</th>
@@ -148,13 +152,44 @@
             <th style="width:1px"></th>
             <th style="width:1px">Server</th>
             <th style="width:1px">Ping / Lost</th>
-            <th style="width:1px">Avg Time</th>
+            <th style="width:70px">Time</th>
             <th style="width:100px">Waiting</th>
-            <th style="width:1px">Traffic I / O</th>
+            <th style="width:1px">Traffic I/O</th>
             <th>Load 5s / 60s</th>
             <th style="width:1px">Dispatch</th>
             <th style="width:145px">Failure</th>
             <th style="width:1px">Status</th>
+        </tr>
+        <tr style="background:#e6e6e6">
+            <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows</td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{home.basic.ping_avg}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{home.basic.ping_failure_avg}}"}}%</div>
+            </td>
+            <td>{{"{{home.basic.avg_time_avg}}"}}</td>
+            <td>{{"{{home.basic.waiting_avg}}"}}</td>
+            <td class="center">
+                <div style="display:inline-block;width:60px" class="right">{{"{{home.basic.traffic_in}}"}}</div>
+                |
+                <div style="display:inline-block;width:60px" class="left">{{"{{home.basic.traffic_out}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{load5sSum}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{load60sSum}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}</div>
+            </td>
+            <td class="center">{{"{{statusAvg}}"}}</td>
         </tr>
         </thead>
         <tbody>
@@ -180,8 +215,9 @@
                 <div style="display:inline-block;width:60px" class="left">{{"{{server.traffic_out}}"}}</div>
             </td>
             <td class="center">
-            {{"{{server.load_5s}}"}} |
-            {{"{{server.load_60s}}"}}
+                <div style="display:inline-block;width:50px" class="right">{{"{{server.load_5s}}"}}</div>
+                |
+                <div style="display:inline-block;width:50px" class="left">{{"{{server.load_60s}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
@@ -211,8 +247,41 @@
 <script>
     let vueContent = new Vue({
         el: "#vue-content",
-        data: {home: {basic: {}}, recent: {basic: {}}},
+        data: {
+            home: {basic: {}}, recent: {basic: {}},
+        },
+        computed: {
+            accessSum: function () {
+                return total(this.home.servers, "access_count");
+            },
+            failureSum: function () {
+                return total(this.home.servers, "failure_count");
+            },
+            failure60Avg: function () {
+                return (total(this.home.servers, "failure_60") / this.home.servers.length).toFixed(2)
+            },
+            failureAllAvg: function () {
+                return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
+            },
+            statusAvg: function () {
+                return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
+            },
+            load5sSum: function () {
+                return total(this.home.servers, "load_5s").toFixed(2)
+            },
+            load60sSum: function () {
+                return total(this.home.servers, "load_60s").toFixed(2)
+            }
+        }
     });
+
+    function total(data, field) {
+        let total = 0;
+        for (item of data) {
+            total += parseFloat(item[field], 10)
+        }
+        return total;
+    }
 
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
     handlerSocket();
@@ -283,7 +352,7 @@
         ws.onopen = function () {
             sendMessage();
             document.body.style = "background:none";
-            document.title = "Asuka Good";
+            document.title = "Asuka connected";
         };
         ws.onerror = function () {
             document.body.style = "background:yellow";
