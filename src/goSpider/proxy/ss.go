@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"github.com/phayes/freeport"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 	"github.com/shadowsocks/go-shadowsocks2/socks"
 	"goSpider/helper"
@@ -26,7 +27,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 		if !server.Enable {
 			continue
 		}
-		listenPort, err := GetFreePort()
+		listenPort, err := freeport.GetFreePort()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -82,23 +83,6 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 	}
 
 	return
-}
-
-// 得到一个可用的端口.
-func GetFreePort() (port int, err error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-	defer listener.Close()
-
-	addr := listener.Addr().String()
-	_, portString, err := net.SplitHostPort(addr)
-	if err != nil {
-		return 0, err
-	}
-
-	return strconv.Atoi(portString)
 }
 
 // Create a SOCKS server listening on addr and proxy to server.
