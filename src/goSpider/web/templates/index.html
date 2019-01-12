@@ -189,7 +189,7 @@
             <th>Status</th>
         </tr>
         <tr style="background:#e6e6e6">
-            <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows</td>
+            <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}} Running</td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{basic.ping_avg}}"}}</div>
                 |
@@ -305,6 +305,15 @@
             },
             load60sSum: function () {
                 return total(this.home.servers, "load_60s").toFixed(2)
+            },
+            serverRunning: function () {
+                let count = 0;
+                for (item of this.home.servers) {
+                    if (item["failure_level"] === 0) {
+                        count++
+                    }
+                }
+                return count
             }
         },
         filters: {

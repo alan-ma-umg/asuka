@@ -174,7 +174,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			//log.Println("read:", err)
 			break
 		}
 		if messageType == 1 {
@@ -213,7 +213,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 			err = c.WriteMessage(websocket.TextMessage, jsonRes)
 		}
 		if err != nil {
-			log.Println("write:", err)
+			//log.Println("write:", err)
 			break
 		}
 		time.Sleep(time.Duration(refreshRate * 1e9))
