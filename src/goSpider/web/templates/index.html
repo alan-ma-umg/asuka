@@ -151,7 +151,7 @@
             <th style="width:1px">Avg Time</th>
             <th style="width:100px">Getting</th>
             <th style="width:1px">Traffic I / O</th>
-            <th>Load 5s / 60s / 15min / 30min</th>
+            <th>Load 5s / 60s</th>
             <th style="width:1px">Dispatch</th>
             <th style="width:145px">Failure</th>
             <th style="width:1px">Status</th>
@@ -181,9 +181,7 @@
             </td>
             <td class="center">
             {{"{{server.load_5s}}"}} |
-            {{"{{server.load_60s}}"}} |
-            {{"{{server.load_15min}}"}} |
-            {{"{{server.load_30min}}"}}
+            {{"{{server.load_60s}}"}}
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
@@ -207,13 +205,15 @@
         </tbody>
     </table>
 </div>
+<br>
+<br>
+<br>
 <script>
     let vueContent = new Vue({
         el: "#vue-content",
         data: {ws: {basic: {}}},
-    })
-</script>
-<script>
+    });
+
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
     handlerSocket();
 

@@ -2,6 +2,7 @@ package web
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"goSpider/database"
@@ -19,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"encoding/json"
 )
 
 var upgrade = websocket.Upgrader{
@@ -148,10 +148,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func monitor(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "monitor.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"monitor.html")).Execute(w, nil)
 }
 func index(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, nil)
 }
 func IO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -213,7 +213,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -261,10 +261,8 @@ func responseJson() []byte {
 		server["getting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
 		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
-		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)        //todo slowly, make improvement
-		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64)      //todo slowly, make improvement
-		server["load_15min"] = strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) //todo slowly, make improvement
-		server["load_30min"] = strconv.FormatFloat(s.Transport.LoadRate(60*30), 'f', 2, 64) //todo slowly, make improvement
+		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)   //todo slowly, make improvement
+		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) //todo slowly, make improvement
 		server["access_count"] = s.Transport.GetAccessCount()
 		server["failure_count"] = s.Transport.GetFailureCount()
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)

@@ -8,8 +8,6 @@ import (
 	"goSpider/web"
 	"log"
 	"time"
-	"goSpider/database"
-	"goSpider/helper"
 )
 
 func init() {
@@ -24,8 +22,8 @@ func main() {
 		//pSt.Stop()
 	}()
 
-	database.Bl().ClearAll()                             //todo for test
-	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	//database.Bl().ClearAll()                             //todo for test
+	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
 	c.Run(&project.DouBan{}, queue.NewQueue())
