@@ -97,7 +97,7 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			return // ignore i/o timeout
 		}
-		log.Println("relay error: %v", err)
+		log.Println(bi.Address+" relay error: %v", err)
 	}
 }
 

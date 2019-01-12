@@ -112,10 +112,12 @@
     }
 </style>
 <body>
-<div style="margin: 10px auto;min-width:1100px;max-width: 1300px" id="vue-content">
+<div style="margin: 10px auto;min-width:1100px;max-width: 1400px" id="vue-content">
     <div class="ctrl-wrap">
-        <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
+        <button id="ws-home" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Home</button>
+        <button id="ws-recent" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Recent</button>
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
+        <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
     </div>
     <table v-if="home.basic.time" style="width: 100%">
         <tbody>
@@ -146,19 +148,45 @@
         </tbody>
     </table>
     <br>
-    <table v-if="home.servers">
+    <table v-if='action == "recent" && fetchList.length'>
         <thead>
         <tr>
-            <th style="width:1px"></th>
-            <th style="width:1px">Server</th>
-            <th style="width:1px">Ping / Lost</th>
-            <th style="width:70px">Time</th>
-            <th style="width:100px">Waiting</th>
-            <th style="width:1px">Traffic I/O</th>
+            <th></th>
+            <th>Server</th>
+            <th>Add Time</th>
+            <th>Consume Time</th>
+            <th>HTTP Code</th>
+            <th>Size</th>
+            <th>Error</th>
+            <th>Url</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="item in fetchList">
+            <td>{{"{{item.Index}}"}}</td>
+            <td>{{"{{item.TransportName}}"}}</td>
+            <td>{{"{{item.AddTime}}"}}</td>
+            <td>{{"{{item.ConsumeTime}}"}}</td>
+            <td>{{"{{item.StatusCode}}"}}</td>
+            <td>{{"{{item.ResponseSize}}"}}</td>
+            <td>{{"{{item.ErrType}}"}}</td>
+            <td><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl}}"}}</a></td>
+        </tr>
+        </tbody>
+    </table>
+    <table v-if='action == "home" && home.servers'>
+        <thead>
+        <tr>
+            <th></th>
+            <th>Server</th>
+            <th>Ping / Lost</th>
+            <th style="min-width:70px">Time</th>
+            <th style="min-width:100px">Waiting</th>
+            <th>Traffic I/O</th>
             <th>Load 5s / 60s</th>
             <th style="width:1px">Dispatch</th>
-            <th style="width:145px">Failure</th>
-            <th style="width:1px">Status</th>
+            <th style="min-width:145px">Failure</th>
+            <th>Status</th>
         </tr>
         <tr style="background:#e6e6e6">
             <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows</td>
@@ -185,9 +213,9 @@
                 <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
             </td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}</div>
+                <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}%</div>
                 |
-                <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}</div>
+                <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
             </td>
             <td class="center">{{"{{statusAvg}}"}}</td>
         </tr>
@@ -226,11 +254,13 @@
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">
-                    <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}</span>
+                    <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}
+                        %</span>
                 </div>
                 |
                 <div style="display:inline-block;width:50px" class="left">
-                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}</span>
+                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
+                        %</span>
                 </div>
             </td>
             <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
@@ -249,6 +279,8 @@
         el: "#vue-content",
         data: {
             home: {basic: {}}, recent: {basic: {}},
+            fetchList: [],
+            action: "home",
         },
         computed: {
             accessSum: function () {
@@ -275,6 +307,18 @@
         }
     });
 
+    vueContent.$watch('recent.fetched', function (newVal, oldVal) {
+        if (!newVal.length) {
+            return
+        }
+        for (item of newVal) {
+            this.fetchList.unshift(item);
+            if (this.fetchList.length > 200) {
+                this.fetchList.pop()
+            }
+        }
+    });
+
     function total(data, field) {
         let total = 0;
         for (item of data) {
@@ -288,25 +332,30 @@
 
     document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-            sendMessage();
+            sendMessage(document.getElementById("send-value").value);
         }
     };
-
+    document.getElementById("ws-home").onclick = function () {
+        sendMessage("home");
+        vueContent.$data.action = "home"
+    };
+    document.getElementById("ws-recent").onclick = function () {
+        sendMessage("recent");
+        vueContent.$data.action = "recent"
+    };
     document.getElementById("ws-open-close").onclick = function () {
         manualOpen();
         manualClose();
     };
 
-    function sendMessage() {
+    function sendMessage(msg) {
         if (!ws) {
             return;
         }
-
         if (ws.readyState !== 1) {
             return;
         }
-
-        ws.send(document.getElementById("send-value").value);
+        ws.send(msg);
     }
 
     function reconnectSocket() {
@@ -350,7 +399,8 @@
             ws.send("")
         };
         ws.onopen = function () {
-            sendMessage();
+            sendMessage(vueContent.$data.action);
+            sendMessage(document.getElementById("send-value").value);
             document.body.style = "background:none";
             document.title = "Asuka connected";
         };

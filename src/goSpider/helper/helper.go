@@ -207,6 +207,13 @@ func MaxInt(a, b int) int {
 	return a
 }
 
+func MaxInt64(a, b int64) int64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
 func SSSubscriptionParse(rawUrl string) {
 	resp, err := http.Get(rawUrl)
 	if err != nil {

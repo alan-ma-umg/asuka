@@ -34,14 +34,16 @@ import (
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
 var imageRegex, _ = regexp.Compile("(?i)(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)")
 
-const RecentFetchCount = 10
+const RecentFetchCount = 100
 
 var RecentFetchMutex = &sync.Mutex{}
+var RecentFetchLastIndex int64 = 0
 
 type RecentFetch struct {
+	Index         int64
 	TransportName string
 	StatusCode    int // http response status code
-	Url           *url.URL
+	RawUrl        string
 	ConsumeTime   time.Duration
 	AddTime       time.Time
 	ErrType       string
@@ -172,8 +174,8 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	//time
 	spider.RequestStartTime = time.Now()
 
-	recentFetch := &RecentFetch{Url: u, AddTime: time.Now(), TransportName: spider.Transport.S.Name}
-	RecentFetchList = append(RecentFetchList, recentFetch)
+	recentFetch := &RecentFetch{RawUrl: u.String(), AddTime: time.Now(), TransportName: spider.Transport.S.Name}
+
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
 
 	defer func() {
@@ -195,6 +197,9 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 			RecentFetchList = RecentFetchList[len(RecentFetchList)-RecentFetchCount:]
 		}
 		RecentFetchMutex.Unlock()
+		RecentFetchLastIndex++
+		recentFetch.Index = RecentFetchLastIndex
+		RecentFetchList = append(RecentFetchList, recentFetch)
 
 		if r := recover(); r != nil {
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
@@ -315,6 +320,10 @@ func (spider *Spider) requestErrorHandler(err error) {
 			return
 		}
 		if strings.Contains(err.Error(), ": EOF") {
+			return
+		}
+		if strings.Contains(err.Error(), "connection reset by peer") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return
 		}
 

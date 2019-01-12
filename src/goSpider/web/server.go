@@ -167,9 +167,10 @@ func IO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	refreshRateMin := 0.2
+	refreshRateMin := 0.5
 	refreshRate := refreshRateMin
 	responseContent := "home"
+	var recentFetchIndex int64 = 0
 
 	for {
 		messageType, b, err := c.ReadMessage()
@@ -208,7 +209,9 @@ func IO(w http.ResponseWriter, r *http.Request) {
 		case "home":
 			err = c.WriteMessage(websocket.TextMessage, homeJson(responseContent))
 		case "recent":
-			err = c.WriteMessage(websocket.TextMessage, recentJson(responseContent))
+			jsonRes, n := recentJson(responseContent, recentFetchIndex)
+			recentFetchIndex = n
+			err = c.WriteMessage(websocket.TextMessage, jsonRes)
 		}
 		if err != nil {
 			log.Println("write:", err)
@@ -232,11 +235,35 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
-func recentJson(sType string) []byte {
+func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
-		"type":  sType,
-		"basic": map[string]interface{}{},
+		"type":    sType,
+		"basic":   map[string]interface{}{},
+		"fetched": []*spider.RecentFetch{},
+	}
+
+	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
+	//copy(recentFetchList, spider.RecentFetchList)
+	//var lastIndex int64
+	//for i := len(recentFetchList); i > 0; i-- {
+	//	l := recentFetchList[i-1]
+	//	if l.Index > recentFetchIndex {
+	//		jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
+	//		lastIndex = helper.MaxInt64(lastIndex, l.Index)
+	//	}
+	//}
+
+	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
+	//copy(recentFetchList, spider.RecentFetchList)
+	var lastIndex int64
+	for _, l := range spider.RecentFetchList {
+		if l.Index > recentFetchIndex {
+			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
+			lastIndex = helper.MaxInt64(lastIndex, l.Index)
+		} else {
+			break
+		}
 	}
 
 	sumLoad := 0.0
@@ -250,7 +277,7 @@ func recentJson(sType string) []byte {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	return b
+	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
 func homeJson(sType string) []byte {
 	start := time.Now()
@@ -424,7 +451,7 @@ func responseHtml() string {
 		} else {
 			html += "<tr>"
 		}
-		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.Url.String() + "\">" + helper.TruncateStr([]rune(l.Url.String()), 40, "...("+strconv.Itoa(len([]rune(l.Url.String())))+")") + "</a></td>"
+		html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.RawUrl + "\">" + helper.TruncateStr([]rune(l.RawUrl), 40, "...("+strconv.Itoa(len([]rune(l.RawUrl)))+")") + "</a></td>"
 		html += "</tr>"
 	}
 	html += "</table>"
