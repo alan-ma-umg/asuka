@@ -3,7 +3,7 @@
 <head>
     <title>Asuka</title>
     <meta charset="utf-8">
-    <script src="/js/vue.min.js"></script>
+    <script src="/js/vue.js"></script>
 </head>
 <style>
     * {
@@ -113,36 +113,36 @@
         <input type="text" id="send-value" placeholder="Command" value="0.5" style="max-width: 160px">
         <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     </div>
-    <table v-if="ws.basic.time">
+    <table v-if="home.basic.time">
         <tbody>
         <tr>
             <th>Queue</th>
-            <td style="width:140px"><a href="/queue">{{"{{ws.basic.queue}}"}}</a></td>
+            <td style="width:140px"><a href="/queue">{{"{{home.basic.queue}}"}}</a></td>
             <th>Redis Mem</th>
-            <td style="width:140px">{{"{{ws.basic.redis_mem}}"}}</td>
+            <td style="width:140px">{{"{{home.basic.redis_mem}}"}}</td>
             <th>Load</th>
-            <td style="width:140px">{{"{{ws.basic.load_avg}}"}} | {{"{{ws.basic.load_sum}}"}}</td>
+            <td style="width:140px">{{"{{home.basic.load_avg}}"}} | {{"{{home.basic.load_sum}}"}}</td>
             <th>Traffic</th>
-            <td style="width:140px">{{"{{ws.basic.traffic_in}}"}} | {{"{{ws.basic.traffic_out}}"}}</td>
+            <td style="width:140px">{{"{{home.basic.traffic_in}}"}} | {{"{{home.basic.traffic_out}}"}}</td>
             <th>Mem.SYS</th>
-            <td style="width:140px">{{"{{ws.basic.mem_sys}}"}}</td>
+            <td style="width:140px">{{"{{home.basic.mem_sys}}"}}</td>
         </tr>
         <tr>
             <th>Goroutine</th>
-            <td>{{"{{ws.basic.goroutine}}"}}</td>
+            <td>{{"{{home.basic.goroutine}}"}}</td>
             <th>Connection</th>
-            <td>{{"{{ws.basic.connections}}"}}</td>
+            <td>{{"{{home.basic.connections}}"}}</td>
             <th>WebSockets</th>
-            <td>{{"{{ws.basic.ws_connections}}"}}</td>
+            <td>{{"{{home.basic.ws_connections}}"}}</td>
             <th>Time</th>
-            <td>{{"{{ws.basic.time}}"}}</td>
+            <td>{{"{{home.basic.time}}"}}</td>
             <th>Uptime</th>
-            <td>{{"{{ws.basic.uptime}}"}}</td>
+            <td>{{"{{home.basic.uptime}}"}}</td>
         </tr>
         </tbody>
     </table>
     <br>
-    <table v-if="ws.servers">
+    <table v-if="home.servers">
         <thead>
         <tr>
             <th style="width:1px"></th>
@@ -158,7 +158,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="server in ws.servers" :class="{failure:server.failure_level}">
+        <tr v-for="server in home.servers" :class="{failure:server.failure_level}">
             <td>{{"{{server.index+1}}"}}</td>
             <td class="center">{{"{{server.name}}"}}</td>
             <td class="center">
@@ -211,7 +211,7 @@
 <script>
     let vueContent = new Vue({
         el: "#vue-content",
-        data: {ws: {basic: {}}},
+        data: {home: {basic: {}}, recent: {basic: {}}},
     });
 
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
@@ -233,7 +233,7 @@
             return;
         }
 
-        if (ws.readyState != 1) {
+        if (ws.readyState !== 1) {
             return;
         }
 
@@ -254,7 +254,7 @@
         if (!ws) {
             return;
         }
-        if (ws.readyState != 3) {
+        if (ws.readyState !== 3) {
             return;
         }
         manualFlag = false;
@@ -265,7 +265,7 @@
         if (!ws) {
             return
         }
-        if (ws.readyState != 1) {
+        if (ws.readyState !== 1) {
             return;
         }
         manualFlag = true;
@@ -273,11 +273,12 @@
     }
 
     function handlerSocket() {
-        let injectPoint = document.getElementById("inject-point");
         ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/socket.io");
         ws.onmessage = function (evt) {
-            vueContent.$data.ws = JSON.parse(evt.data);
-            document.title = "Asuka " + vueContent.$data.ws.basic.load_avg + " / " + vueContent.$data.ws.basic.load_sum + " / " + vueContent.$data.ws.basic.time;
+            let data = JSON.parse(evt.data);
+            vueContent.$data[data.type] = data;
+            document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
+            ws.send("")
         };
         ws.onopen = function () {
             sendMessage();

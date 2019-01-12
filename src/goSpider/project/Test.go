@@ -2,16 +2,16 @@ package project
 
 import (
 	"goSpider/spider"
+	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"time"
-	"net/http/cookiejar"
-	"net/http"
 )
 
-type DouBan struct {
+type Test struct {
 }
 
-func (my *DouBan) EntryUrl() []string {
+func (my *Test) EntryUrl() []string {
 	return []string{
 		//"http://192.168.100.125:8188/forever",
 		//"http://192.168.100.125:8188/forever",
@@ -54,7 +54,7 @@ func (my *DouBan) EntryUrl() []string {
 	}
 }
 
-func (my *DouBan) RequestBefore(spider *spider.Spider) {
+func (my *Test) RequestBefore(spider *spider.Spider) {
 	//Referer
 	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" {
 		spider.CurrentRequest.Header.Set("Referer", my.EntryUrl()[0])
@@ -63,7 +63,7 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 	spider.Client.Timeout = time.Second
 }
 
-func (my *DouBan) ResponseAfter(spider *spider.Spider) {
+func (my *Test) ResponseAfter(spider *spider.Spider) {
 	//free the memory
 	if len(spider.RequestsMap) > 10 {
 		spider.Client.Jar, _ = cookiejar.New(nil)
@@ -72,11 +72,11 @@ func (my *DouBan) ResponseAfter(spider *spider.Spider) {
 }
 
 // queue
-func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
+func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	return true
 }
 
 // frequency
-func (my *DouBan) Throttle(spider *spider.Spider) {
+func (my *Test) Throttle(spider *spider.Spider) {
 	time.Sleep(10e9)
 }

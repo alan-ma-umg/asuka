@@ -27,13 +27,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 var linkRegex, _ = regexp.Compile("<a[^>]+href=\"([(\\.|h|/)][^\"]+)\"[^>]*>[^<]+</a>")
 var imageRegex, _ = regexp.Compile("(?i)(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)")
 
-const RecentFetchCount = 200
+const RecentFetchCount = 10
+
+var RecentFetchMutex = &sync.Mutex{}
 
 type RecentFetch struct {
 	TransportName string
@@ -93,8 +96,8 @@ func (spider *Spider) Throttle() {
 		time.Sleep(time.Minute)
 	}
 
-	accessCount, failureCount := spider.Transport.AccessCount(60)
-	if accessCount > 7 && helper.SpiderFailureRate(accessCount, failureCount) > 50.0 {
+	accessCount, failureCount := spider.Transport.AccessCount(60)                      //fixme 速度低于每分钟7次这里永远不会发生
+	if accessCount > 7 && helper.SpiderFailureRate(accessCount, failureCount) > 50.0 { //fixme 速度低于每分钟7次这里永远不会发生
 		spider.FailureLevel = 100
 		accessCountAll := spider.Transport.GetAccessCount()
 		failureCountAll := spider.Transport.GetFailureCount()
@@ -186,9 +189,12 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
 
+		//recent fetch
+		RecentFetchMutex.Lock()
 		if len(RecentFetchList) > RecentFetchCount {
 			RecentFetchList = RecentFetchList[len(RecentFetchList)-RecentFetchCount:]
 		}
+		RecentFetchMutex.Unlock()
 
 		if r := recover(); r != nil {
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())

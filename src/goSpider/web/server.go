@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math"
 	"math/rand"
 	"net/http"
 	"os"
@@ -168,41 +169,47 @@ func IO(w http.ResponseWriter, r *http.Request) {
 
 	refreshRateMin := 0.2
 	refreshRate := refreshRateMin
-	go func() {
-		for {
-			messageType, b, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				break
-			}
-			if messageType == 1 {
+	responseContent := "home"
 
-				switch strings.TrimSpace(string(b)) {
-				case "free":
-					debug.FreeOSMemory()
-					fmt.Println("debug.FreeOsMemory")
-				case "stop":
-					for _, s := range dispatcherObj.GetSpiders() {
-						s.Stop = true
-					}
-					fmt.Println("spider stop")
-				case "start":
-					for _, s := range dispatcherObj.GetSpiders() {
-						s.Stop = false
-					}
-					fmt.Println("spider start")
-				default:
-					refreshRate, _ = strconv.ParseFloat(string(b), 64)
-					if refreshRate < refreshRateMin {
-						refreshRate = refreshRateMin
-					}
+	for {
+		messageType, b, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		if messageType == 1 {
+			switch strings.TrimSpace(string(b)) {
+			case "free":
+				debug.FreeOSMemory()
+				fmt.Println("debug.FreeOsMemory")
+			case "stop":
+				for _, s := range dispatcherObj.GetSpiders() {
+					s.Stop = true
+				}
+				fmt.Println("spider stop")
+			case "start":
+				for _, s := range dispatcherObj.GetSpiders() {
+					s.Stop = false
+				}
+				fmt.Println("spider start")
+			case "home":
+				responseContent = strings.TrimSpace(string(b))
+			case "recent":
+				responseContent = strings.TrimSpace(string(b))
+			default:
+				refreshRateTemp, err := strconv.ParseFloat(string(b), 64)
+				if err == nil {
+					refreshRate = math.Max(refreshRateTemp, refreshRateMin)
 				}
 			}
 		}
-	}()
 
-	for {
-		err = c.WriteMessage(websocket.TextMessage, responseJson())
+		switch responseContent {
+		case "home":
+			err = c.WriteMessage(websocket.TextMessage, homeJson(responseContent))
+		case "recent":
+			err = c.WriteMessage(websocket.TextMessage, recentJson(responseContent))
+		}
 		if err != nil {
 			log.Println("write:", err)
 			break
@@ -224,10 +231,30 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	io.WriteString(w, str)
 }
-
-func responseJson() []byte {
+func recentJson(sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
+		"type":  sType,
+		"basic": map[string]interface{}{},
+	}
+
+	sumLoad := 0.0
+	for _, s := range dispatcherObj.GetSpiders() {
+		sumLoad += s.Transport.LoadRate(5)
+	}
+	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return b
+}
+func homeJson(sType string) []byte {
+	start := time.Now()
+	var jsonMap = map[string]interface{}{
+		"type":    sType,
 		"basic":   map[string]interface{}{},
 		"servers": []map[string]interface{}{},
 	}
