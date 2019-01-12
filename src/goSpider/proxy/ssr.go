@@ -16,6 +16,7 @@ import (
 	"github.com/sun8911879/shadowsocksR/tools/socks"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -53,6 +54,7 @@ func (bi *BackendInfo) Listen(clientRawAddr string) {
 	if err != nil {
 		//2019/01/09 20:03:54 ssr.go:55: listen tcp 127.0.0.1:43307: bind: address already in use
 		log.Println(err)
+		os.Exit(100) //fixme bind: address already in use
 		return
 	}
 	for {
