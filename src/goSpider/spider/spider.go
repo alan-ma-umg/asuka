@@ -83,6 +83,9 @@ func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
 }
 
 func (spider *Spider) Throttle() {
+	if spider.Transport.S.Interval > .0 {
+		time.Sleep(time.Second * time.Duration(spider.Transport.S.Interval))
+	}
 	for {
 		//todo make improvement
 		if !spider.Stop {

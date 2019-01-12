@@ -41,6 +41,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 			dt, _ := proxy.NewTransport(&proxy.SsAddr{})
 			dt.S.Name = helper.Env().LocalTransport.Name
 			dt.S.Enable = helper.Env().LocalTransport.Enable
+			dt.S.Interval = helper.Env().LocalTransport.Interval
 			dispatcher.transportArr = append(dispatcher.transportArr, dt)
 		}
 

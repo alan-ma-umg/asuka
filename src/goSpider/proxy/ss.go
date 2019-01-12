@@ -13,6 +13,7 @@ import (
 
 type SsAddr struct {
 	Enable     bool
+	Interval   float64
 	Type       string
 	Name       string
 	ServerAddr string
@@ -52,6 +53,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 
 			ss := &SsAddr{
 				Enable:     server.Enable,
+				Interval:   server.Interval,
 				Name:       server.Name,
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
@@ -67,6 +69,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 
 			ss := &SsAddr{
 				Enable:     server.Enable,
+				Interval:   server.Interval,
 				Name:       server.Name,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,

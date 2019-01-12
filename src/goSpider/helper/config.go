@@ -9,12 +9,14 @@ type EnvConfig struct {
 }
 
 type LocalTransport struct {
-	Enable bool
-	Name   string
+	Enable   bool
+	Interval float64
+	Name     string
 }
 
 type SsServer struct {
 	Enable     bool
+	Interval   float64
 	Name       string
 	Server     string
 	ServerPort string
