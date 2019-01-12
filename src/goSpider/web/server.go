@@ -261,8 +261,6 @@ func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 		if l.Index > recentFetchIndex {
 			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
 			lastIndex = helper.MaxInt64(lastIndex, l.Index)
-		} else {
-			break
 		}
 	}
 

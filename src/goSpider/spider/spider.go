@@ -195,15 +195,17 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime)
 
 		//recent fetch
+		RecentFetchLastIndex++
+		recentFetch.Index = RecentFetchLastIndex
+		RecentFetchList = append(RecentFetchList, recentFetch)
+
 		RecentFetchMutex.Lock()
 		if len(RecentFetchList) > RecentFetchCount {
 			RecentFetchList = RecentFetchList[len(RecentFetchList)-RecentFetchCount:]
 		}
 		RecentFetchMutex.Unlock()
-		RecentFetchLastIndex++
-		recentFetch.Index = RecentFetchLastIndex
-		RecentFetchList = append(RecentFetchList, recentFetch)
 
+		//recover
 		if r := recover(); r != nil {
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
