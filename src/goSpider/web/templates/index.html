@@ -107,8 +107,12 @@
         z-index: 1;
     }
 
-    .failure {
+    .warning {
         background: rgb(255, 248, 228) !important;
+    }
+
+    .danger {
+        background: rgb(255, 236, 234) !important;
     }
 </style>
 <body>
@@ -148,8 +152,8 @@
     <table v-if='action == "recent" && fetchList.length'>
         <thead>
         <tr>
-            <th></th>
-            <th class="center">Server</th>
+            <th style="width: 1px"></th>
+            <th>Server</th>
             <th>Add Time</th>
             <th>Consume Time</th>
             <th>Status</th>
@@ -159,9 +163,9 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in fetchList" :class="{failure:!item.StatusCode || item.StatusCode != 200}">
-            <td>{{"{{item.Index}}"}}</td>
-            <td>{{"{{item.TransportName}}"}}</td>
+        <tr v-for="item in fetchList" :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
+            <td class="center">{{"{{item.Index}}"}}</td>
+            <td class="center">{{"{{item.TransportName}}"}}</td>
             <td>{{"{{item.AddTime}}"}}</td>
             <td>{{"{{item.ConsumeTime}}"}}</td>
             <td>{{"{{item.StatusCode}}"}}</td>
@@ -174,7 +178,7 @@
     <table v-if='action == "home" && home.servers'>
         <thead>
         <tr>
-            <th></th>
+            <th style="width: 1px"></th>
             <th>Server</th>
             <th>Ping / Lost</th>
             <th style="min-width:70px">Time</th>
@@ -188,9 +192,9 @@
         <tr style="background:#e6e6e6">
             <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}} Running</td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{basic.ping_avg}}"}}</div>
+                <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
                 /
-                <div style="display:inline-block;width:50px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
+                <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
             </td>
             <td>{{"{{basic.avg_time_avg}}"}}</td>
             <td class="center">
@@ -204,9 +208,9 @@
                 <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
             </td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{load5sSum}}"}}</div>
+                <div style="display:inline-block;width:45px" class="right">{{"{{load5sSum}}"}}</div>
                 /
-                <div style="display:inline-block;width:50px" class="left">{{"{{load60sSum}}"}}</div>
+                <div style="display:inline-block;width:45px" class="left">{{"{{load60sSum}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
@@ -222,15 +226,17 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="server in home.servers" :class="{failure:server.failure_level}">
-            <td>{{"{{server.index+1}}"}}</td>
-            <td class="center">{{"{{server.name}}"}}</td>
+        <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
+            <td class="center">{{"{{server.index+1}}"}}</td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">
+                <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:45px" class="right">
                     <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
                 </div>
                 /
-                <div style="display:inline-block;width:50px" class="left">
+                <div style="display:inline-block;width:45px" class="left">
                     <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
                     {{"{{server.ping_failure}}"}} %
                     </span>
@@ -247,9 +253,9 @@
                 <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
             </td>
             <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{server.load_5s}}"}}</div>
+                <div style="display:inline-block;width:45px" class="right">{{"{{server.load_5s}}"}}</div>
                 /
-                <div style="display:inline-block;width:50px" class="left">{{"{{server.load_60s}}"}}</div>
+                <div style="display:inline-block;width:45px" class="left">{{"{{server.load_60s}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
