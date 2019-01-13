@@ -123,27 +123,24 @@
         <tbody>
         <tr>
             <th style="width:8%">Queue</th>
-            <td style="width:12%"><a href="/queue">{{"{{basic.queue}}"}}</a></td>
-            <th style="width:8%">Redis Mem</th>
-            <td style="width:12%">{{"{{basic.redis_mem}}"}}</td>
+            <td style="width:12%"><a href="/queue">{{"{{basic.queue}}"}}</a> / {{"{{basic.redis_mem}}"}}</td>
             <th style="width:8%">Load</th>
-            <td style="width:12%">{{"{{basic.load_avg}}"}} | {{"{{basic.load_sum}}"}}</td>
-            <th style="width:8%">Traffic I/O</th>
-            <td style="width:12%">{{"{{basic.traffic_in}}"}} | {{"{{basic.traffic_out}}"}}</td>
+            <td style="width:12%">{{"{{basic.load_avg}}"}} / {{"{{basic.load_sum}}"}}</td>
+            <th style="width:8%">Goroutine</th>
+            <td style="width:12%">{{"{{basic.goroutine}}"}}</td>
             <th style="width:8%">Mem.SYS</th>
             <td style="width:12%">{{"{{basic.mem_sys}}"}}</td>
         </tr>
         <tr>
-            <th>Goroutine</th>
-            <td>{{"{{basic.goroutine}}"}}</td>
+            <th>Retries</th>
+            <td>{{"{{retries}}"}}</td>
+            <th>Traffic I/O</th>
+            <td>{{"{{basic.traffic_in}}"}} / {{"{{basic.traffic_out}}"}}</td>
+
             <th>Connection</th>
-            <td>{{"{{basic.connections}}"}}</td>
-            <th>WebSockets</th>
-            <td>{{"{{basic.ws_connections}}"}}</td>
-            <th>Time</th>
-            <td>{{"{{basic.time}}"}}</td>
+            <td>{{"{{basic.ws_connections}}"}} / {{"{{basic.connections}}"}}</td>
             <th>Uptime</th>
-            <td>{{"{{basic.uptime}}"}}</td>
+            <td>{{"{{basic.time}}"}} / {{"{{basic.uptime}}"}}</td>
         </tr>
         </tbody>
     </table>
@@ -192,29 +189,29 @@
             <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}} Running</td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{basic.ping_avg}}"}}</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
             </td>
             <td>{{"{{basic.avg_time_avg}}"}}</td>
             <td>{{"{{basic.waiting_avg}}"}}</td>
             <td class="center">
-                <div style="display:inline-block;width:60px" class="right">{{"{{basic.traffic_in}}"}}</div>
-                |
-                <div style="display:inline-block;width:60px" class="left">{{"{{basic.traffic_out}}"}}</div>
+                <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
+                /
+                <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{load5sSum}}"}}</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{load60sSum}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}%</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
             </td>
             <td class="center">{{"{{statusAvg}}"}}</td>
@@ -228,7 +225,7 @@
                 <div style="display:inline-block;width:50px" class="right">
                     <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
                 </div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">
                     <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
                     {{"{{server.ping_failure}}"}} %
@@ -238,18 +235,18 @@
             <td>{{"{{server.avg_time}}"}}</td>
             <td>{{"{{server.waiting}}"}}</td>
             <td class="center">
-                <div style="display:inline-block;width:60px" class="right">{{"{{server.traffic_in}}"}}</div>
-                |
-                <div style="display:inline-block;width:60px" class="left">{{"{{server.traffic_out}}"}}</div>
+                <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
+                /
+                <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.load_5s}}"}}</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{server.load_60s}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
             </td>
             <td class="center">
@@ -257,7 +254,7 @@
                     <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}
                         %</span>
                 </div>
-                |
+                /
                 <div style="display:inline-block;width:50px" class="left">
                     <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
                         %</span>
@@ -305,6 +302,15 @@
             },
             load60sSum: function () {
                 return total(this.home.servers, "load_60s").toFixed(2)
+            },
+            retries: function () {
+                let str = "", k;
+                for (k in this.basic.queue_bls) {
+                    if (this.basic.queue_bls.hasOwnProperty(k)) {
+                        str += (parseInt(k) + 1) + ": " + this.basic.queue_bls[k] + " / "
+                    }
+                }
+                return str ? str.substring(0, str.length - 2) : str
             },
             serverRunning: function () {
                 let count = 0;

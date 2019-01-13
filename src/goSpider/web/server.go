@@ -15,7 +15,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"os"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -28,7 +27,6 @@ var upgrade = websocket.Upgrader{
 }
 var startTime = time.Now()
 var webSocketConnections = 0
-var pwd, _ = os.Getwd()
 var dispatcherObj *dispatcher.Dispatcher
 
 type gzipResponseWriter struct {
@@ -77,10 +75,8 @@ func commonHandle(h http.Handler) http.Handler {
 func Server(d *dispatcher.Dispatcher, address string) {
 	dispatcherObj = d //todo
 	http.HandleFunc("/queue", commonHandleFunc(queue))
-	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/socket.io", IO)
 	http.HandleFunc("/", commonHandleFunc(index))
-	http.HandleFunc("/monitor/", commonHandleFunc(monitor))
 	http.HandleFunc("/forever/", forever)
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
@@ -90,66 +86,6 @@ func Server(d *dispatcher.Dispatcher, address string) {
 	log.Fatal(http.ListenAndServe(address, nil))
 }
 
-func echo(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrade.Upgrade(w, r, nil)
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
-	webSocketConnections++
-
-	defer func() {
-		webSocketConnections--
-		c.Close()
-	}()
-
-	refreshRateMin := 0.2
-	refreshRate := refreshRateMin
-	go func() {
-		for {
-			messageType, b, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				break
-			}
-			if messageType == 1 {
-				switch strings.TrimSpace(string(b)) {
-				case "free":
-					debug.FreeOSMemory()
-					fmt.Println("debug.FreeOsMemory")
-				case "stop":
-					for _, s := range dispatcherObj.GetSpiders() {
-						s.Stop = true
-					}
-					fmt.Println("spider stop")
-				case "start":
-					for _, s := range dispatcherObj.GetSpiders() {
-						s.Stop = false
-					}
-					fmt.Println("spider start")
-				default:
-					refreshRate, _ = strconv.ParseFloat(string(b), 64)
-					if refreshRate < refreshRateMin {
-						refreshRate = refreshRateMin
-					}
-				}
-			}
-		}
-	}()
-
-	for {
-		err = c.WriteMessage(websocket.TextMessage, []byte(responseHtml()))
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
-		time.Sleep(time.Duration(refreshRate * 1e9))
-	}
-}
-
-func monitor(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"monitor.html")).Execute(w, nil)
-}
 func index(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, runtime.GOOS)
 }
@@ -238,7 +174,6 @@ func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
-		"basic":   map[string]interface{}{},
 		"fetched": []*spider.RecentFetch{},
 	}
 
@@ -253,8 +188,7 @@ func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 		}
 	}
 
-	responseJsonCommon(jsonMap)
-	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+	responseJsonCommon(jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
@@ -265,7 +199,6 @@ func homeJson(sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
-		"basic":   map[string]interface{}{},
 		"servers": []map[string]interface{}{},
 	}
 	for index, s := range dispatcherObj.GetSpiders() {
@@ -305,15 +238,23 @@ func homeJson(sType string) []byte {
 	}
 
 	//basic
-	responseJsonCommon(jsonMap)
-	jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+	responseJsonCommon(jsonMap, start)
+
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	return b
 }
-func responseJsonCommon(jsonMap map[string]interface{}) {
+func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
+	defer func() {
+		jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
+	}()
+
+	jsonMap["basic"] = map[string]interface{}{
+		"queue_bls": make(map[int]int),
+	}
+
 	sumLoad := .0
 	pingFailureAvg := .0
 	failureLevelZeroCount := 0
@@ -339,6 +280,12 @@ func responseJsonCommon(jsonMap map[string]interface{}) {
 		TrafficOut += s.Transport.TrafficOut
 	}
 
+	if len(dispatcherObj.GetSpiders()) > 0 {
+		for i, v := range dispatcherObj.GetSpiders()[0].Queue.BlsTestCount {
+			jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] = v
+		}
+	}
+
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 
@@ -361,124 +308,4 @@ func responseJsonCommon(jsonMap map[string]interface{}) {
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(startTime).Truncate(time.Second).String()
-}
-
-func responseHtml() string {
-	html := `<table><tr><th style="width:1px">#</th><th style="width:1px">Server</th><th style="width:1px">Ping / Lost</th><th style="width:1px">Avg Time</th><th style="width:1px">Traffic I / O</th><th>Load 5s / 60s / 15min / 30min</th><th style="width:1px">Dispatch</th><th style="width:145px">Failure</th><th style="width:1px">Status</th></tr>`
-
-	start := time.Now()
-	sumLoad := 0.0
-	var TrafficIn uint64 = 0
-	var TrafficOut uint64 = 0
-	for index, s := range dispatcherObj.GetSpiders() {
-		sumLoad += s.Transport.LoadRate(5)
-		TrafficIn += s.Transport.TrafficIn
-		TrafficOut += s.Transport.TrafficOut
-		if s.FailureLevel > 0 {
-			html += `<tr style="background:#ffffd2">`
-		} else {
-			html += "<tr>"
-		}
-
-		FailStr := "-"
-		if s.Transport.GetAccessCount() > 0 {
-			failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
-			failureRateAllValue := float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
-			FailStr = `<div style="display:inline-block;width:50px" class="right"><span style="color: hsl(` + strconv.Itoa(int(100-failureRate60Value)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRate60Value, 'f', 2, 64) + `%</span></div>` +
-				" | " +
-				`<div style="display:inline-block;width:50px" class="left"><span style="color: hsl(` + strconv.Itoa(int(100-failureRateAllValue)) + `, 100%, 35%);">` + strconv.FormatFloat(failureRateAllValue, 'f', 2, 64) + `%</span></div>`
-		}
-
-		html += `
-<td>` + strconv.Itoa(index+1) + ` </td>
-<td class="center">` + s.Transport.S.Name + `</td>
-<td class="center">
-	<div style="display:inline-block;width:50px" class="right">
-	<span style="color: hsl(` + strconv.Itoa(helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))) + `, 100%, 35%);">` + s.Transport.Ping.Truncate(time.Millisecond).String() + `</span></div> | 
-<div style="display:inline-block;width:50px" class="left"><span style="color: hsl(` + strconv.Itoa(int(150-s.Transport.PingFailureRate*150)) + `, 100%, 35%);">` + strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64) + `%</span></div></td>
-<td>` + s.GetAvgTime().Truncate(time.Millisecond).String() + `</td>
-<td class="center"><div style="display:inline-block;width:60px" class="right">` + helper.ByteCountBinary(s.Transport.TrafficIn) + `</div> | <div style="display:inline-block;width:60px" class="left">` + helper.ByteCountBinary(s.Transport.TrafficOut) + `</div></td>
-<td class="center"> ` + strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64) + ` |
- ` + strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) + ` |
- ` + strconv.FormatFloat(s.Transport.LoadRate(60*15), 'f', 2, 64) + ` |
- ` + strconv.FormatFloat(s.Transport.LoadRate(60*30), 'f', 2, 64) + `</td>
-<td class="center">	<div style="display:inline-block;width:50px" class="right">` + strconv.Itoa(s.Transport.GetAccessCount()) + `</div> | <div style="display:inline-block;width:50px" class="left">` + strconv.Itoa(s.Transport.GetFailureCount()) + `</div></td>
-<td class="center"> ` + FailStr + `</td>
-<td style="font-weight:800;color: hsl(` + strconv.Itoa(100-s.FailureLevel) + `, 100%, 35%);" class="center">` + strconv.Itoa(s.FailureLevel) + `</td>`
-
-		html += "</tr>"
-	}
-
-	queueCount, _ := database.Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
-
-	//memory
-	var mem runtime.MemStats
-	runtime.ReadMemStats(&mem)
-
-	//redis memory
-	redisMem, err := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result()
-	if err != nil {
-		//fmt.Println(err)
-		redisMem = 0
-	}
-	html += "</table><br>"
-	//
-	//html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Time</th><th>Current Url</th></tr>"
-	//for _, s := range dispatcherObj.GetSpiders() {
-	//	if s.CurrentRequest != nil && s.FailureLevel == 0 {
-	//		html += "<tr><td>" + s.Transport.S.Name + "</td><td>" + time.Since(s.RequestStartTime).Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + s.CurrentRequest.URL.String() + "\">" + helper.TruncateStr([]rune(s.CurrentRequest.URL.String()), 60, "...("+strconv.Itoa(len([]rune(s.CurrentRequest.URL.String())))+")") + "</a></td></tr>"
-	//	}
-	//}
-	//html += "</table><br>"
-
-	//html += "<table><tr><th style=\"width:100px\">Server</th><th style=\"width:100px\">Status</th><th>Size</th><th style=\"width:120px\">Add At</th><th style=\"width:120px\">Time</th><th>Url</th></tr>"
-	//
-	//recentFetchList := make([]*spider.RecentFetch, helper.MinInt(len(spider.RecentFetchList), spider.RecentFetchCount))
-	//copy(recentFetchList, spider.RecentFetchList)
-	//for i := len(recentFetchList); i > 0; i-- {
-	//	l := recentFetchList[i-1]
-	//	if l.StatusCode == 0 && l.ConsumeTime != 0 {
-	//		html += "<tr style=\"background:#ff9d87\">"
-	//	} else if l.ConsumeTime == 0 {
-	//		html += "<tr style=\"background:#f2f2f2\">"
-	//	} else if l.StatusCode != 200 {
-	//		html += "<tr style=\"background:yellow\">"
-	//	} else {
-	//		html += "<tr>"
-	//	}
-	//	html += "<td>" + l.TransportName + "</td><td>" + strconv.Itoa(l.StatusCode) + " " + l.ErrType + "</td><td>" + helper.ByteCountBinary(l.ResponseSize) + "</td><td>" + l.AddTime.Format("01-02 15:04:05") + "</td><td>" + l.ConsumeTime.Truncate(time.Millisecond).String() + "</td><td><a class=\"text-ellipsis\" target=\"_blank\" href=\"" + l.RawUrl + "\">" + helper.TruncateStr([]rune(l.RawUrl), 40, "...("+strconv.Itoa(len([]rune(l.RawUrl)))+")") + "</a></td>"
-	//	html += "</tr>"
-	//}
-	//html += "</table>"
-
-	overviewHtml := `
-<table>
-    <tr>
-        <th>Queue</th>
-        <td style="width:140px"><a href="/queue">` + strconv.Itoa(int(queueCount)) + `</a></td>
-        <th>Redis Mem</th>
-        <td style="width:140px">` + helper.ByteCountBinary(uint64(redisMem)) + `</td>
-        <th>Load</th>
-        <td style="width:140px">` + strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) + ` | ` + strconv.FormatFloat(sumLoad, 'f', 2, 64) + `</td>
-        <th>Traffic</th>
-        <td style="width:140px">` + helper.ByteCountBinary(TrafficIn) + ` | ` + helper.ByteCountBinary(TrafficOut) + `</td>
-        <th>Mem.SYS</th>
-        <td style="width:140px">` + helper.ByteCountBinary(mem.Sys) + `</td>
-	</tr>
-	<tr>
-        <th>Goroutine</th>
-        <td>` + strconv.Itoa(runtime.NumGoroutine()) + `</td>
-        <th>Connection</th>
-        <td>` + strconv.Itoa(helper.GetSocketEstablishedCountLazy()) + `</td>
-        <th>WebSockets</th>
-        <td>` + strconv.Itoa(webSocketConnections) + `</td>
-        <th>Time</th>
-        <td>` + time.Since(start).Truncate(time.Microsecond).String() + `</td>
-        <th>Uptime</th>
-        <td>` + time.Since(startTime).Truncate(time.Second).String() + `</td>
-    </tr>
-</table>
-<br>
-`
-	return overviewHtml + html
 }

@@ -13,14 +13,15 @@ import (
 
 type Queue struct {
 	bls                    []*bloom.BloomFilter
+	BlsTestCount           map[int]int
 	enqueueForFailureMutex *sync.Mutex
 }
 
 func NewQueue() (q *Queue) {
-	q = &Queue{enqueueForFailureMutex: &sync.Mutex{}}
+	q = &Queue{enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
 
 	go func(q *Queue) {
-		t := time.NewTicker(time.Minute * 3) //todo
+		t := time.NewTicker(time.Minute * 3)
 		for {
 			<-t.C
 			q.blSave()
@@ -47,6 +48,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 	for i := 0; i < retryTimes; i++ {
 		if !my.getBl(i).TestAndAddString(rawUrl) {
+			my.BlsTestCount[i]++
 			my.Enqueue(rawUrl)
 			return true
 		}
