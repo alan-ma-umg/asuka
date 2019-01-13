@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 )
 
 func TestSpider_Crawl(t *testing.T) {
+	fmt.Println(int(math.Ceil((time.Duration(0) + 1).Seconds())))
 }
 
 func TestSpider_Fetch(tt *testing.T) {

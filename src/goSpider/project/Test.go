@@ -78,5 +78,5 @@ func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 // frequency
 func (my *Test) Throttle(spider *spider.Spider) {
-	//time.Sleep(10e9)
+	//spider.AddSleep(10e9)
 }

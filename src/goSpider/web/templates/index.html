@@ -178,7 +178,7 @@
             <th>Server</th>
             <th>Ping / Lost</th>
             <th style="min-width:70px">Time</th>
-            <th style="min-width:100px">Waiting</th>
+            <th>Pass / Sleep</th>
             <th>Traffic I/O</th>
             <th>Load 5s / 60s</th>
             <th style="width:1px">Dispatch</th>
@@ -193,7 +193,11 @@
                 <div style="display:inline-block;width:50px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
             </td>
             <td>{{"{{basic.avg_time_avg}}"}}</td>
-            <td>{{"{{basic.waiting_avg}}"}}</td>
+            <td class="center">
+                <div style="display:inline-block;width:63px" class="right">{{"{{basic.waiting_avg}}"}}</div>
+                /
+                <div style="display:inline-block;width:63px" class="left">{{"{{basic.sleep_avg}}"}}</div>
+            </td>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
                 /
@@ -233,7 +237,10 @@
                 </div>
             </td>
             <td>{{"{{server.avg_time}}"}}</td>
-            <td>{{"{{server.waiting}}"}}</td>
+            <td class="center">
+                <div style="display:inline-block;width:63px" class="right">{{"{{server.waiting}}"}}</div>
+                /
+                <div style="display:inline-block;width:63px" class="left">{{"{{server.sleep}}"}}</div>
             <td class="center">
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
                 /

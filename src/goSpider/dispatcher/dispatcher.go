@@ -74,8 +74,8 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 	for _, s := range dispatcher.InitSpider(queue) {
 		go func(s *spider.Spider) {
 			for {
-				s.Throttle()
 				project.Throttle(s)
+				s.Throttle()
 				project.RequestBefore(s)
 				s.Crawl(project.EnqueueFilter)
 				project.ResponseAfter(s)

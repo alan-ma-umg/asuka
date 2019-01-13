@@ -13,7 +13,7 @@ import (
 )
 
 const SecondInterval = 1
-const countQueueLen = 2000
+const CountQueueLen = 6000
 
 //time url
 func init() {
@@ -95,7 +95,8 @@ func (transport *Transport) AddFailure(link string) {
 	transport.FailureList = append(transport.FailureList, link)
 }
 
-// LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒, 最大取值 countQueueLen*SecondInterval-1
+// LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒, 最大取值 CountQueueLen*SecondInterval-1
+//todo 性能优化
 func (transport *Transport) LoadRate(second int) float64 {
 	rate := 0.0
 	cursor := transport.accessCountList.Back()
@@ -116,7 +117,8 @@ func (transport *Transport) LoadRate(second int) float64 {
 	return rate / float64(times)
 }
 
-//  获取指定秒数内的访问数/失败数量.参数最小值5秒, 最大取值 countQueueLen*SecondInterval-1
+//AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒, 最大取值 CountQueueLen*SecondInterval-1
+//todo 性能优化
 func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes int) {
 	failureCursor := transport.failureCountList.Back()
 	accessCursor := transport.accessCountList.Back()
@@ -155,7 +157,7 @@ func (transport *Transport) GetAccessCount() int {
 
 func (transport *Transport) recordAccessCount() {
 	transport.accessCountList.PushBack(transport.GetAccessCount())
-	if transport.accessCountList.Len() > countQueueLen {
+	if transport.accessCountList.Len() > CountQueueLen {
 		transport.accessCountList.Remove(transport.accessCountList.Front()) // FIFO
 	}
 
@@ -173,7 +175,7 @@ func (transport *Transport) GetFailureCount() int {
 
 func (transport *Transport) recordFailureCount() {
 	transport.failureCountList.PushBack(transport.GetFailureCount())
-	if transport.failureCountList.Len() > countQueueLen {
+	if transport.failureCountList.Len() > CountQueueLen {
 		transport.failureCountList.Remove(transport.failureCountList.Front()) // FIFO
 	}
 

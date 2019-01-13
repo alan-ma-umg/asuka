@@ -17,6 +17,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -70,6 +71,7 @@ type Spider struct {
 
 	RequestStartTime time.Time
 	Stop             bool
+	sleepDuration    time.Duration
 
 	Queue *queue.Queue
 }
@@ -82,49 +84,66 @@ func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
 	return &Spider{Queue: queue, Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
 }
 
+func (spider *Spider) AddSleep(duration time.Duration) {
+	spider.sleepDuration += duration
+}
+
+func (spider *Spider) GetSleep() time.Duration {
+	return spider.sleepDuration
+}
+
+func (spider *Spider) ResetSleep() {
+	spider.sleepDuration = 0
+}
+
 func (spider *Spider) Throttle() {
 	if spider.Transport.S.Interval > .0 {
-		time.Sleep(time.Second * time.Duration(spider.Transport.S.Interval))
+		spider.AddSleep(time.Duration(spider.Transport.S.Interval * 1e9))
 	}
 	for {
-		//todo make improvement
 		if !spider.Stop {
 			break
 		}
-		time.Sleep(2e9)
+		time.Sleep(3e9)
 	}
 
 	if spider.FailureLevel > 0 {
-		time.Sleep(time.Second)
+		spider.AddSleep(time.Second)
 	}
 	if spider.FailureLevel > 1 {
-		time.Sleep(time.Minute)
+		spider.AddSleep(time.Minute)
 	}
 
-	accessCount, failureCount := spider.Transport.AccessCount(60)                      //fixme 速度低于每分钟7次这里永远不会发生
-	if accessCount > 7 && helper.SpiderFailureRate(accessCount, failureCount) > 50.0 { //fixme 速度低于每分钟7次这里永远不会发生
-		spider.FailureLevel = 100
+	fetchTimes := 7
+	second := fetchTimes * fetchTimes * int(math.Ceil((spider.GetSleep() + 1).Seconds())) //最小49秒
+	accessCount, failureCount := spider.Transport.AccessCount(second)
+	if (accessCount > fetchTimes && helper.SpiderFailureRate(accessCount, failureCount) > 50.0) || proxy.CountQueueLen*proxy.SecondInterval-1 < second { //fixme proxy.CountQueueLen*proxy.SecondInterval-1 < second  超出最大记录值无脑sleep, 不是最优解
 		accessCountAll := spider.Transport.GetAccessCount()
 		failureCountAll := spider.Transport.GetFailureCount()
 		failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 		if accessCountAll > 40 && failureRateAll > 95 {
 			spider.FailureLevel = 100
-			time.Sleep(time.Hour * 2)
+			spider.AddSleep(time.Hour * 2)
 		} else if accessCountAll > 40 && failureRateAll > 85 {
 			spider.FailureLevel = 80
-			time.Sleep(time.Minute * 40)
+			spider.AddSleep(time.Minute * 40)
 		} else if accessCountAll > 30 && failureRateAll > 70 {
 			spider.FailureLevel = 60
-			time.Sleep(time.Minute * 10)
+			spider.AddSleep(time.Minute * 10)
 		} else if accessCountAll > 30 && failureRateAll > 60 {
 			spider.FailureLevel = 40
-			time.Sleep(time.Minute * 5)
+			spider.AddSleep(time.Minute * 5)
 		} else {
 			spider.FailureLevel = 20
-			time.Sleep(time.Minute * 2)
+			spider.AddSleep(time.Minute * 2)
 		}
 	}
 
+	//go to sleep and reset sleep duration
+	if duration := spider.GetSleep(); duration > 0 {
+		time.Sleep(duration)
+	}
+	spider.ResetSleep()
 	spider.FailureLevel = 0
 }
 
