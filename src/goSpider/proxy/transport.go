@@ -163,9 +163,10 @@ func (transport *Transport) recordAccessCount() {
 
 	//todo lock
 	listLen := len(transport.AccessList)
-	if listLen > 2000 {
-		transport.AccessList = transport.AccessList[0:999]
-		transport.accessCountHistory += listLen - 1000
+	limit := 1000
+	if listLen > limit {
+		transport.AccessList = transport.AccessList[0 : limit/2-1]
+		transport.accessCountHistory += listLen - limit/2
 	}
 }
 
@@ -181,8 +182,9 @@ func (transport *Transport) recordFailureCount() {
 
 	//todo lock
 	listLen := len(transport.FailureList)
-	if listLen > 2000 {
-		transport.FailureList = transport.FailureList[0:999]
-		transport.FailureCountHistory += listLen - 1000
+	limit := 1000
+	if listLen > limit {
+		transport.FailureList = transport.FailureList[0 : limit/2-1]
+		transport.FailureCountHistory += listLen - limit/2
 	}
 }

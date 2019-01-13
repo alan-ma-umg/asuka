@@ -39,6 +39,7 @@ func (my *Queue) Dequeue() (string, error) {
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
+	//lock
 	my.enqueueForFailureMutex.Lock()
 	defer my.enqueueForFailureMutex.Unlock()
 

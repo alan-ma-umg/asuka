@@ -354,3 +354,12 @@ func Ping(ip *net.IPAddr, times int) (avgRtt time.Duration, failureTimes int) {
 	}
 	return
 }
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("Alloc = %v MiB", ByteCountBinary(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", ByteCountBinary(m.TotalAlloc))
+	fmt.Printf("\tSys = %v MiB", ByteCountBinary(m.Sys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}

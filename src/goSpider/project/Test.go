@@ -13,35 +13,6 @@ type Test struct {
 
 func (my *Test) EntryUrl() []string {
 	return []string{
-		//"http://192.168.100.125:8188/forever",
-		//"http://192.168.100.125:8188/forever",
-		//"http://192.168.100.125:8188/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"http://192.168.100.125:888/forever",
-		//"https://book.douban.com",
-		//"https://movie.douban.com",
-		//"https://www.zhihu.com/explore",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
-		//"http://10.0.0.180:888/forever/",
 		"http://hk.flysay.com:888/",
 		"http://hk.flysay.com:888",
 		"http://hk.flysay.com:888",
@@ -54,6 +25,11 @@ func (my *Test) EntryUrl() []string {
 	}
 }
 
+// frequency
+func (my *Test) Throttle(spider *spider.Spider) {
+	//spider.AddSleep(10e9)
+}
+
 func (my *Test) RequestBefore(spider *spider.Spider) {
 	//Referer
 	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" {
@@ -63,12 +39,16 @@ func (my *Test) RequestBefore(spider *spider.Spider) {
 	spider.Client.Timeout = time.Second
 }
 
-func (my *Test) ResponseAfter(spider *spider.Spider) {
-	//free the memory
-	if len(spider.RequestsMap) > 10 {
-		spider.Client.Jar, _ = cookiejar.New(nil)
-		spider.RequestsMap = map[string]*http.Request{}
-	}
+// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
+// 一般用于根据Header过滤不想继续下载的response.content_type
+func (my *Test) RequestAfter(spider *spider.Spider) {
+
+}
+
+// ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
+// 一般用于采集数据的地方
+func (my *Test) ResponseSuccess(spider *spider.Spider) {
+
 }
 
 // queue
@@ -76,7 +56,10 @@ func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	return true
 }
 
-// frequency
-func (my *Test) Throttle(spider *spider.Spider) {
-	//spider.AddSleep(10e9)
+func (my *Test) ResponseAfter(spider *spider.Spider) {
+	//free the memory
+	if len(spider.RequestsMap) > 10 {
+		spider.Client.Jar, _ = cookiejar.New(nil)
+		spider.RequestsMap = map[string]*http.Request{}
+	}
 }

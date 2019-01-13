@@ -8,7 +8,10 @@ import (
 	"goSpider/proxy"
 	"goSpider/queue"
 	"goSpider/spider"
+	"log"
 	"net"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -72,13 +75,10 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 	}
 
 	for _, s := range dispatcher.InitSpider(queue) {
-		go func(s *spider.Spider) {
+		go func(spider *spider.Spider) {
 			for {
-				project.Throttle(s)
-				s.Throttle()
-				project.RequestBefore(s)
-				s.Crawl(project.EnqueueFilter)
-				project.ResponseAfter(s)
+
+				Crawl(project, spider)
 			}
 		}(s)
 
@@ -99,6 +99,63 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 				time.Sleep(7)
 			}
 		}(s)
+	}
+}
+
+func Crawl(project project.Project, spider *spider.Spider) {
+	// throttle
+	if project != nil {
+		project.Throttle(spider)
+	}
+	spider.Throttle()
+
+	if project != nil {
+		project.RequestBefore(spider)
+	}
+
+	link, err := spider.Queue.Dequeue()
+	if err != nil {
+		time.Sleep(time.Second * 5)
+		return
+	}
+
+	u, err := url.Parse(link)
+	if err != nil {
+		log.Println("URL parse failed ", link, err)
+		return
+	}
+
+	ssArr := spider.Transport.S.ServerAddr
+	if ssArr == "" {
+		ssArr = "localhost"
+	}
+
+	defer func() {
+		if project != nil {
+			project.ResponseAfter(spider)
+		}
+	}()
+
+	spider.Transport.LoopCount++
+	_, err = spider.Fetch(u)
+	if err != nil {
+		return
+	}
+
+	if project != nil {
+		project.ResponseSuccess(spider)
+	}
+
+	for _, l := range spider.GetLinksByTokenizer() {
+		if project != nil && !project.EnqueueFilter(spider, l) {
+			continue
+		}
+
+		if database.BlTestAndAddString(l.String()) {
+			continue
+		}
+
+		spider.Queue.Enqueue(strings.TrimSpace(l.String()))
 	}
 }
 

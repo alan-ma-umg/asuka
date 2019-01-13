@@ -26,6 +26,13 @@ func (my *Www) EntryUrl() []string {
 	}
 }
 
+// frequency
+func (my *Www) Throttle(spider *spider.Spider) {
+	if spider.Transport.LoadRate(5) > 5.0 {
+		spider.AddSleep(60e9)
+	}
+}
+
 func (my *Www) RequestBefore(spider *spider.Spider) {
 	if spider.CurrentRequest != nil {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
@@ -34,13 +41,16 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 	spider.Client.Timeout = 4 * time.Second
 }
 
-func (my *Www) ResponseAfter(spider *spider.Spider) {
+// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
+// 一般用于根据Header过滤不想继续下载的response.content_type
+func (my *Www) RequestAfter(spider *spider.Spider) {
 
-	//free the memory
-	if len(spider.RequestsMap) > 10 {
-		spider.Client.Jar, _ = cookiejar.New(nil)
-		spider.RequestsMap = map[string]*http.Request{}
-	}
+}
+
+// ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
+// 一般用于采集数据的地方
+func (my *Www) ResponseSuccess(spider *spider.Spider) {
+
 }
 
 // queue
@@ -64,9 +74,11 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	return true
 }
 
-// frequency
-func (my *Www) Throttle(spider *spider.Spider) {
-	if spider.Transport.LoadRate(5) > 5.0 {
-		spider.AddSleep(60e9)
+func (my *Www) ResponseAfter(spider *spider.Spider) {
+
+	//free the memory
+	if len(spider.RequestsMap) > 10 {
+		spider.Client.Jar, _ = cookiejar.New(nil)
+		spider.RequestsMap = map[string]*http.Request{}
 	}
 }
