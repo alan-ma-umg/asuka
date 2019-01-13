@@ -43,8 +43,14 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
-func (my *Www) RequestAfter(spider *spider.Spider) {
-
+func (my *Www) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
+	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
+		return false, nil
+	}
+	if strings.ToLower(response.Header.Get("Content-Encoding")) != "gzip" {
+		return false, nil
+	}
+	return true, nil
 }
 
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后

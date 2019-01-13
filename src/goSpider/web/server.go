@@ -283,28 +283,38 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 		TrafficOut += s.Transport.TrafficOut
 	}
 
-	if len(dispatcherObj.GetSpiders()) > 0 {
-		for i, v := range dispatcherObj.GetSpiders()[0].Queue.BlsTestCount {
-			jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] = v
-		}
-	}
-
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 
 	//redis
 	queueCount, _ := database.Redis().LLen(helper.Env().Redis.URLQueueKey).Result()      //about 1ms
 	redisMem, _ := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result() //about 1ms
+
 	//basic
+	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["ping_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["load_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = ""
+
+	spiderCount := len(dispatcherObj.GetSpiders())
+	if spiderCount > 0 {
+		for i, v := range dispatcherObj.GetSpiders()[0].Queue.BlsTestCount {
+			jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] = v
+		}
+		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(spiderCount)).Truncate(time.Millisecond).String()
+		jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(spiderCount)).Truncate(time.Millisecond).String()
+		jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(spiderCount), 'f', 2, 64)
+		jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(spiderCount), 'f', 2, 64)
+	}
+	if failureLevelZeroCount > 0 {
+		jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
+		jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
+	}
 	jsonMap["basic"].(map[string]interface{})["queue"] = strconv.Itoa(int(queueCount))
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
-	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()      //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()       //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String() //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(len(dispatcherObj.GetSpiders()))).Truncate(time.Millisecond).String()   //fixme Divide by Zero
-	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
-	jsonMap["basic"].(map[string]interface{})["load_avg"] = strconv.FormatFloat(sumLoad/float64(len(dispatcherObj.GetSpiders())), 'f', 2, 64) //fixme Divide by Zero
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)

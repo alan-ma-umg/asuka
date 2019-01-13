@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"goSpider/database"
 	"goSpider/dispatcher"
+	"goSpider/helper"
 	"goSpider/project"
 	"goSpider/queue"
 	"goSpider/web"
@@ -22,10 +24,10 @@ func main() {
 		//pSt.Stop()
 	}()
 
-	//database.Bl().ClearAll()                             //todo for test
-	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	database.Bl().ClearAll()                             //todo for test
+	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
-	c.Run(&project.Test{}, queue.NewQueue())
+	c.Run(&project.Www{}, queue.NewQueue())
 	web.Server(c, ":666") // http://127.0.0.1:666
 }

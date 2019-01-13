@@ -44,6 +44,7 @@ type RecentFetch struct {
 	AddTime       string
 	ErrType       string
 	ResponseSize  string
+	ContentType   string
 }
 
 var RecentFetchList []*RecentFetch
@@ -181,7 +182,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
+func (spider *Spider) Fetch(u *url.URL, downloadFilter func(spider *Spider, response *http.Response) (bool, error)) (resp *http.Response, err error) {
 	spider.SetRequest(u, nil)
 
 	spider.ResponseStr = ""
@@ -235,14 +236,26 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	}
 	defer resp.Body.Close()
 	recentFetch.StatusCode = resp.StatusCode
+	recentFetch.ContentType = resp.Header.Get("Content-type")
 
-	//todo remove
-	if !strings.Contains(resp.Header.Get("Content-type"), "text/html") {
-		//return resp, errors.New("Content-type:Content-type must be text/html, " + resp.Header.Get("Content-type") + " given")
-	}
-	//todo remove
-	if strings.ToLower(resp.Header.Get("Content-Encoding")) != "gzip" {
-		//return resp, errors.New("Content-Encoding must be gzip , " + resp.Header.Get("Content-Encoding") + " given")
+	if downloadFilter != nil {
+		filter, err := downloadFilter(spider, resp)
+
+		if err != nil || !filter {
+			//traffic  response header only
+			dump, _ = httputil.DumpResponse(resp, false)
+			recentFetch.ResponseSize = helper.ByteCountBinary(uint64(len(dump)))
+			spider.Transport.TrafficIn += uint64(len(dump))
+
+			if err != nil {
+				recentFetch.ErrType = "project.Filtered"
+				return nil, errors.New(recentFetch.ErrType)
+			}
+
+			if !filter {
+				return nil, nil
+			}
+		}
 	}
 
 	resByte, err := ioutil.ReadAll(resp.Body)
@@ -337,7 +350,8 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "reset by peer"
 		}
 		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
-		log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		// Get ..... :read ...
+		//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "unknown"
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())

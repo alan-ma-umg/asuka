@@ -92,14 +92,14 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		return //ignore i/o timeout
 	}
 	defer dst.Close()
-	//tcpRelay(src, dst)
-	_, _, err = tcpRelay(src, dst)
-	if err != nil {
-		if err, ok := err.(net.Error); ok && err.Timeout() {
-			return // ignore i/o timeout
-		}
-		log.Println(bi.Address+" relay error: %v", err)
-	}
+	tcpRelay(src, dst)
+	//_, _, err = tcpRelay(src, dst)
+	//if err != nil {
+	//	if err, ok := err.(net.Error); ok && err.Timeout() {
+	//		return // ignore i/o timeout
+	//	}
+	//	log.Println(bi.Address+" relay error: %v", err)
+	//}
 }
 
 func (bi *BackendInfo) DialSSRConn(rawaddr socks.Addr) (net.Conn, error) {

@@ -158,18 +158,21 @@
             <th>Consume Time</th>
             <th>Status</th>
             <th>Size</th>
+            <th>Content Type</th>
             <th>Error</th>
             <th>Url</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in fetchList" :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
+        <tr v-for="item in fetchList"
+            :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
             <td class="center">{{"{{item.Index}}"}}</td>
             <td class="center">{{"{{item.TransportName}}"}}</td>
             <td>{{"{{item.AddTime}}"}}</td>
             <td>{{"{{item.ConsumeTime}}"}}</td>
             <td>{{"{{item.StatusCode}}"}}</td>
             <td>{{"{{item.ResponseSize}}"}}</td>
+            <td>{{"{{item.ContentType}}"}}</td>
             <td>{{"{{item.ErrType}}"}}</td>
             <td><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
         </tr>

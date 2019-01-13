@@ -2,6 +2,7 @@ package project
 
 import (
 	"goSpider/spider"
+	"net/http"
 	"net/url"
 )
 
@@ -22,7 +23,7 @@ type Project interface {
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
 	// Fourth
-	RequestAfter(spider *spider.Spider)
+	DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error)
 
 	// ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 	// 一般用于采集数据的地方

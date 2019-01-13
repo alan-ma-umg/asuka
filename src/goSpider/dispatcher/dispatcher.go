@@ -137,7 +137,7 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}()
 
 	spider.Transport.LoopCount++
-	_, err = spider.Fetch(u)
+	_, err = spider.Fetch(u, project.DownloadFilter)
 	if err != nil {
 		return
 	}

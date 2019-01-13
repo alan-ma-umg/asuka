@@ -168,13 +168,14 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 			}
 
 			//log.Println("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt)
-			_, _, err = relay(rc, c)
-			if err != nil {
-				if err, ok := err.(net.Error); ok && err.Timeout() {
-					return // ignore i/o timeout
-				}
-				log.Println(ssAddr.ServerAddr+"relay error: %v", err)
-			}
+			relay(rc, c)
+			//_, _, err = relay(rc, c)
+			//if err != nil {
+			//	if err, ok := err.(net.Error); ok && err.Timeout() {
+			//		return // ignore i/o timeout
+			//	}
+			//	log.Println(ssAddr.ServerAddr+"relay error: %v", err)
+			//}
 		}()
 	}
 }
