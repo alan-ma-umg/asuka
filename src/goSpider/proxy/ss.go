@@ -155,6 +155,7 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 
 			rc, err := net.Dial("tcp", ssAddr.ServerAddr)
 			if err != nil {
+				//2019/01/13 22:56:01 ss.go:158: failed to connect to server %v: %v hk.......domain......72 dial tcp: lookup hk05.bilibilivpn.com: no such host
 				log.Println("failed to connect to server %v: %v", ssAddr.ServerAddr, err)
 				return
 			}

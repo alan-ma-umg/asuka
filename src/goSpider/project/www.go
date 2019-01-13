@@ -1,9 +1,14 @@
 package project
 
 import (
+	"bytes"
 	"github.com/willf/bloom"
+	"goSpider/database"
 	"goSpider/helper"
 	"goSpider/spider"
+	"golang.org/x/net/html"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -14,6 +19,22 @@ import (
 
 var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
 var tldFilterMutex = &sync.Mutex{}
+
+type AsukaWww struct {
+	Id        int                    `xorm:"pk autoincr"`
+	Url       string                 `xorm:"varchar(1024)"`
+	Data      map[string]interface{} `xorm:"json"`
+	Version   int                    `xorm:"version"`
+	UpdatedAt int                    `xorm:"updated"`
+	CreatedAt int                    `xorm:"created"`
+}
+
+func init() {
+	err := database.Mysql().CreateTables(&AsukaWww{})
+	if err != nil {
+		panic(err)
+	}
+}
 
 type Www struct {
 }
@@ -53,10 +74,45 @@ func (my *Www) DownloadFilter(spider *spider.Spider, response *http.Response) (b
 	return true, nil
 }
 
+func pageTitle(n *html.Node) string {
+	var title string
+	if n.Type == html.ElementNode && n.Data == "title" {
+		if n.FirstChild != nil {
+			return n.FirstChild.Data
+		}
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		title = pageTitle(c)
+		if title != "" {
+			break
+		}
+	}
+	return title
+}
+
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *Www) ResponseSuccess(spider *spider.Spider) {
-
+	title := ""
+	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
+	if err != nil {
+		return
+	}
+	title = strings.TrimSpace(pageTitle(node))
+	if title == "" {
+		return
+	}
+	_, err = database.Mysql().Insert(&AsukaWww{
+		Url: spider.CurrentRequest.URL.String(),
+		Data: map[string]interface{}{
+			"title":  title,
+			"server": spider.Transport.S.ServerAddr,
+			"time":   time.Since(spider.RequestStartTime).String(),
+		},
+	})
+	if err != nil {
+		log.Println(spider.CurrentRequest.URL.String(), err)
+	}
 }
 
 // queue

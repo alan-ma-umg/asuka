@@ -6,6 +6,7 @@ type EnvConfig struct {
 	LocalTransport  LocalTransport //using http.DefaultTransport
 	SsServers       []SsServer
 	Redis           Redis
+	MysqlDSN        string
 }
 
 type LocalTransport struct {
