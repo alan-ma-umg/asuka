@@ -173,7 +173,7 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 				if err, ok := err.(net.Error); ok && err.Timeout() {
 					return // ignore i/o timeout
 				}
-				log.Println("relay error: %v", err)
+				log.Println(ssAddr.ServerAddr+"relay error: %v", err)
 			}
 		}()
 	}

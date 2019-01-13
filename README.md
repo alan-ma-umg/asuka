@@ -4,13 +4,7 @@
 
 - 完善 project interface
 - 完善根据 response.header 决定是否继续读取 response.Body
-- 完善各类网络错误的处理
-- 出现非目标服务器的网络问题时, 将URL重新入队
 - 爬取结果的存储
-- 优化WebSocket响应速度
-- WebSocket响应JSON版本的数据
-- 视失败情况不计算请求耗时
-- 爬取历史采用ws逐条推送到页面的方式, 不再保存
 - 网络流量统计时加入失败的请求流量
 
 ### Bugs

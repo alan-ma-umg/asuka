@@ -54,6 +54,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 		}
 	}
 
+	my.BlsTestCount[-1]++
 	return false
 }
 
