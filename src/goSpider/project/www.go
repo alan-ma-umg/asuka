@@ -67,6 +67,10 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 		return false
 	}
 
+	if strings.Contains(strings.ToLower(tld), "com.cn") {
+		return false
+	}
+
 	if strings.Contains(strings.ToLower(tld), "gov") {
 		return false
 	}
