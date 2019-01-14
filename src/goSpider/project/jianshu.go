@@ -184,7 +184,7 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 		return false
 	}
 
-	if !strings.Contains(strings.ToLower(tld), "jianshu.com") {
+	if !strings.Contains(strings.ToLower(tld), "www.jianshu.com") {
 		return false
 	}
 
