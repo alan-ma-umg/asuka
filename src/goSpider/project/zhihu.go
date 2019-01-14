@@ -185,7 +185,7 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 		return false
 	}
 
-	if !strings.Contains(strings.ToLower(tld), "zhihu.com") {
+	if !strings.HasPrefix(strings.ToLower(tld), "https://www.zhihu.com/question/") {
 		return false
 	}
 
