@@ -160,8 +160,8 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 	//2019/01/14 16:41:03 zhihu.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
 	_, err = database.Mysql().Insert(&AsukaZhiHu{
 		Url:      spider.CurrentRequest.URL.String(),
-		Referer:  spider.CurrentRequest.Referer(),            //todo only test
-		Cookie:   spider.CurrentRequest.Header.Get("cookie"), //todo only test
+		Referer:  spider.CurrentRequest.Referer(),                                                  //todo only test
+		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest.Header.Get("cookie")), 2000, ""), //todo only test
 		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest.URL.String()))),
 		Title:    title,
 		Tag:      tag,
@@ -180,12 +180,12 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 // queue
 func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
-	tld, err := helper.TldDomain(l)
-	if err != nil {
-		return false
-	}
+	//tld, err := helper.TldDomain(l)
+	//if err != nil {
+	//	return false
+	//}
 
-	if !strings.HasPrefix(strings.ToLower(tld), "https://www.zhihu.com/question/") {
+	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question/") {
 		return false
 	}
 
