@@ -30,11 +30,11 @@ func main() {
 	for i := 0; i < 10; i++ {
 		os.Remove(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
 	}
-	database.Mysql().Exec("truncate asuka_zhi_hu")       //todo for test
+	database.Mysql().Exec("truncate asuka_jian_shu")     //todo for test
 	database.Bl().ClearAll()                             //todo for test
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
-	c.Run(&project.ZhiHu{}, queue.NewQueue())
+	c.Run(&project.JianShu{}, queue.NewQueue())
 	web.Server(c, ":666") // http://127.0.0.1:666
 }
