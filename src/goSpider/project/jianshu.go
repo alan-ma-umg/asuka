@@ -179,12 +179,12 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 // queue
 func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
-	tld, err := helper.TldDomain(l)
-	if err != nil {
-		return false
-	}
+	//tld, err := helper.TldDomain(l)
+	//if err != nil {
+	//	return false
+	//}
 
-	if !strings.Contains(strings.ToLower(tld), "www.jianshu.com") {
+	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.jianshu.com/p/") {
 		return false
 	}
 
