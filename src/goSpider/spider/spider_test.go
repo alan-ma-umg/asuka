@@ -27,6 +27,16 @@ func TestSpider_GetImageLinks(t *testing.T) {
 }
 
 func TestSpider_GetLinks(t *testing.T) {
+	u, _ := url.Parse("https://www.zhihu.com/question/37362725/answer/152869802#ds987gf/fgd45")
+	//u.Fragment = ""
+	fmt.Println(u.String())
+	log.Println(u)
+
+	uu, _ := url.Parse("https://www.zhihu.com/terms#sec-zhihu-bean")
+	newUU := uu.ResolveReference(u)
+	newUU.Fragment = ""
+	fmt.Println(newUU.String())
+	log.Println(newUU)
 }
 
 func TestSpider_Regex(t *testing.T) {

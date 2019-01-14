@@ -182,8 +182,12 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(u *url.URL, downloadFilter func(spider *Spider, response *http.Response) (bool, error)) (resp *http.Response, err error) {
+func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), downloadFilter func(spider *Spider, response *http.Response) (bool, error)) (resp *http.Response, err error) {
 	spider.SetRequest(u, nil)
+
+	if requestBefore != nil {
+		requestBefore(spider)
+	}
 
 	spider.ResponseStr = ""
 	spider.ResponseByte = []byte{}
@@ -465,7 +469,9 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 						if err != nil {
 							continue
 						}
+						u.Fragment = "" //remove anchor
 						addUrl := spider.CurrentRequest.URL.ResolveReference(u)
+						addUrl.Fragment = "" //remove anchor
 						if addUrl.Scheme != "http" && addUrl.Scheme != "https" {
 							continue
 						}

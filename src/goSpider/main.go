@@ -28,6 +28,6 @@ func main() {
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
-	c.Run(&project.Www{}, queue.NewQueue())
+	c.Run(&project.ZhiHu{}, queue.NewQueue())
 	web.Server(c, ":666") // http://127.0.0.1:666
 }

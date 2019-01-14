@@ -109,10 +109,6 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}
 	spider.Throttle()
 
-	if project != nil {
-		project.RequestBefore(spider)
-	}
-
 	link, err := spider.Queue.Dequeue()
 	if err != nil {
 		time.Sleep(time.Second * 5)
@@ -137,7 +133,7 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}()
 
 	spider.Transport.LoopCount++
-	_, err = spider.Fetch(u, project.DownloadFilter)
+	_, err = spider.Fetch(u, project.RequestBefore, project.DownloadFilter)
 	if err != nil {
 		return
 	}
@@ -147,11 +143,11 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}
 
 	for _, l := range spider.GetLinksByTokenizer() {
-		if project != nil && !project.EnqueueFilter(spider, l) {
+		if database.BlTestAndAddString(l.String()) {
 			continue
 		}
 
-		if database.BlTestAndAddString(l.String()) {
+		if project != nil && !project.EnqueueFilter(spider, l) {
 			continue
 		}
 
