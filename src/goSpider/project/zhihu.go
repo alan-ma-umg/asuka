@@ -42,9 +42,12 @@ type ZhiHu struct {
 
 func (my *ZhiHu) EntryUrl() []string {
 	return []string{
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
 	}
 }
 
@@ -177,7 +180,7 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 		return false
 	}
 
-	if !strings.Contains(strings.ToLower(tld), "zhihu.com") {
+	if !strings.Contains(strings.ToLower(tld), "jianshu.com") {
 		return false
 	}
 
