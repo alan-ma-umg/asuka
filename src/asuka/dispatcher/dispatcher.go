@@ -57,13 +57,13 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 				if ssAddr.ClientAddr != "" {
 					break
 				}
-				fmt.Println("Waiting for socks proxy")
+				log.Println("Waiting for socks proxy")
 				time.Sleep(time.Second / 10)
 			}
 
 			t, err := proxy.NewTransport(ssAddr)
 			if err != nil {
-				fmt.Println("proxy error: ", err)
+				log.Println("proxy error: ", err)
 				continue
 			}
 			dispatcher.transportArr = append(dispatcher.transportArr, t)
