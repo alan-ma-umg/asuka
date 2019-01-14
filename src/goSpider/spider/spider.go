@@ -41,7 +41,7 @@ func init() {
 					failCount++
 				}
 			}
-			if float64(failCount)/float64(len(spiderList)) > 0.4 {
+			if float64(failCount)/float64(len(spiderList)) >= 0.4 {
 				for _, spider := range spiderList {
 					spider.FailureLevel = 150
 					spider.AddSleep(time.Hour * 3)
@@ -144,7 +144,7 @@ func (spider *Spider) Throttle() {
 				failCount++
 			}
 		}
-		if float64(failCount)/float64(recentSeveralTimesResultCap) > 0.4 {
+		if float64(failCount)/float64(recentSeveralTimesResultCap) >= 0.4 {
 			accessCountAll := spider.Transport.GetAccessCount()
 			failureCountAll := spider.Transport.GetFailureCount()
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
