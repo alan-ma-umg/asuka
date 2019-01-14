@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-type AsukaZhiHu struct {
+type AsukaJianShu struct {
 	Id        int64  `xorm:"pk autoincr"`
 	Url       string `xorm:"varchar(1024)"`
 	Referer   string `xorm:"varchar(1024)"` //todo for test
@@ -31,38 +31,37 @@ type AsukaZhiHu struct {
 }
 
 func init() {
-	err := database.Mysql().CreateTables(&AsukaZhiHu{})
+	err := database.Mysql().CreateTables(&AsukaJianShu{})
 	if err != nil {
 		panic(err)
 	}
 }
 
-type ZhiHu struct {
+type JianShu struct {
 	lastRequestUrl string
 }
 
-func (my *ZhiHu) EntryUrl() []string {
+func (my *JianShu) EntryUrl() []string {
 	return []string{
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
+		"https://www.jianshu.com/",
 	}
 }
 
 // frequency
-func (my *ZhiHu) Throttle(spider *spider.Spider) {
+func (my *JianShu) Throttle(spider *spider.Spider) {
 	if spider.Transport.LoadRate(5) > 5.0 {
-		spider.AddSleep(120e9)
+		spider.AddSleep(60e9)
 	}
 
 	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
 }
 
-func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
+func (my *JianShu) RequestBefore(spider *spider.Spider) {
 	//accept
 	if spider.CurrentRequest != nil {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
@@ -78,7 +77,7 @@ func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
-func (my *ZhiHu) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
+func (my *JianShu) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
 	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
 		return false, nil
 	}
@@ -88,7 +87,7 @@ func (my *ZhiHu) DownloadFilter(spider *spider.Spider, response *http.Response) 
 	return true, nil
 }
 
-func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
+func JianShuPageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 	if n.Type == html.ElementNode {
 
 		//title
@@ -142,7 +141,7 @@ func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
-func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
+func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 	my.lastRequestUrl = spider.CurrentRequest.URL.String()
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
 	if err != nil {
@@ -152,13 +151,13 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 	var title, watch, view string
 	var tag []string
 
-	PageHtml(node, &title, &watch, &view, &tag)
+	JianShuPageHtml(node, &title, &watch, &view, &tag)
 	if title == "" {
 		return
 	}
 
 	//2019/01/14 16:41:03 zhihu.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
-	_, err = database.Mysql().Insert(&AsukaZhiHu{
+	_, err = database.Mysql().Insert(&AsukaJianShu{
 		Url:      spider.CurrentRequest.URL.String(),
 		Referer:  spider.CurrentRequest.Referer(),            //todo only test
 		Cookie:   spider.CurrentRequest.Header.Get("cookie"), //todo only test
@@ -178,21 +177,21 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 }
 
 // queue
-func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
+func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 	tld, err := helper.TldDomain(l)
 	if err != nil {
 		return false
 	}
 
-	if !strings.Contains(strings.ToLower(tld), "zhihu.com") {
+	if !strings.Contains(strings.ToLower(tld), "jianshu.com") {
 		return false
 	}
 
 	return true
 }
 
-func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
+func (my *JianShu) ResponseAfter(spider *spider.Spider) {
 	//free the memory
 	//if len(spider.RequestsMap) > 10 {
 	//	spider.Client.Jar, _ = cookiejar.New(nil)
