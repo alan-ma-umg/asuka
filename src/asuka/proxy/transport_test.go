@@ -1,8 +1,8 @@
 package proxy
 
 import (
+	"asuka/helper"
 	"fmt"
-	"goSpider/helper"
 	"log"
 	"testing"
 	"time"

@@ -1,9 +1,9 @@
 package queue
 
 import (
+	"asuka/database"
+	"asuka/helper"
 	"github.com/willf/bloom"
-	"goSpider/database"
-	"goSpider/helper"
 	"log"
 	"os"
 	"strconv"

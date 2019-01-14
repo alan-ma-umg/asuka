@@ -1,14 +1,14 @@
 package web
 
 import (
+	"asuka/database"
+	"asuka/dispatcher"
+	"asuka/helper"
+	"asuka/spider"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"goSpider/database"
-	"goSpider/dispatcher"
-	"goSpider/helper"
-	"goSpider/spider"
 	"html/template"
 	"io"
 	"log"

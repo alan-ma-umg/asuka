@@ -1,11 +1,11 @@
 package main
 
 import (
+	"asuka/dispatcher"
+	"asuka/project"
+	"asuka/queue"
+	"asuka/web"
 	"fmt"
-	"goSpider/dispatcher"
-	"goSpider/project"
-	"goSpider/queue"
-	"goSpider/web"
 	"log"
 	"time"
 )

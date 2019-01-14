@@ -1,13 +1,13 @@
 package dispatcher
 
 import (
+	"asuka/database"
+	"asuka/helper"
+	"asuka/project"
+	"asuka/proxy"
+	"asuka/queue"
+	"asuka/spider"
 	"fmt"
-	"goSpider/database"
-	"goSpider/helper"
-	"goSpider/project"
-	"goSpider/proxy"
-	"goSpider/queue"
-	"goSpider/spider"
 	"log"
 	"net"
 	"net/url"
@@ -48,7 +48,6 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 			dispatcher.transportArr = append(dispatcher.transportArr, dt)
 		}
 
-		//todo 可用性维护
 		for _, ssAddr := range proxy.SSLocalHandler() {
 			if !ssAddr.Enable {
 				continue
@@ -58,8 +57,8 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 				if ssAddr.ClientAddr != "" {
 					break
 				}
-				fmt.Println("Waiting ..")
-				time.Sleep(time.Second / 5)
+				fmt.Println("Waiting for socks proxy")
+				time.Sleep(time.Second / 10)
 			}
 
 			t, err := proxy.NewTransport(ssAddr)
@@ -69,6 +68,8 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 			}
 			dispatcher.transportArr = append(dispatcher.transportArr, t)
 		}
+
+		fmt.Println("Socks proxy is ready to go")
 	})
 
 	return dispatcher.transportArr

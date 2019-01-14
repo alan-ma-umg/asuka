@@ -1,7 +1,7 @@
 package project
 
 import (
-	"goSpider/spider"
+	"asuka/spider"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"

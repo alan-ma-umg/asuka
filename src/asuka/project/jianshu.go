@@ -1,10 +1,10 @@
 package project
 
 import (
+	"asuka/database"
+	"asuka/helper"
+	"asuka/spider"
 	"bytes"
-	"goSpider/database"
-	"goSpider/helper"
-	"goSpider/spider"
 	"golang.org/x/net/html"
 	"hash/crc32"
 	"io/ioutil"

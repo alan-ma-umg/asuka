@@ -1,9 +1,9 @@
 package proxy
 
 import (
+	"asuka/helper"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 	"github.com/shadowsocks/go-shadowsocks2/socks"
-	"goSpider/helper"
 	"io"
 	"log"
 	"net"

@@ -1,8 +1,8 @@
 package proxy
 
 import (
-	"testing"
 	"log"
+	"testing"
 )
 
 func TestSSRRun(t *testing.T) {
