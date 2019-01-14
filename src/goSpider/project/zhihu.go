@@ -57,7 +57,7 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 		spider.AddSleep(60e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 120e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
 }
 
 func (my *ZhiHu) RequestBefore(spider *spider.Spider) {

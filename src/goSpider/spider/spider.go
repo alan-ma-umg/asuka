@@ -151,6 +151,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 
 	r, ok := spider.RequestsMap[tld]
 	if ok {
+		r.URL = url
 		spider.CurrentRequest = r
 	} else {
 		r, err = http.NewRequest("GET", url.String(), nil)
@@ -182,7 +183,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 }
 
 func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), downloadFilter func(spider *Spider, response *http.Response) (bool, error)) (resp *http.Response, err error) {
-	spider.SetRequest(u, nil)
+	spider.SetRequest(u, nil) //setting spider.CurrentRequest
 
 	if requestBefore != nil {
 		requestBefore(spider)
@@ -194,7 +195,7 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 	//time
 	spider.RequestStartTime = time.Now()
 
-	recentFetch := &RecentFetch{RawUrl: u.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
+	recentFetch := &RecentFetch{RawUrl: spider.CurrentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
 
 	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
 
@@ -317,16 +318,17 @@ func (spider *Spider) requestErrorHandler(err error) string {
 		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
 		return "x509.DNSConfigError"
 	case *net.DNSError:
-		return "x509.DNSError"
+		return "net.DNSError"
 	case *net.OpError:
 		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
 		if err.(net.Error).Timeout() {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 4)
 			return "net.Timeout"
 		}
 		if io.EOF == err {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "io.EOF"
 		}
 		if io.ErrUnexpectedEOF == err {
@@ -337,6 +339,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "connection broken"
 		}
 		if strings.Contains(err.Error(), "unexpected EOF") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "unexpected EOF"
 		}
 		if strings.Contains(err.Error(), "x509: certificate") {
@@ -346,6 +349,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "no such host"
 		}
 		if strings.Contains(err.Error(), ": EOF") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "other EOF"
 		}
 		if strings.Contains(err.Error(), "connection reset by peer") {
@@ -366,6 +370,8 @@ func (spider *Spider) requestErrorHandler(err error) string {
 		if strings.HasPrefix(err.Error(), "no Host in request URL http") {
 			return "no Host"
 		}
+
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 		spider.FailureLevel = 10
 		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "unknown"
@@ -383,10 +389,11 @@ func (spider *Spider) responseErrorHandler(err error) string {
 
 	switch err.(type) {
 	case *net.OpError:
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 4)
 		if err.(net.Error).Timeout() {
 			return "net.Timeout"
 		}
@@ -396,36 +403,47 @@ func (spider *Spider) responseErrorHandler(err error) string {
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "url.Error"
 	case tls.RecordHeaderError:
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "tls.RecordHeaderError"
 	case flate.CorruptInputError:
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "flate.CorruptInputError"
 	default:
 		if strings.HasPrefix(err.Error(), "malformed chunked encoding") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
 			return "chunked encoding"
 		}
 		if strings.HasPrefix(err.Error(), "invalid URL") {
 			return "invalid URL"
 		}
 		if strings.HasPrefix(err.Error(), "http: unexpected EOF reading trailer") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "unexpected EOF reading trailer"
 		}
 		if strings.HasPrefix(err.Error(), "http:  reading trailer") {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "http.reading trailer"
 		}
 		if gzip.ErrHeader == err {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
 			return "gzip.ErrHeader"
 		}
 		if gzip.ErrChecksum == err {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
 			return "gzip.ErrChecksum"
 		}
 		if io.EOF == err {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "io.EOF"
 		}
 		if io.ErrUnexpectedEOF == err {
+			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 			return "io.ErrUnexpectedEOF"
 		}
+
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
 		return "unknown"
 	}
