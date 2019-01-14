@@ -17,8 +17,8 @@ import (
 )
 
 type AsukaZhiHu struct {
-	Id        int64                  `xorm:"pk autoincr"`
-	Url       string                 `xorm:"varchar(1024)"`
+	Id        int64  `xorm:"pk autoincr"`
+	Url       string `xorm:"varchar(1024)"`
 	UrlCrc32  int64
 	Title     string                 `xorm:"varchar(1024)"`
 	Tag       []string               `xorm:"json"`
@@ -59,7 +59,7 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 200e9))
 }
 
 func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
@@ -185,7 +185,7 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	//	return false
 	//}
 
-	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question/") {
+	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/") {
 		return false
 	}
 
