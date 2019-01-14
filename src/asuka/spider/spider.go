@@ -41,7 +41,7 @@ func init() {
 					failCount++
 				}
 			}
-			if float64(failCount)/float64(len(spiderList)) >= 0.4 {
+			if float64(failCount)/float64(len(spiderList)) >= 0.35 {
 				for _, spider := range spiderList {
 					spider.FailureLevel = 150
 					spider.AddSleep(time.Hour * 3)
