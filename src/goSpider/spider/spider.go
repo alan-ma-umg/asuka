@@ -16,7 +16,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -110,9 +109,12 @@ func (spider *Spider) Throttle() {
 	}
 
 	fetchTimes := 7
-	second := fetchTimes * fetchTimes * int(math.Ceil((spider.GetSleep() + 1).Seconds())) //最小49秒
+	//second := fetchTimes * fetchTimes * int(math.Ceil((spider.GetSleep() + 1).Seconds())) //最小49秒
+	second := helper.MaxInt(60, int(spider.GetSleep())*fetchTimes*2)
+
 	accessCount, failureCount := spider.Transport.AccessCount(second)
-	if (accessCount > fetchTimes && helper.SpiderFailureRate(accessCount, failureCount) > 50.0) || proxy.CountQueueLen*proxy.SecondInterval-1 < second { //fixme proxy.CountQueueLen*proxy.SecondInterval-1 < second  超出最大记录值无脑sleep, 不是最优解
+	fmt.Println(second)
+	if (accessCount > fetchTimes && helper.SpiderFailureRate(accessCount, failureCount) > 50.0) || (proxy.CountQueueLen*proxy.SecondInterval-1) < second { //fixme proxy.CountQueueLen*proxy.SecondInterval-1 < second  超出最大记录值无脑sleep, 不是最优解
 		accessCountAll := spider.Transport.GetAccessCount()
 		failureCountAll := spider.Transport.GetFailureCount()
 		failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
