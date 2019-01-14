@@ -17,14 +17,14 @@ import (
 )
 
 type AsukaJianShu struct {
-	Id        int64  `xorm:"pk autoincr"`
-	Url       string `xorm:"varchar(1024)"`
-	Referer   string `xorm:"varchar(1024)"` //todo for test
-	Cookie    string `xorm:"varchar(2048)"` //todo for test
+	Id        int64                  `xorm:"pk autoincr"`
+	Url       string                 `xorm:"varchar(1024)"`
 	UrlCrc32  int64
 	Title     string                 `xorm:"varchar(1024)"`
 	Tag       []string               `xorm:"json"`
 	Data      map[string]interface{} `xorm:"json"`
+	Referer   string                 `xorm:"varchar(1024)"` //todo for test
+	Cookie    string                 `xorm:"varchar(2048)"` //todo for test
 	Version   int                    `xorm:"version"`
 	UpdatedAt int                    `xorm:"updated"`
 	CreatedAt int                    `xorm:"created"`
