@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
@@ -193,9 +194,15 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
-	//free the memory
-	//if len(spider.RequestsMap) > 10 {
-	//	spider.Client.Jar, _ = cookiejar.New(nil)
-	//	spider.RequestsMap = map[string]*http.Request{}
-	//}
+	if spider.FailureLevel > 10 {
+		zhiHuResetSpider(spider)
+	} else if rand.Intn(15) == 10 {
+		zhiHuResetSpider(spider)
+	}
+}
+
+func zhiHuResetSpider(spider *spider.Spider) {
+	jar, _ := cookiejar.New(nil)
+	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: jar, Timeout: time.Second * 30}
+	spider.RequestsMap = map[string]*http.Request{}
 }
