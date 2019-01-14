@@ -116,7 +116,7 @@
     }
 </style>
 <body>
-<div style="margin: 10px auto;min-width:1100px;max-width: 1400px" id="vue-content">
+<div style="margin: 10px auto;min-width:1100px;max-width: 1500px" id="vue-content">
     <div class="ctrl-wrap">
         <button id="ws-home" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Home</button>
         <button id="ws-recent" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Recent</button>
@@ -186,7 +186,8 @@
             <th>Ping / Lost</th>
             <th style="min-width:70px">Time</th>
             <th>Pass / Sleep</th>
-            <th>Traffic I/O</th>
+            <th>HTTP I/O</th>
+            <th>TCP I/O</th>
             <th>Load 5s / 60s</th>
             <th style="width:1px">Dispatch</th>
             <th style="min-width:145px">Failure</th>
@@ -209,6 +210,11 @@
                 <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
                 /
                 <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
+                /
+                <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:45px" class="right">{{"{{load5sSum}}"}}</div>
@@ -254,6 +260,11 @@
                 <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
                 /
                 <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
+            </td>
+            <td class="center">
+                <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
+                /
+                <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
             </td>
             <td class="center">
                 <div style="display:inline-block;width:45px" class="right">{{"{{server.load_5s}}"}}</div>

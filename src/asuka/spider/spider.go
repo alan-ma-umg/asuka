@@ -37,13 +37,16 @@ func init() {
 			<-t.C
 			failCount := 0
 			for _, spider := range spiderList {
-				if spider.FailureLevel != 0 {
+				if spider.FailureLevel != 0 && len(spider.Transport.RecentFewTimesResultEmergency) >= RecentSeveralTimesResultCap {
 					failCount++
 				}
 			}
 			if float64(failCount)/float64(len(spiderList)) >= 0.35 {
 				for _, spider := range spiderList {
+					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
+					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
 					spider.FailureLevel = 150
+					spider.ResetSleep()
 					spider.AddSleep(time.Hour * 3)
 				}
 			}
@@ -52,6 +55,7 @@ func init() {
 }
 
 const RecentFetchCount = 100
+const RecentSeveralTimesResultCap = 7
 
 var RecentFetchMutex = &sync.Mutex{}
 var RecentFetchLastIndex int64 = 0
@@ -133,18 +137,16 @@ func (spider *Spider) Throttle() {
 	}
 
 	//Failure control
-	recentSeveralTimesResultCap := 7
-	if len(spider.Transport.RecentFewTimesResult) >= recentSeveralTimesResultCap {
-		defer func() {
-			spider.Transport.RecentFewTimesResult = make([]bool, 0, recentSeveralTimesResultCap)
-		}()
+	if len(spider.Transport.RecentFewTimesResult) >= RecentSeveralTimesResultCap {
+		spider.Transport.RecentFewTimesResult = spider.Transport.RecentFewTimesResult[len(spider.Transport.RecentFewTimesResult)-RecentSeveralTimesResultCap:]
 		failCount := 0
 		for _, v := range spider.Transport.RecentFewTimesResult {
 			if !v {
 				failCount++
 			}
 		}
-		if float64(failCount)/float64(recentSeveralTimesResultCap) >= 0.4 {
+		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 {
+			spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
 			accessCountAll := spider.Transport.GetAccessCount()
 			failureCountAll := spider.Transport.GetFailureCount()
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
@@ -240,6 +242,7 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 
 		//A few times result of http request
 		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
+		spider.Transport.RecentFewTimesResultEmergency = append(spider.Transport.RecentFewTimesResultEmergency, spider.FailureLevel == 0)
 
 		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		if spider.TimeList.Len() > spider.TimeLenLimit {

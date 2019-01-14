@@ -43,25 +43,25 @@ type BackendInfo struct {
 	Type    string
 }
 
-func (bi *BackendInfo) Listen(clientRawAddr *SsAddr) {
+func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Println("SSR failed to listen : ", err)
 		os.Exit(100)
 		return
 	}
-	clientRawAddr.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 
 	for {
 		localConn, err := listener.Accept()
 		if err != nil {
 			continue
 		}
-		go bi.Handle(localConn)
+		go bi.Handle(localConn, SocksInfo)
 	}
 }
 
-func (bi *BackendInfo) Handle(src net.Conn) {
+func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
 	defer src.Close()
 	src.(*net.TCPConn).SetKeepAlive(true)
 
@@ -93,7 +93,10 @@ func (bi *BackendInfo) Handle(src net.Conn) {
 		return //ignore i/o timeout
 	}
 	defer dst.Close()
-	tcpRelay(src, dst)
+	out, in, _ := tcpRelay(dst, src)
+	SocksInfo.TrafficIn += uint64(in)
+	SocksInfo.TrafficOut += uint64(out)
+
 	//_, _, err = tcpRelay(src, dst)
 	//if err != nil {
 	//	if err, ok := err.(net.Error); ok && err.Timeout() {

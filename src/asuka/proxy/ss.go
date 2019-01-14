@@ -19,7 +19,8 @@ type SsAddr struct {
 	Name       string
 	ServerAddr string
 	ClientAddr string
-	Weight     int
+	TrafficIn  uint64
+	TrafficOut uint64
 }
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
@@ -110,13 +111,13 @@ func relay(left, right net.Conn) (int64, int64, error) {
 	return n, rs.N, err
 }
 
-func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
+func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Println("SS failed to listen: ", err)
 		os.Exit(200)
 	}
-	ssAddr.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 
 	for {
 		c, err := l.Accept()
@@ -148,10 +149,10 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 				return
 			}
 
-			rc, err := net.Dial("tcp", ssAddr.ServerAddr)
+			rc, err := net.Dial("tcp", SocksInfo.ServerAddr)
 			if err != nil {
 				//2019/01/13 22:56:01 ss.go:158: failed to connect to server %v: %v hk.......domain......72 dial tcp: lookup hk05.bilibilivpn.com: no such host
-				log.Println("failed to connect to server %v: %v", ssAddr.ServerAddr, err)
+				log.Println("failed to connect to server %v: %v", SocksInfo.ServerAddr, err)
 				return
 			}
 			defer rc.Close()
@@ -164,7 +165,9 @@ func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.C
 			}
 
 			//log.Println("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt)
-			relay(rc, c)
+			out, in, _ := relay(rc, c)
+			SocksInfo.TrafficIn += uint64(in)
+			SocksInfo.TrafficOut += uint64(out)
 			//_, _, err = relay(rc, c)
 			//if err != nil {
 			//	if err, ok := err.(net.Error); ok && err.Timeout() {

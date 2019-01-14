@@ -231,6 +231,8 @@ func homeJson(sType string) []byte {
 		}
 		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
+		server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
+		server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
 		server["load_5s"] = strconv.FormatFloat(load5s, 'f', 2, 64)                    //todo slowly, make improvement
 		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) //todo slowly, make improvement
 		server["access_count"] = s.Transport.GetAccessCount()
@@ -265,6 +267,8 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	var avgTimeAvg time.Duration
 	var TrafficIn uint64
 	var TrafficOut uint64
+	var NetIn uint64
+	var NetOut uint64
 	for _, s := range dispatcherObj.GetSpiders() {
 		if s.FailureLevel == 0 {
 			failureLevelZeroCount++
@@ -281,6 +285,8 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 		sumLoad += load5s
 		TrafficIn += s.Transport.TrafficIn
 		TrafficOut += s.Transport.TrafficOut
+		NetIn += s.Transport.S.TrafficIn
+		NetOut += s.Transport.S.TrafficOut
 	}
 
 	var mem runtime.MemStats
@@ -317,6 +323,8 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	jsonMap["basic"].(map[string]interface{})["load_sum"] = strconv.FormatFloat(sumLoad, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
+	jsonMap["basic"].(map[string]interface{})["net_in"] = helper.ByteCountBinary(NetIn)
+	jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()

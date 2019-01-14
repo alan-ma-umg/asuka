@@ -54,7 +54,8 @@ type Transport struct {
 	Ping            time.Duration
 	PingFailureRate float64
 
-	RecentFewTimesResult []bool
+	RecentFewTimesResult          []bool
+	RecentFewTimesResultEmergency []bool
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
@@ -176,7 +177,7 @@ func (transport *Transport) recordAccessCount() {
 	listLen := len(transport.AccessList)
 	limit := 1000
 	if listLen > limit {
-		transport.AccessList = transport.AccessList[0 : limit/2-1]
+		transport.AccessList = transport.AccessList[0 : limit/2-1] //fixme !!!!!!!!!!!!!! [limit/2-1:]
 		transport.accessCountHistory += listLen - limit/2
 	}
 }
@@ -195,7 +196,7 @@ func (transport *Transport) recordFailureCount() {
 	listLen := len(transport.FailureList)
 	limit := 1000
 	if listLen > limit {
-		transport.FailureList = transport.FailureList[0 : limit/2-1]
+		transport.FailureList = transport.FailureList[0 : limit/2-1] //fixme !!!!!!!!!!!!!! [limit/2-1:]
 		transport.FailureCountHistory += listLen - limit/2
 	}
 }
