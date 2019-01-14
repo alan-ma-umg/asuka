@@ -13,7 +13,7 @@ import (
 )
 
 const SecondInterval = 1
-const CountQueueLen = 6000
+const CountQueueLen = 2000
 
 //time url
 func init() {
