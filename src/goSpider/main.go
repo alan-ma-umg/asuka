@@ -24,6 +24,7 @@ func main() {
 		//pSt.Stop()
 	}()
 
+	database.Mysql().DropTables(&project.AsukaWww{})     //todo for test
 	database.Bl().ClearAll()                             //todo for test
 	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 

@@ -109,11 +109,8 @@ func (spider *Spider) Throttle() {
 	}
 
 	fetchTimes := 7
-	//second := fetchTimes * fetchTimes * int(math.Ceil((spider.GetSleep() + 1).Seconds())) //最小49秒
-	second := helper.MaxInt(60, int(spider.GetSleep())*fetchTimes*2)
-
+	second := helper.MaxInt(60, int(spider.GetSleep().Seconds())*fetchTimes*2)
 	accessCount, failureCount := spider.Transport.AccessCount(second)
-	fmt.Println(second)
 	if (accessCount > fetchTimes && helper.SpiderFailureRate(accessCount, failureCount) > 50.0) || (proxy.CountQueueLen*proxy.SecondInterval-1) < second { //fixme proxy.CountQueueLen*proxy.SecondInterval-1 < second  超出最大记录值无脑sleep, 不是最优解
 		accessCountAll := spider.Transport.GetAccessCount()
 		failureCountAll := spider.Transport.GetFailureCount()
