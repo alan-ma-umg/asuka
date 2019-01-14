@@ -13,7 +13,8 @@ import (
 )
 
 const SecondInterval = 1
-const CountQueueLen = 2000
+
+var CountQueueLen = 0 //Dynamic changes
 
 func init() {
 	//save
@@ -97,9 +98,16 @@ func (transport *Transport) AddFailure(link string) {
 	transport.FailureList = append(transport.FailureList, link)
 }
 
-// LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒, 最大取值 CountQueueLen*SecondInterval-1
+func updateCountQueueLen(second int) {
+	if CountQueueLen <= second/SecondInterval {
+		CountQueueLen = second/SecondInterval + 2
+	}
+}
+
+// LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒
 //todo 性能优化
 func (transport *Transport) LoadRate(second int) float64 {
+	updateCountQueueLen(second)
 	rate := 0.0
 	cursor := transport.accessCountList.Back()
 	times := int(math.Ceil(float64(second) / SecondInterval))
@@ -119,9 +127,10 @@ func (transport *Transport) LoadRate(second int) float64 {
 	return rate / float64(times)
 }
 
-//AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒, 最大取值 CountQueueLen*SecondInterval-1
+//AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒
 //todo 性能优化
 func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes int) {
+	updateCountQueueLen(second)
 	failureCursor := transport.failureCountList.Back()
 	accessCursor := transport.accessCountList.Back()
 	times := int(math.Ceil(float64(second) / SecondInterval))
