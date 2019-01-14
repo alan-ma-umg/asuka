@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"time"
 )
@@ -26,14 +27,19 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 		if !server.Enable {
 			continue
 		}
-		listenPort, err := helper.GetFreePort()
-		if err != nil {
-			log.Fatal(err)
-		}
-		ssLocalAddr := "127.0.0.1:" + strconv.Itoa(listenPort)
 
 		if server.Obfs != "" || server.ObfsParam != "" || server.ProtocolParam != "" || server.Protocol != "" {
-			go func(server helper.SsServer) {
+
+			ss := &SsAddr{
+				Enable:     server.Enable,
+				Interval:   server.Interval,
+				Name:       server.Name,
+				Type:       "ssr",
+				ServerAddr: server.Server + ":" + server.ServerPort,
+			}
+			ssAddr = append(ssAddr, ss)
+
+			go func(server helper.SsServer, ss *SsAddr) {
 				bi := &BackendInfo{
 					Address: server.Server + ":" + server.ServerPort,
 					Type:    "ssr",
@@ -48,19 +54,8 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 						},
 					},
 				}
-				bi.Listen(ssLocalAddr)
-			}(server)
-
-			ss := &SsAddr{
-				Enable:     server.Enable,
-				Interval:   server.Interval,
-				Name:       server.Name,
-				Type:       "ssr",
-				ServerAddr: server.Server + ":" + server.ServerPort,
-				ClientAddr: ssLocalAddr,
-			}
-			ssAddr = append(ssAddr, ss)
-
+				bi.Listen(ss)
+			}(server, ss)
 		} else {
 			cipher, err := core.PickCipher(server.Method, []byte{}, server.Password)
 			if err != nil {
@@ -73,10 +68,9 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Name:       server.Name,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
-				ClientAddr: ssLocalAddr,
 			}
-
 			ssAddr = append(ssAddr, ss)
+
 			go socksLocal(ss, cipher.StreamConn)
 		}
 	}
@@ -117,11 +111,12 @@ func relay(left, right net.Conn) (int64, int64, error) {
 }
 
 func tcpLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
-	l, err := net.Listen("tcp", ssAddr.ClientAddr)
+	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		log.Println("failed to listen on %s: %v", ssAddr.ClientAddr, err)
-		return
+		log.Println("SS failed to listen: ", err)
+		os.Exit(200)
 	}
+	ssAddr.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 
 	for {
 		c, err := l.Accept()

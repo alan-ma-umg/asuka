@@ -54,6 +54,14 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 				continue
 			}
 
+			for {
+				if ssAddr.ClientAddr != "" {
+					break
+				}
+				fmt.Println("Waiting ..")
+				time.Sleep(time.Second / 5)
+			}
+
 			t, err := proxy.NewTransport(ssAddr)
 			if err != nil {
 				fmt.Println("proxy error: ", err)

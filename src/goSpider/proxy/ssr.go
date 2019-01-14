@@ -43,14 +43,15 @@ type BackendInfo struct {
 	Type    string
 }
 
-func (bi *BackendInfo) Listen(clientRawAddr string) {
-	listener, err := net.Listen("tcp", clientRawAddr)
+func (bi *BackendInfo) Listen(clientRawAddr *SsAddr) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		//2019/01/09 20:03:54 ssr.go:55: listen tcp 127.0.0.1:43307: bind: address already in use
-		log.Println(err)
-		os.Exit(100) //fixme bind: address already in use
+		log.Println("SSR failed to listen : ", err)
+		os.Exit(100)
 		return
 	}
+	clientRawAddr.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+
 	for {
 		localConn, err := listener.Accept()
 		if err != nil {
