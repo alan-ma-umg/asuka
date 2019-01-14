@@ -17,8 +17,8 @@ import (
 )
 
 type AsukaJianShu struct {
-	Id        int64                  `xorm:"pk autoincr"`
-	Url       string                 `xorm:"varchar(1024)"`
+	Id        int64  `xorm:"pk autoincr"`
+	Url       string `xorm:"varchar(1024)"`
 	UrlCrc32  int64
 	Title     string                 `xorm:"varchar(1024)"`
 	Tag       []string               `xorm:"json"`
@@ -58,7 +58,7 @@ func (my *JianShu) Throttle(spider *spider.Spider) {
 		spider.AddSleep(60e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 300e9))
 }
 
 func (my *JianShu) RequestBefore(spider *spider.Spider) {

@@ -29,10 +29,34 @@ import (
 	"time"
 )
 
+func init() {
+	//Emergency error handling
+	go func() {
+		t := time.NewTicker(time.Second)
+		for {
+			<-t.C
+			failCount := 0
+			for _, spider := range spiderList {
+				if spider.FailureLevel != 0 {
+					failCount++
+				}
+			}
+			if float64(failCount)/float64(len(spiderList)) > 0.4 {
+				for _, spider := range spiderList {
+					spider.FailureLevel = 150
+					spider.AddSleep(time.Hour * 3)
+				}
+			}
+		}
+	}()
+}
+
 const RecentFetchCount = 100
 
 var RecentFetchMutex = &sync.Mutex{}
 var RecentFetchLastIndex int64 = 0
+var RecentFetchList []*RecentFetch
+var spiderList []*Spider
 
 type RecentFetch struct {
 	Index         int64
@@ -45,8 +69,6 @@ type RecentFetch struct {
 	ResponseSize  string
 	ContentType   string
 }
-
-var RecentFetchList []*RecentFetch
 
 type Spider struct {
 	Transport *proxy.Transport
@@ -75,7 +97,9 @@ func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
 		j, _ = cookiejar.New(nil)
 	}
 	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 30}
-	return &Spider{Queue: queue, Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+	spider := &Spider{Queue: queue, Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+	spiderList = append(spiderList, spider)
+	return spider
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
@@ -108,28 +132,38 @@ func (spider *Spider) Throttle() {
 		spider.AddSleep(time.Minute)
 	}
 
-	fetchTimes := 7
-	second := helper.MaxInt(60, int(spider.GetSleep().Seconds())*fetchTimes*2)
-	accessCount, failureCount := spider.Transport.AccessCount(second)
-	if (accessCount > fetchTimes && helper.SpiderFailureRate(accessCount, failureCount) > 50.0) || (proxy.CountQueueLen*proxy.SecondInterval-1) < second { //fixme proxy.CountQueueLen*proxy.SecondInterval-1 < second  超出最大记录值无脑sleep, 不是最优解
-		accessCountAll := spider.Transport.GetAccessCount()
-		failureCountAll := spider.Transport.GetFailureCount()
-		failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
-		if accessCountAll > 40 && failureRateAll > 95 {
-			spider.FailureLevel = 100
-			spider.AddSleep(time.Hour * 2)
-		} else if accessCountAll > 40 && failureRateAll > 85 {
-			spider.FailureLevel = 80
-			spider.AddSleep(time.Minute * 40)
-		} else if accessCountAll > 30 && failureRateAll > 70 {
-			spider.FailureLevel = 60
-			spider.AddSleep(time.Minute * 10)
-		} else if accessCountAll > 30 && failureRateAll > 60 {
-			spider.FailureLevel = 40
-			spider.AddSleep(time.Minute * 5)
-		} else {
-			spider.FailureLevel = 20
-			spider.AddSleep(time.Minute * 2)
+	//Failure control
+	recentSeveralTimesResultCap := 7
+	if len(spider.Transport.RecentFewTimesResult) >= recentSeveralTimesResultCap {
+		defer func() {
+			spider.Transport.RecentFewTimesResult = make([]bool, 0, recentSeveralTimesResultCap)
+		}()
+		failCount := 0
+		for _, v := range spider.Transport.RecentFewTimesResult {
+			if !v {
+				failCount++
+			}
+		}
+		if float64(failCount)/float64(recentSeveralTimesResultCap) > 0.4 {
+			accessCountAll := spider.Transport.GetAccessCount()
+			failureCountAll := spider.Transport.GetFailureCount()
+			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
+			if accessCountAll > 40 && failureRateAll > 95 && spider.FailureLevel <= 100 {
+				spider.FailureLevel = 100
+				spider.AddSleep(time.Hour * 2)
+			} else if accessCountAll > 40 && failureRateAll > 85 && spider.FailureLevel <= 80 {
+				spider.FailureLevel = 80
+				spider.AddSleep(time.Minute * 40)
+			} else if accessCountAll > 30 && failureRateAll > 70 && spider.FailureLevel <= 60 {
+				spider.FailureLevel = 60
+				spider.AddSleep(time.Minute * 10)
+			} else if accessCountAll > 30 && failureRateAll > 60 && spider.FailureLevel <= 30 {
+				spider.FailureLevel = 40
+				spider.AddSleep(time.Minute * 5)
+			} else if spider.FailureLevel <= 20 {
+				spider.FailureLevel = 20
+				spider.AddSleep(time.Minute * 2)
+			}
 		}
 	}
 
@@ -203,6 +237,9 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 		if err != nil {
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		}
+
+		//A few times result of http request
+		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
 
 		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		if spider.TimeList.Len() > spider.TimeLenLimit {
@@ -505,5 +542,4 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 			return
 		}
 	}
-	return
 }

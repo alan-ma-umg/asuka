@@ -15,7 +15,6 @@ import (
 const SecondInterval = 1
 const CountQueueLen = 2000
 
-//time url
 func init() {
 	//save
 	go func() {
@@ -25,6 +24,7 @@ func init() {
 			for _, t := range transportList {
 				t.recordAccessCount()
 				t.recordFailureCount()
+
 			}
 		}
 	}()
@@ -52,6 +52,8 @@ type Transport struct {
 
 	Ping            time.Duration
 	PingFailureRate float64
+
+	RecentFewTimesResult []bool
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
