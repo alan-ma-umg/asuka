@@ -31,18 +31,15 @@ type AsukaZhiHu struct {
 	CreatedAt int                    `xorm:"created"`
 }
 
-func init() {
-	err := database.Mysql().CreateTables(&AsukaZhiHu{})
-	if err != nil {
-		panic(err)
-	}
-}
-
 type ZhiHu struct {
 	lastRequestUrl string
 }
 
 func (my *ZhiHu) EntryUrl() []string {
+	err := database.Mysql().CreateTables(&AsukaZhiHu{})
+	if err != nil {
+		panic(err)
+	}
 	return []string{
 		"https://www.zhihu.com/explore",
 		"https://www.zhihu.com/explore",

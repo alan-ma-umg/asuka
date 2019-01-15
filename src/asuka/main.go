@@ -2,16 +2,22 @@ package main
 
 import (
 	"asuka/dispatcher"
+	"asuka/helper"
 	"asuka/project"
 	"asuka/queue"
 	"asuka/web"
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if len(os.Args) < 2 {
+		log.Fatal("Example:/path/to/asuka /path/to/env.json")
+	}
+	helper.PathToEnvFile = os.Args[1]
 }
 
 func main() {

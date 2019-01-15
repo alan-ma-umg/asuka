@@ -36,6 +36,7 @@ func init() {
 		for {
 			<-t.C
 			failCount := 0
+			//fixme bug !
 			for _, spider := range spiderList {
 				if spider.FailureLevel != 0 && len(spider.Transport.RecentFewTimesResultEmergency) >= RecentSeveralTimesResultCap {
 					failCount++

@@ -27,16 +27,13 @@ import (
 
 var envParseOnce sync.Once
 var envConfig *EnvConfig
-
-var pwd, _ = os.Getwd()
+var PathToEnvFile string
 
 func Env() *EnvConfig {
 	envParseOnce.Do(func() {
-		filename := pwd + "/env.json"
-
-		file, err := os.Open(filename)
+		file, err := os.Open(PathToEnvFile)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err, PathToEnvFile)
 		}
 		decoder := json.NewDecoder(file)
 		err = decoder.Decode(&envConfig)
@@ -46,23 +43,6 @@ func Env() *EnvConfig {
 	})
 
 	return envConfig
-}
-
-// 得到一个可用的端口.
-func GetFreePort() (port int, err error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-	defer listener.Close()
-
-	addr := listener.Addr().String()
-	_, portString, err := net.SplitHostPort(addr)
-	if err != nil {
-		return 0, err
-	}
-
-	return strconv.Atoi(portString)
 }
 
 // Contains tells whether a contains x.

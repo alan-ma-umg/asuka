@@ -37,9 +37,6 @@ type Transport struct {
 	S *SsAddr
 	T http.RoundTripper
 
-	AccessList  []string
-	FailureList []string
-
 	accessCountList     *list.List
 	failureCountList    *list.List
 	accessCountHistory  int
@@ -91,12 +88,20 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 
 // AddAccess 每次调用请求时增加一次记录, 无论是否成功
 func (transport *Transport) AddAccess(link string) {
-	transport.AccessList = append(transport.AccessList, link)
+	transport.accessCountHistory++
 }
 
 // AddFailure 每次调用请求并失败时增加一次失败记录
 func (transport *Transport) AddFailure(link string) {
-	transport.FailureList = append(transport.FailureList, link)
+	transport.FailureCountHistory++
+}
+
+func (transport *Transport) GetAccessCount() int {
+	return transport.accessCountHistory
+}
+
+func (transport *Transport) GetFailureCount() int {
+	return transport.FailureCountHistory
 }
 
 func updateCountQueueLen(second int) {
@@ -163,40 +168,16 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 	return
 }
 
-func (transport *Transport) GetAccessCount() int {
-	return transport.accessCountHistory + len(transport.AccessList)
-}
-
 func (transport *Transport) recordAccessCount() {
 	transport.accessCountList.PushBack(transport.GetAccessCount())
 	if transport.accessCountList.Len() > CountQueueLen {
 		transport.accessCountList.Remove(transport.accessCountList.Front()) // FIFO
 	}
-
-	//todo lock
-	listLen := len(transport.AccessList)
-	limit := 1000
-	if listLen > limit {
-		transport.AccessList = transport.AccessList[0 : limit/2-1] //fixme !!!!!!!!!!!!!! [limit/2-1:]
-		transport.accessCountHistory += listLen - limit/2
-	}
-}
-
-func (transport *Transport) GetFailureCount() int {
-	return transport.FailureCountHistory + len(transport.FailureList)
 }
 
 func (transport *Transport) recordFailureCount() {
 	transport.failureCountList.PushBack(transport.GetFailureCount())
 	if transport.failureCountList.Len() > CountQueueLen {
 		transport.failureCountList.Remove(transport.failureCountList.Front()) // FIFO
-	}
-
-	//todo lock
-	listLen := len(transport.FailureList)
-	limit := 1000
-	if listLen > limit {
-		transport.FailureList = transport.FailureList[0 : limit/2-1] //fixme !!!!!!!!!!!!!! [limit/2-1:]
-		transport.FailureCountHistory += listLen - limit/2
 	}
 }

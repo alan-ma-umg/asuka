@@ -29,17 +29,14 @@ type AsukaWww struct {
 	CreatedAt int                    `xorm:"created"`
 }
 
-func init() {
-	err := database.Mysql().CreateTables(&AsukaWww{})
-	if err != nil {
-		panic(err)
-	}
-}
-
 type Www struct {
 }
 
 func (my *Www) EntryUrl() []string {
+	err := database.Mysql().CreateTables(&AsukaWww{})
+	if err != nil {
+		panic(err)
+	}
 	return []string{
 		"https://www.douban.com/",
 		"https://www.zhihu.com/explore",
