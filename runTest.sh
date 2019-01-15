@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+chmod +x runTest.sh
+
 echo 'Welcome! Asuka'
 git pull --rebase
 
