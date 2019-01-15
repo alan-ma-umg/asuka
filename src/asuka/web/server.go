@@ -325,6 +325,8 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
 	jsonMap["basic"].(map[string]interface{})["net_in"] = helper.ByteCountBinary(NetIn)
 	jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
+	jsonMap["basic"].(map[string]interface{})["net_in_int"] = NetIn
+	jsonMap["basic"].(map[string]interface{})["net_out_int"] = NetOut
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
