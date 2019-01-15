@@ -1,7 +1,5 @@
 #! /usr/bin/env bash
 
-chmod +x runTest.sh
-
 echo 'Welcome! Asuka'
 git pull --rebase  --quiet && killall asuka >/dev/null 2>/dev/null
 echo 'Killed Asuka!'
