@@ -202,7 +202,6 @@ func homeJson(sType string) []byte {
 		"servers": []map[string]interface{}{},
 	}
 	for index, s := range dispatcherObj.GetSpiders() {
-		load5s := s.Transport.LoadRate(5)
 		avgTime := s.GetAvgTime()
 		failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
 		failureRateAllValue := .0
@@ -233,8 +232,10 @@ func homeJson(sType string) []byte {
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
 		server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
 		server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
-		server["load_5s"] = strconv.FormatFloat(load5s, 'f', 2, 64)                    //todo slowly, make improvement
-		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64) //todo slowly, make improvement
+		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)       //todo slowly, make improvement
+		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64)     //todo slowly, make improvement
+		server["load_900s"] = strconv.FormatFloat(s.Transport.LoadRate(900), 'f', 2, 64)   //todo slowly, make improvement
+		server["load_1800s"] = strconv.FormatFloat(s.Transport.LoadRate(1800), 'f', 2, 64) //todo slowly, make improvement
 		server["access_count"] = s.Transport.GetAccessCount()
 		server["failure_count"] = s.Transport.GetFailureCount()
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
@@ -279,10 +280,9 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 		}
 
 		sleepAvg += s.GetSleep()
-		load5s := s.Transport.LoadRate(5)
 		pingFailureAvg += s.Transport.PingFailureRate
 		pingAvg += s.Transport.Ping
-		sumLoad += load5s
+		sumLoad += s.Transport.LoadRate(60)
 		TrafficIn += s.Transport.TrafficIn
 		TrafficOut += s.Transport.TrafficOut
 		NetIn += s.Transport.S.TrafficIn

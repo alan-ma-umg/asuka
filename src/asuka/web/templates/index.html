@@ -129,7 +129,8 @@
             <th style="width:8%">Queue</th>
             <td style="width:12%"><a href="/queue">{{"{{basic.queue}}"}}</a> / {{"{{basic.redis_mem}}"}}</td>
             <th style="width:8%">Load</th>
-            <td style="width:12%">{{"{{basic.load_avg}}"}} / {{"{{basic.load_sum}}"}}</td>
+            <td style="width:12%">{{"{{load5sSum}}"}} / {{"{{load60sSum}}"}} / {{"{{load900sSum}}"}}
+                / {{"{{load1800sSum}}"}}</td>
             <th style="width:8%">Goroutine</th>
             <td style="width:12%">{{"{{basic.goroutine}}"}}</td>
             <th style="width:8%">Mem.SYS</th>
@@ -329,6 +330,12 @@
             },
             load60sSum: function () {
                 return total(this.home.servers, "load_60s").toFixed(2)
+            },
+            load900sSum: function () {
+                return total(this.home.servers, "load_900s").toFixed(2)
+            },
+            load1800sSum: function () {
+                return total(this.home.servers, "load_1800s").toFixed(2)
             },
             retries: function () {
                 let str = "", k;
