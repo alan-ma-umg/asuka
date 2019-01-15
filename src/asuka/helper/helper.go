@@ -33,7 +33,7 @@ func Env() *EnvConfig {
 	envParseOnce.Do(func() {
 		file, err := os.Open(PathToEnvFile)
 		if err != nil {
-			log.Fatal(err, PathToEnvFile)
+			log.Fatal(err)
 		}
 		decoder := json.NewDecoder(file)
 		err = decoder.Decode(&envConfig)
