@@ -3,10 +3,9 @@
 chmod +x runTest.sh
 
 echo 'Welcome! Asuka'
-git pull --rebase
-
+git pull --rebase  --quiet && killall asuka >/dev/null 2>/dev/null
 echo 'Killed Asuka!'
-killall asuka >/dev/null 2>/dev/null
+
 
 echo 'Rebuild Asuka!'
 go build asuka
