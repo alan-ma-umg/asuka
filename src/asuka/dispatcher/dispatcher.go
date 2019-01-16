@@ -7,6 +7,7 @@ import (
 	"asuka/proxy"
 	"asuka/queue"
 	"asuka/spider"
+	"fmt"
 	"log"
 	"net"
 	"net/url"
@@ -56,7 +57,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 				if ssAddr.ClientAddr != "" {
 					break
 				}
-				log.Println("Waiting for socks proxy")
+				fmt.Println("Waiting for socks proxy")
 				time.Sleep(time.Second / 10)
 			}
 
@@ -68,7 +69,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 			dispatcher.transportArr = append(dispatcher.transportArr, t)
 		}
 
-		log.Println("Socks proxy is ready to go")
+		fmt.Println("Socks proxy is ready to go")
 	})
 
 	return dispatcher.transportArr

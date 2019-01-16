@@ -143,128 +143,177 @@
         flex: 1;
     }
 
-    ul.item-preview {
-        display: flex;
-        flex-grow: 1;
-        justify-content: space-between;
-    }
 
     .ws-closed {
         background: #E6E6E6
     }
 </style>
 <body>
-<div style="max-width: 1500px;margin: 50px auto;"
+<div style="max-width: 1500px;margin: 20px auto;"
      id="vue-content">
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
+
             <div>
                 <h1>{{"{{basic.mem_sys}}"}}</h1>
                 <small>System memory usage</small>
             </div>
+
             <br>
-            <br>
-            <ul class="item-preview">
-                <li>
-                    <small>Time</small>
-                    <h4>{{"{{basic.time}}"}}</h4>
-                </li>
-                <li>
-                    <small>Uptime</small>
-                    <h4>{{"{{basic.uptime}}"}}</h4>
-                </li>
-                <li>
-                    <small>Retries</small>
-                    <h4>{{"{{retries}}"}}</h4>
-                </li>
-            </ul>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        Time
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.time}}"}}</strong>
+                    </td>
+                    <td>
+                        Uptime
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.uptime}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Servers
+                    </td>
+                    <td>
+                        <strong>{{"{{home.servers.length}}"}}</strong>
+                    </td>
+                    <td>
+                        Server offline
+                    </td>
+                    <td>
+                        <strong>
+                            {{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}
+                            %
+                        </strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Retries</td>
+                    <td colspan="3">
+                        <strong>{{"{{retries}}"}}</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
         <div class="head-item">
             <div>
                 <h1>{{"{{basic.queue|numberFormat}}"}}</h1>
                 <small>All url in redis</small>
+                <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
             </div>
             <br>
-            <br>
-            <ul class="item-preview">
-                <li>
-                    <small>Redis memory</small>
-                    <h4>{{"{{basic.redis_mem}}"}}</h4>
-                </li>
-                <li>
-                    <small>Goroutine</small>
-                    <h4>{{"{{basic.goroutine|numberFormat}}"}}</h4>
-                </li>
-                <li>
-                    <small>ws / socket</small>
-                    <h4>{{"{{basic.ws_connections|numberFormat}}"}} / {{"{{basic.connections|numberFormat}}"}}</h4>
-                </li>
-
-            </ul>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        socket / ws
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.ws_connections|numberFormat}}"}}
+                            / {{"{{basic.connections|numberFormat}}"}}</strong>
+                    </td>
+                    <td>
+                        Goroutine
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.goroutine|numberFormat}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Request
+                    </td>
+                    <td>
+                        <strong>{{"{{accessSum|numberFormat}}"}}</strong>
+                    </td>
+                    <td>
+                        Failed
+                    </td>
+                    <td>
+                        <strong>{{"{{failureSum|numberFormat}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Failure 60s
+                    </td>
+                    <td>
+                        <strong>{{"{{failure60Avg}}"}}%</strong>
+                    </td>
+                    <td>
+                        Failure All
+                    </td>
+                    <td>
+                        <strong>{{"{{failureAllAvg}}"}}%</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-
         <div class="head-item">
-            <div style="display: flex; flex-direction: column ;flex-grow: 1;">
-                <div style="display: flex;justify-content: space-between; flex-grow: 1;">
-                    <div>
-                        <h1>{{"{{basic.net_in}}"}}</h1>
-                        <small>TCP traffic in</small>
-                    </div>
-                    <div>
-                        <h1>{{"{{basic.net_out}}"}}</h1>
-                        <small>TCP traffic out</small>
-                    </div>
-                </div>
-                <br>
-                <br>
-                <table>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <strong>{{"{{load5sSum}}"}}</strong> Load 5s
-                        </td>
-                        <td>
-                            <strong>{{"{{load60sSum}}"}}</strong> Load 60s
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>{{"{{load900sSum}}"}}</strong> Load 15min
-                        </td>
-                        <td>
-                            <strong>{{"{{load1800sSum}}"}}</strong> Load 30min
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>{{"{{accessSum|numberFormat}}"}}</strong> Request
-
-                        </td>
-                        <td>
-                            <strong>{{"{{failureSum|numberFormat}}"}}</strong> Failed
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>{{"{{failure60Avg}}"}}%</strong> Failure rate 60s
-                        </td>
-                        <td>
-                            <strong>{{"{{failureAllAvg}}"}}%</strong> Failure rate
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            <strong>{{"{{home.servers.length}}"}}</strong> Servers
-                        </td>
-                        <td>
-                            <strong>{{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}%</strong> Server offline
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div style="float:right">
+                <h1>{{"{{basic.net_out}}"}}</h1>
+                <small>TCP traffic out</small>
             </div>
+            <div>
+                <h1>{{"{{basic.net_in}}"}}</h1>
+                <small>TCP traffic in</small>
+            </div>
+            <br>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        Load 5s
+                    </td>
+                    <td>
+                        <strong>{{"{{load5sSum}}"}}</strong>
+                    </td>
+                    <td>
+                        Load 60s
+                    </td>
+                    <td>
+                        <strong>{{"{{load5sSum}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Load 15min
+                    </td>
+                    <td>
+                        <strong>{{"{{load900sSum}}"}}</strong>
+                    </td>
+                    <td>
+                        Load 30min
+                    </td>
+                    <td>
+                        <strong>{{"{{load1800sSum}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Load 5h
+                    </td>
+                    <td>
+                        <strong>-</strong>
+                    </td>
+                    <td>
+                        Load 10h
+                    </td>
+                    <td>
+                        <strong>-</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <br>
