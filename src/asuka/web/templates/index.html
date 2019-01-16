@@ -229,7 +229,6 @@
                         <td>
                             <strong>{{"{{load60sSum}}"}}</strong> Load 60s
                         </td>
-
                     </tr>
                     <tr>
                         <td>
@@ -238,7 +237,6 @@
                         <td>
                             <strong>{{"{{load1800sSum}}"}}</strong> Load 30min
                         </td>
-
                     </tr>
                     <tr>
                         <td>
@@ -248,7 +246,6 @@
                         <td>
                             <strong>{{"{{failureSum|numberFormat}}"}}</strong> Failed
                         </td>
-
                     </tr>
                     <tr>
                         <td>
@@ -256,6 +253,15 @@
                         </td>
                         <td>
                             <strong>{{"{{failureAllAvg}}"}}%</strong> Failure rate
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>{{"{{home.servers.length}}"}}%</strong> Servers
+                        </td>
+                        <td>
+                            <strong>{{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}%</strong> Failure rate
                         </td>
                     </tr>
                     </tbody>
