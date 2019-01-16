@@ -3,7 +3,9 @@
 <head>
     <title>Asuka connecting..</title>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400" rel="stylesheet">
     {{if eq . "windows"}}
     <script src="/js/vue.js"></script>{{/*For Development*/}}
     {{else}}
@@ -14,13 +16,19 @@
     * {
         padding: 0;
         margin: 0;
+        box-sizing: border-box;
         -webkit-box-sizing: border-box;
     }
 
     body {
-        font-family: Helvetica, Arial, sans-serif, "Microsoft YaHei", 'Helvetica Neue';
-        color: #222;
+        font-family: open sans, Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
+        color: rgb(97, 100, 102);
         font-size: 12px;
+        background: rgb(247, 250, 252);
+    }
+
+    small {
+        font-size: 0.9em;
     }
 
     *:focus {
@@ -37,15 +45,21 @@
     }
 
     h1, h2, h3, h4, h5, h6 {
-        font-weight: 400;
-        margin: 15px 0;
+        margin: 10px 0;
+        color: rgb(103, 106, 108);
+    }
+
+    h1 {
+        font-weight: 100;
+        font-size: 30px;
+        line-height: 36px;
     }
 
     input, button {
         -webkit-appearance: none;
         border-radius: 0;
         border: 1px solid #ccc;
-        padding: 10px 15px;
+        padding: 6px 14px;
     }
 
     li {
@@ -67,26 +81,26 @@
     table {
         border-spacing: 0;
         border-collapse: collapse;
-        margin: 0 auto;
-        min-width: 1300px;
     }
 
     th, td {
-        padding: 5px 10px;
-        border: 1px solid #ccc;
+        padding: 7px 10px;
+        border: 1px solid rgb(231, 234, 236);
+        border-left: none;
+        border-right: none;
         white-space: nowrap;
     }
 
-    table tr:nth-child(odd) {
-        background: #FaFaFa;
+    table.table-striped th {
+        background: #eaeaea;
+    }
+
+    table.table-striped tr:nth-child(even) {
+        background: #f4f4f4;
     }
 
     tr:hover {
         background: #d9f1db !important;
-    }
-
-    tr td {
-        text-align: right;
     }
 
     .inline-block {
@@ -109,197 +123,311 @@
     }
 
     .warning {
-        background: rgb(255, 248, 228) !important;
+        background: rgb(255, 248, 235) !important;
     }
 
     .danger {
-        background: rgb(255, 236, 234) !important;
+        background: rgb(255, 240, 240) !important;
+    }
+
+    .head_wrap {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .head-item {
+        min-width: 300px;
+        padding: 0 30px;
+        flex: 1;
+    }
+
+    ul.item-preview {
+        display: flex;
+        flex-grow: 1;
+        justify-content: space-between;
+    }
+
+    .ws-closed {
+        background: #E6E6E6
     }
 </style>
 <body>
-<div style="margin: 10px auto;max-width: 1500px" id="vue-content">
-    <div class="ctrl-wrap">
-        <button id="ws-home" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Home</button>
-        <button id="ws-recent" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Recent</button>
-        <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
-        <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
-    </div>
-    <table v-if="basic.time">
-        <tbody>
-        <tr>
-            <th style="width:8%">Queue</th>
-            <td style="width:12%"><a href="/queue">{{"{{basic.queue}}"}}</a> / {{"{{basic.redis_mem}}"}}</td>
-            <th style="width:8%">Load</th>
-            <td style="width:12%">{{"{{load5sSum}}"}} / {{"{{load60sSum}}"}} / {{"{{load900sSum}}"}}
-                / {{"{{load1800sSum}}"}}</td>
-            <th style="width:8%">Goroutine</th>
-            <td style="width:12%">{{"{{basic.goroutine}}"}}</td>
-            <th style="width:8%">Mem.SYS</th>
-            <td style="width:12%">{{"{{basic.mem_sys}}"}}</td>
-        </tr>
-        <tr>
-            <th>Retries</th>
-            <td>{{"{{retries}}"}}</td>
-            <th>Traffic I/O</th>
-            <td>{{"{{basic.traffic_in}}"}} / {{"{{basic.traffic_out}}"}}</td>
+<div style="max-width: 1500px;margin: 50px auto;"
+     id="vue-content">
+    <div class="head_wrap" v-if="basic.time">
+        <div class="head-item">
+            <div>
+                <h1>{{"{{basic.mem_sys}}"}}</h1>
+                <small>System memory usage</small>
+            </div>
+            <br>
+            <br>
+            <br>
+            <ul class="item-preview">
+                <li>
+                    <small>Time</small>
+                    <h4>{{"{{basic.time}}"}}</h4>
+                </li>
+                <li>
+                    <small>Uptime</small>
+                    <h4>{{"{{basic.uptime}}"}}</h4>
+                </li>
+                <li>
+                    <small>Retries</small>
+                    <h4>{{"{{retries}}"}}</h4>
+                </li>
+            </ul>
+        </div>
 
-            <th>Connection</th>
-            <td>{{"{{basic.ws_connections}}"}} / {{"{{basic.connections}}"}}</td>
-            <th>Uptime</th>
-            <td>{{"{{basic.time}}"}} / {{"{{basic.uptime}}"}}</td>
-        </tr>
-        </tbody>
-    </table>
-    <br>
-    <table v-if='action == "recent" && fetchList.length'>
-        <thead>
-        <tr>
-            <th style="width: 1px"></th>
-            <th>Server</th>
-            <th>Add Time</th>
-            <th>Consume Time</th>
-            <th>Status</th>
-            <th>Size</th>
-            <th>Content Type</th>
-            <th>Error</th>
-            <th>Url</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="item in fetchList"
-            :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
-            <td class="center">{{"{{item.Index}}"}}</td>
-            <td class="center">{{"{{item.TransportName}}"}}</td>
-            <td>{{"{{item.AddTime}}"}}</td>
-            <td>{{"{{item.ConsumeTime}}"}}</td>
-            <td>{{"{{item.StatusCode}}"}}</td>
-            <td>{{"{{item.ResponseSize}}"}}</td>
-            <td>{{"{{item.ContentType}}"}}</td>
-            <td>{{"{{item.ErrType}}"}}</td>
-            <td><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
-        </tr>
-        </tbody>
-    </table>
-    <table v-if='action == "home" && home.servers'>
-        <thead>
-        <tr>
-            <th style="width: 1px"></th>
-            <th>Server</th>
-            <th>Ping / Lost</th>
-            <th style="min-width:70px">Time</th>
-            <th>Pass / Sleep</th>
-            <th>HTTP I/O</th>
-            <th>TCP I/O</th>
-            <th>Load 5s/60s</th>
-            <th style="width:1px">Dispatch</th>
-            <th style="min-width:145px">Failure 60s/all</th>
-            <th>Status</th>
-        </tr>
-        <tr style="background:#e6e6e6">
-            <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}} Running</td>
-            <td class="center">
-                <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
-                /
-                <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%</div>
-            </td>
-            <td>{{"{{basic.avg_time_avg}}"}}</td>
-            <td class="center">
-                <div style="display:inline-block;width:80px" class="right">{{"{{basic.waiting_avg}}"}}</div>
-                /
-                <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:45px" class="right">{{"{{load5sSum}}"}}</div>
-                /
-                <div style="display:inline-block;width:45px" class="left">{{"{{load60sSum}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}%</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
-            </td>
-            <td class="center">{{"{{statusAvg}}"}}</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
-            <td class="center">{{"{{server.index+1}}"}}</td>
-            <td class="center">
-                <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:45px" class="right">
-                    <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
+        <div class="head-item">
+            <div>
+                <h1>{{"{{basic.queue|numberFormat}}"}}</h1>
+                <small>All url in redis</small>
+            </div>
+            <br>
+            <br>
+            <br>
+            <ul class="item-preview">
+                <li>
+                    <small>Redis memory</small>
+                    <h4>{{"{{basic.redis_mem}}"}}</h4>
+                </li>
+                <li>
+                    <small>Goroutine</small>
+                    <h4>{{"{{basic.goroutine|numberFormat}}"}}</h4>
+                </li>
+                <li>
+                    <small>ws / socket</small>
+                    <h4>{{"{{basic.ws_connections|numberFormat}}"}} / {{"{{basic.connections|numberFormat}}"}}</h4>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="head-item">
+            <div style="display: flex; flex-direction: column ;flex-grow: 1;">
+                <div style="display: flex;justify-content: space-between; flex-grow: 1;">
+                    <div>
+                        <h1>{{"{{basic.net_in}}"}}</h1>
+                        <small>TCP traffic in</small>
+                    </div>
+                    <div>
+                        <h1>{{"{{basic.net_out}}"}}</h1>
+                        <small>TCP traffic out</small>
+                    </div>
                 </div>
-                /
-                <div style="display:inline-block;width:45px" class="left">
+                <br>
+                <br>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <strong>{{"{{load5sSum}}"}}</strong> Load 5s
+                        </td>
+                        <td>
+                            <strong>{{"{{load60sSum}}"}}</strong> Load 60s
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>{{"{{load900sSum}}"}}</strong> Load 15min
+                        </td>
+                        <td>
+                            <strong>{{"{{load1800sSum}}"}}</strong> Load 30min
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>{{"{{accessSum|numberFormat}}"}}</strong> Request
+
+                        </td>
+                        <td>
+                            <strong>{{"{{failureSum|numberFormat}}"}}</strong> Failed
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>{{"{{failure60Avg}}"}}%</strong> Failure rate 60s
+                        </td>
+                        <td>
+                            <strong>{{"{{failureAllAvg}}"}}%</strong> Failure rate
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+
+    <div style="background: #fff;padding: 30px 20px;overflow-x: scroll"
+         v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
+
+        {{/*recent*/}}
+        <table v-if='action == "recent" && fetchList.length' class="table-striped">
+            <thead>
+            <tr>
+                <th style="width: 1px"></th>
+                <th>Server</th>
+                <th>Add Time</th>
+                <th>Consume Time</th>
+                <th>Status</th>
+                <th>Size</th>
+                <th>Content Type</th>
+                <th>Error</th>
+                <th>Url</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in fetchList"
+                :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
+                <td class="center">{{"{{item.Index}}"}}</td>
+                <td class="center">{{"{{item.TransportName}}"}}</td>
+                <td class="center">{{"{{item.AddTime}}"}}</td>
+                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
+                <td class="center">{{"{{item.StatusCode}}"}}</td>
+                <td class="center">{{"{{item.ResponseSize}}"}}</td>
+                <td class="center">{{"{{item.ContentType}}"}}</td>
+                <td class="center">{{"{{item.ErrType}}"}}</td>
+                <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+
+        {{/*home*/}}
+        <table v-if='action == "home" && home.servers' class="table-striped">
+            <thead>
+            <tr>
+                <th style="width: 1px"></th>
+                <th>Server</th>
+                <th>Ping / Lost</th>
+                <th style="min-width:70px">Time</th>
+                <th>Pass / Sleep</th>
+                <th>HTTP I/O</th>
+                <th>TCP I/O</th>
+                <th>Load 5s/60s</th>
+                <th style="width:1px">Dispatch</th>
+                <th style="min-width:145px">Failure 60s/all</th>
+                <th>Status</th>
+            </tr>
+            <tr style="background:#dadada">
+                <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%
+                    </div>
+                </td>
+                <td>{{"{{basic.avg_time_avg}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:80px" class="right">{{"{{basic.waiting_avg}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{load5sSum}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{load60sSum}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}%</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
+                </td>
+                <td class="center">{{"{{statusAvg}}"}}</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
+                <td class="center">{{"{{server.index+1}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">
+                        <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
+                    </div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">
                     <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
                     {{"{{server.ping_failure}}"}} %
                     </span>
-                </div>
-            </td>
-            <td>{{"{{server.avg_time}}"}}</td>
-            <td class="center">
-                <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
-                /
-                <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:45px" class="right">{{"{{server.load_5s}}"}}</div>
-                /
-                <div style="display:inline-block;width:45px" class="left">{{"{{server.load_60s}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
-                /
-                <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
-            </td>
-            <td class="center">
-                <div style="display:inline-block;width:50px" class="right">
+                    </div>
+                </td>
+                <td>{{"{{server.avg_time}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{server.load_5s}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{server.load_60s}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">
                     <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}
                         %</span>
-                </div>
-                /
-                <div style="display:inline-block;width:50px" class="left">
+                    </div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">
                     <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
                         %</span>
-                </div>
-            </td>
-            <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
-                class="center">
-                {{"{{server.failure_level}}"}}
-            </td>
-        </tr>
-        </tbody>
-    </table>
+                    </div>
+                </td>
+                <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
+                    class="center">
+                    {{"{{server.failure_level}}"}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<br>
-<br>
-<br>
+
+<div class="ctrl-wrap">
+    <button id="ws-page-switch" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H / R</button>
+    <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
+    <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
+</div>
+
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
     vueContent = new Vue({
@@ -358,6 +486,9 @@
             }
         },
         filters: {
+            numberFormat: function (v) {
+                return new Intl.NumberFormat().format(v)
+            },
             urlTruncate: function (str) {
                 if (str.length > 40) {
                     return str.substring(0, 40) + "..(" + str.length + ")"
@@ -395,13 +526,14 @@
             sendMessage(document.getElementById("send-value").value);
         }
     };
-    document.getElementById("ws-home").onclick = function () {
-        sendMessage("home");
-        vueContent.$data.action = "home"
-    };
-    document.getElementById("ws-recent").onclick = function () {
-        sendMessage("recent");
-        vueContent.$data.action = "recent"
+    document.getElementById("ws-page-switch").onclick = function () {
+        if (vueContent.$data.action === "home") {
+            sendMessage("recent");
+            vueContent.$data.action = "recent"
+        } else {
+            sendMessage("home");
+            vueContent.$data.action = "home"
+        }
     };
     document.getElementById("ws-open-close").onclick = function () {
         manualOpen();
@@ -457,22 +589,22 @@
             vueContent.$data[data.type] = data;
             vueContent.$data.basic = data.basic;
             document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
-            ws.send("")
+            ws.send("");
         };
         ws.onopen = function () {
             sendMessage(vueContent.$data.action);
             sendMessage(document.getElementById("send-value").value);
-            document.body.style = "background:none";
+            document.body.className = "";
             document.title = "Asuka connected";
         };
         ws.onerror = function () {
-            document.body.style = "background:yellow";
+            document.body.className = "ws-closed";
             document.title = "Asuka Error !";
             ws && ws.close();
             reconnectSocket()
         };
         ws.onclose = function () {
-            document.body.style = "background:#E6E6E6";
+            document.body.className = "ws-closed";
             document.title = "Asuka Closed !";
             ws && ws.close();
             reconnectSocket()

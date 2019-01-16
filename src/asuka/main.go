@@ -38,5 +38,6 @@ func main() {
 
 	c := &dispatcher.Dispatcher{}
 	c.Run(&project.JianShu{}, queue.NewQueue())
+	fmt.Println("Monitor: http://127.0.0.1:666")
 	web.Server(c, ":666") // http://127.0.0.1:666
 }
