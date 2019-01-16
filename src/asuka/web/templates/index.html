@@ -551,9 +551,6 @@
         },
         mounted: function () {
             handlerSocket();
-            setTimeout(function () {
-                vueContent && (vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig()));
-            }, 200);
         }
     });
 
@@ -648,13 +645,15 @@
             ws.send("");
 
 
-            //delay
+            //chart
             if (vueContent.chart1) {
                 vueContent.chart1.data.datasets[0].data.push(data.basic.load_sum);
                 if (vueContent.chart1.data.labels.length < vueContent.chart1.data.datasets[0].data.length) {
                     vueContent.chart1.data.datasets[0].data.shift();
                 }
                 vueContent.chart1.update();
+            } else {
+                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig())
             }
         };
         ws.onopen = function () {
