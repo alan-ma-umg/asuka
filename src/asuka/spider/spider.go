@@ -46,7 +46,7 @@ func init() {
 				for _, spider := range spiderList {
 					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
 					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
-					spider.FailureLevel = 150
+					spider.FailureLevel = EmergencyFailureLevel
 					spider.ResetSleep()
 					spider.AddSleep(time.Hour * 3)
 				}
@@ -55,6 +55,7 @@ func init() {
 	}()
 }
 
+const EmergencyFailureLevel = 150
 const RecentFetchCount = 100
 const RecentSeveralTimesResultCap = 7
 
@@ -146,7 +147,7 @@ func (spider *Spider) Throttle() {
 				failCount++
 			}
 		}
-		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 && spider.FailureLevel != 150 {
+		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 && spider.FailureLevel != EmergencyFailureLevel {
 			spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
 			accessCountAll := spider.Transport.GetAccessCount()
 			failureCountAll := spider.Transport.GetFailureCount()
