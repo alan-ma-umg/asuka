@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"container/list"
+	"asuka/helper"
 	"context"
 	"fmt"
 	"golang.org/x/net/proxy"
@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -37,8 +38,10 @@ type Transport struct {
 	S *SsAddr
 	T http.RoundTripper
 
-	accessCountList     *list.List
-	failureCountList    *list.List
+	countSliceMutex   sync.RWMutex
+	accessCountSlice  []int
+	failureCountSlice []int
+
 	accessCountHistory  int
 	FailureCountHistory int
 
@@ -81,7 +84,7 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 			},
 		}
 	}
-	instance := &Transport{S: ssAddr, T: t, accessCountList: list.New(), failureCountList: list.New(), LoopCount: 0}
+	instance := &Transport{S: ssAddr, T: t, LoopCount: 0}
 	transportList = append(transportList, instance)
 	return instance, nil
 }
@@ -111,20 +114,26 @@ func updateCountQueueLen(second int) {
 }
 
 // LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒
-//todo 性能优化
 func (transport *Transport) LoadRate(second int) float64 {
+	//Read lock
+	defer func() {
+		transport.countSliceMutex.RUnlock()
+	}()
+	transport.countSliceMutex.RLock()
+
 	updateCountQueueLen(second)
 	rate := 0.0
-	cursor := transport.accessCountList.Back()
+
+	sliceLen := len(transport.accessCountSlice)
+
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	for i := 0; i < times; i++ {
 		currentNum := 0
 		prevNum := 0
-		if cursor != nil {
-			currentNum = cursor.Value.(int)
-			cursor = cursor.Prev()
-			if cursor != nil {
-				prevNum = cursor.Value.(int)
+		if i < sliceLen {
+			currentNum = transport.accessCountSlice[sliceLen-i-1]
+			if i+1 < sliceLen {
+				prevNum = transport.accessCountSlice[sliceLen-i-2]
 			}
 		}
 		rate += float64(currentNum-prevNum) / SecondInterval
@@ -134,30 +143,35 @@ func (transport *Transport) LoadRate(second int) float64 {
 }
 
 //AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒
-//todo 性能优化
 func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes int) {
+	//Read lock
+	defer func() {
+		transport.countSliceMutex.RUnlock()
+	}()
+	transport.countSliceMutex.RLock()
+
 	updateCountQueueLen(second)
-	failureCursor := transport.failureCountList.Back()
-	accessCursor := transport.accessCountList.Back()
+
+	accessSliceLen := len(transport.accessCountSlice)
+	failureSliceLen := len(transport.failureCountSlice)
+
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	for i := 0; i < times; i++ {
 		currentFailureNum := 0
 		prevFailureNum := 0
-		if failureCursor != nil {
-			currentFailureNum = failureCursor.Value.(int)
-			failureCursor = failureCursor.Prev()
-			if failureCursor != nil {
-				prevFailureNum = failureCursor.Value.(int)
+		if i < failureSliceLen {
+			currentFailureNum = transport.failureCountSlice[failureSliceLen-i-1]
+			if i+1 < failureSliceLen {
+				prevFailureNum = transport.failureCountSlice[failureSliceLen-i-2]
 			}
 		}
 
 		currentAccessNum := 0
 		prevAccessNum := 0
-		if accessCursor != nil {
-			currentAccessNum = accessCursor.Value.(int)
-			accessCursor = accessCursor.Prev()
-			if accessCursor != nil {
-				prevAccessNum = accessCursor.Value.(int)
+		if i < accessSliceLen {
+			currentAccessNum = transport.accessCountSlice[accessSliceLen-i-1]
+			if i+1 < accessSliceLen {
+				prevAccessNum = transport.accessCountSlice[accessSliceLen-i-2]
 			}
 		}
 
@@ -169,15 +183,23 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 }
 
 func (transport *Transport) recordAccessCount() {
-	transport.accessCountList.PushBack(transport.GetAccessCount())
-	if transport.accessCountList.Len() > CountQueueLen {
-		transport.accessCountList.Remove(transport.accessCountList.Front()) // FIFO
-	}
+	//Write lock
+	defer func() {
+		transport.countSliceMutex.Unlock()
+	}()
+	transport.countSliceMutex.Lock()
+
+	//slice fifo
+	transport.accessCountSlice = append(transport.accessCountSlice[helper.MaxInt(len(transport.accessCountSlice)-CountQueueLen, 0):], transport.GetAccessCount())
 }
 
 func (transport *Transport) recordFailureCount() {
-	transport.failureCountList.PushBack(transport.GetFailureCount())
-	if transport.failureCountList.Len() > CountQueueLen {
-		transport.failureCountList.Remove(transport.failureCountList.Front()) // FIFO
-	}
+	//Write lock
+	defer func() {
+		transport.countSliceMutex.Unlock()
+	}()
+	transport.countSliceMutex.Lock()
+
+	//slice fifo
+	transport.failureCountSlice = append(transport.failureCountSlice[helper.MaxInt(len(transport.failureCountSlice)-CountQueueLen, 0):], transport.GetFailureCount())
 }
