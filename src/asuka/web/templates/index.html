@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <canvas style="visibility:hidden;width: 100%;height:90px;" id="chart-legend-top"></canvas>
+    <canvas style="width: 100%;height:90px;" id="chart-legend-top"></canvas>
 
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto"
          v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
@@ -550,11 +550,10 @@
             }
         },
         mounted: function () {
-            this.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig());
             handlerSocket();
             setTimeout(function () {
-                document.getElementById('chart-legend-top').style.visibility = "visible";
-            }, 300);
+                vueContent && (vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig()));
+            }, 200);
         }
     });
 
@@ -648,11 +647,15 @@
             document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
             ws.send("");
 
-            vueContent.chart1.data.datasets[0].data.push(data.basic.load_sum);
-            if (vueContent.chart1.data.labels.length < vueContent.chart1.data.datasets[0].data.length) {
-                vueContent.chart1.data.datasets[0].data.shift();
+
+            //delay
+            if (vueContent.chart1) {
+                vueContent.chart1.data.datasets[0].data.push(data.basic.load_sum);
+                if (vueContent.chart1.data.labels.length < vueContent.chart1.data.datasets[0].data.length) {
+                    vueContent.chart1.data.datasets[0].data.shift();
+                }
+                vueContent.chart1.update();
             }
-            vueContent.chart1.update();
         };
         ws.onopen = function () {
             sendMessage(vueContent.$data.action);
