@@ -172,10 +172,14 @@ func (spider *Spider) Throttle() {
 
 	//go to sleep and reset sleep duration
 	if duration := spider.GetSleep(); duration > 0 {
+		spider.ResetSleep()
 		time.Sleep(duration)
 	}
-	spider.ResetSleep()
-	spider.FailureLevel = 0
+
+	//reset failureLevel
+	if spider.GetSleep() == 0 { //Maybe change by another goroutine when time.sleep
+		spider.FailureLevel = 0
+	}
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
