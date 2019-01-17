@@ -192,7 +192,7 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 func (my *JianShu) ResponseAfter(spider *spider.Spider) {
 	if spider.FailureLevel > 10 {
 		jianShuResetSpider(spider)
-	} else if rand.Intn(15) == 10 {
+	} else if rand.Intn(30) == 10 {
 		jianShuResetSpider(spider)
 	}
 }
