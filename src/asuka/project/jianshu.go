@@ -190,6 +190,7 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *JianShu) ResponseAfter(spider *spider.Spider) {
+	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
 	if spider.FailureLevel > 10 {
 		jianShuResetSpider(spider)
 	} else if rand.Intn(30) == 10 {
@@ -198,6 +199,8 @@ func (my *JianShu) ResponseAfter(spider *spider.Spider) {
 }
 
 func jianShuResetSpider(spider *spider.Spider) {
+	spider.Transport.T.(*http.Transport).CloseIdleConnections()
+	spider.Transport.T.(*http.Transport).DisableKeepAlives = true
 	jar, _ := cookiejar.New(nil)
 	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: jar, Timeout: time.Second * 30}
 	spider.RequestsMap = map[string]*http.Request{}
