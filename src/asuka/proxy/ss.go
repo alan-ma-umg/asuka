@@ -22,6 +22,8 @@ type SsAddr struct {
 	TrafficIn   uint64
 	TrafficOut  uint64
 	Connections int
+	Listener    net.Listener
+	CloseChan   chan bool
 }
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
@@ -38,6 +40,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Name:       server.Name,
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
+				CloseChan:  make(chan bool, 1),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -56,7 +59,9 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 						},
 					},
 				}
-				bi.Listen(ss)
+				for {
+					bi.Listen(ss)
+				}
 			}(server, ss)
 		} else {
 			cipher, err := core.PickCipher(server.Method, []byte{}, server.Password)
@@ -70,6 +75,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Name:       server.Name,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
+				CloseChan:  make(chan bool, 1),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -82,7 +88,9 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 
 // Create a SOCKS server listening on addr and proxy to server.
 func socksLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn) {
-	tcpLocal(ssAddr, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
+	for {
+		tcpLocal(ssAddr, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
+	}
 }
 
 // relay copies between left and right bidirectionally. Returns number of
@@ -118,13 +126,23 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 		log.Println("SS failed to listen: ", err)
 		os.Exit(200)
 	}
+	defer l.Close()
+
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+	SocksInfo.Listener = l
 
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			log.Println("failed to accept: %s", err)
-			continue
+			select {
+			case <-SocksInfo.CloseChan:
+				// If we called stop() then there will be a value in es.done, so
+				// we'll get here and we can exit without showing the error.
+				return
+			default:
+				log.Printf("Accept failed: %v", err)
+				continue
+			}
 		}
 		go func() {
 			defer func() {

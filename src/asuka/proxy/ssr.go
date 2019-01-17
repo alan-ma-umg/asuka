@@ -48,14 +48,24 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 	if err != nil {
 		log.Println("SSR failed to listen : ", err)
 		os.Exit(100)
-		return
 	}
+	defer listener.Close()
+
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+	SocksInfo.Listener = listener
 
 	for {
 		localConn, err := listener.Accept()
 		if err != nil {
-			continue
+			select {
+			case <-SocksInfo.CloseChan:
+				// If we called stop() then there will be a value in es.done, so
+				// we'll get here and we can exit without showing the error.
+				return
+			default:
+				log.Printf("Accept failed: %v", err)
+				continue
+			}
 		}
 		go bi.Handle(localConn, SocksInfo)
 	}

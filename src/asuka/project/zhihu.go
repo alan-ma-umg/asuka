@@ -199,6 +199,7 @@ func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
 }
 
 func zhiHuResetSpider(spider *spider.Spider) {
+	spider.Transport.Reconnection()
 	jar, _ := cookiejar.New(nil)
 	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: jar, Timeout: time.Second * 30}
 	spider.RequestsMap = map[string]*http.Request{}

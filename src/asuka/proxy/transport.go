@@ -203,3 +203,10 @@ func (transport *Transport) recordFailureCount() {
 	//slice fifo
 	transport.failureCountSlice = append(transport.failureCountSlice[helper.MaxInt(len(transport.failureCountSlice)-CountQueueLen, 0):], transport.GetFailureCount())
 }
+
+func (transport *Transport) Reconnection() {
+	transport.T.(*http.Transport).DisableKeepAlives = false
+	transport.T.(*http.Transport).CloseIdleConnections()
+	transport.S.CloseChan <- true
+	transport.S.Listener.Close()
+}

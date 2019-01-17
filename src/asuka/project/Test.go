@@ -13,17 +13,13 @@ type Test struct {
 }
 
 func (my *Test) EntryUrl() []string {
-	return []string{
-		"http://hk.flysay.com:888/",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
-		"http://hk.flysay.com:888",
+	var links []string
+
+	for i := 0; i < 1000; i++ {
+		links = append(links, "http://hk.flysay.com:888/")
 	}
+
+	return links
 }
 
 // frequency
@@ -62,6 +58,10 @@ func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *Test) ResponseAfter(spider *spider.Spider) {
+	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
+	spider.Transport.T.(*http.Transport).CloseIdleConnections()
+	spider.Transport.S.CloseChan <- true
+	spider.Transport.S.Listener.Close()
 	//if rand.Intn(10) == 2 {
 	//	spider.Transport.T.(*http.Transport).DisableKeepAlives = true
 	//} else {
