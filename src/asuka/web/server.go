@@ -232,6 +232,7 @@ func homeJson(sType string) []byte {
 		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
 		server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
 		server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
+		server["connections"] = s.Transport.S.Connections
 		server["load_5s"] = strconv.FormatFloat(s.Transport.LoadRate(5), 'f', 2, 64)       //todo slowly, make improvement
 		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64)     //todo slowly, make improvement
 		server["load_900s"] = strconv.FormatFloat(s.Transport.LoadRate(900), 'f', 2, 64)   //todo slowly, make improvement

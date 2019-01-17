@@ -62,7 +62,11 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 }
 
 func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
-	defer src.Close()
+	defer func() {
+		src.Close()
+		SocksInfo.Connections--
+	}()
+	SocksInfo.Connections++
 	src.(*net.TCPConn).SetKeepAlive(true)
 
 	socks.ReadAddr(src)

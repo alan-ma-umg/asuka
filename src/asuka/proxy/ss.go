@@ -13,14 +13,15 @@ import (
 )
 
 type SsAddr struct {
-	Enable     bool
-	Interval   float64
-	Type       string
-	Name       string
-	ServerAddr string
-	ClientAddr string
-	TrafficIn  uint64
-	TrafficOut uint64
+	Enable      bool
+	Interval    float64
+	Type        string
+	Name        string
+	ServerAddr  string
+	ClientAddr  string
+	TrafficIn   uint64
+	TrafficOut  uint64
+	Connections int
 }
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
@@ -126,7 +127,13 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			continue
 		}
 		go func() {
-			defer c.Close()
+			defer func() {
+				c.Close()
+				SocksInfo.Connections--
+			}()
+
+			SocksInfo.Connections++
+
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)
 			if err != nil {
