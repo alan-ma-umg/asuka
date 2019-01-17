@@ -118,11 +118,11 @@ func IO(w http.ResponseWriter, r *http.Request) {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
-			case "reconnect":
-				for _, s := range dispatcherObj.GetSpiders() {
-					s.Transport.Reconnect()
-				}
-				fmt.Println("reconnect")
+			//case "reconnect":
+			//	for _, s := range dispatcherObj.GetSpiders() {
+			//		s.Transport.Reconnect()
+			//	}
+			//	fmt.Println("reconnect")
 			case "stop":
 				for _, s := range dispatcherObj.GetSpiders() {
 					s.Stop = true
