@@ -204,7 +204,7 @@ func (transport *Transport) recordFailureCount() {
 	transport.failureCountSlice = append(transport.failureCountSlice[helper.MaxInt(len(transport.failureCountSlice)-CountQueueLen, 0):], transport.GetFailureCount())
 }
 
-func (transport *Transport) Reconnection() {
+func (transport *Transport) Reconnect() {
 	transport.T.(*http.Transport).DisableKeepAlives = false
 	transport.T.(*http.Transport).CloseIdleConnections()
 	transport.S.CloseChan <- true
