@@ -278,6 +278,10 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
 	recentFetch.ErrType = spider.requestErrorHandler(err)
 	spider.Transport.TrafficOut += uint64(len(dump))
+	//for localhost
+	if spider.Transport.S.Type == "" {
+		spider.Transport.S.TrafficOut += uint64(len(dump))
+	}
 
 	resp, err = spider.Client.Do(spider.CurrentRequest)
 	if err != nil {
@@ -296,6 +300,10 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 			dump, _ = httputil.DumpResponse(resp, false)
 			recentFetch.ResponseSize = helper.ByteCountBinary(uint64(len(dump)))
 			spider.Transport.TrafficIn += uint64(len(dump))
+			//for localhost
+			if spider.Transport.S.Type == "" {
+				spider.Transport.S.TrafficIn += uint64(len(dump))
+			}
 
 			if err != nil {
 				recentFetch.ErrType = "project.Filtered"
@@ -319,6 +327,10 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 	recentFetch.ErrType = spider.responseErrorHandler(err)
 	recentFetch.ResponseSize = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
 	spider.Transport.TrafficIn += uint64(len(dump) + len(resByte))
+	//for localhost
+	if spider.Transport.S.Type == "" {
+		spider.Transport.S.TrafficIn += uint64(len(dump) + len(resByte))
+	}
 
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))
