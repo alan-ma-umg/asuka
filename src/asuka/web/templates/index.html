@@ -215,7 +215,8 @@
                         socket / ws
                     </td>
                     <td>
-                        <strong>{{"{{basic.connections|numberFormat}}"}} / {{"{{basic.ws_connections|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.connections|numberFormat}}"}}
+                            / {{"{{basic.ws_connections|numberFormat}}"}}</strong>
                     </td>
                     <td>
                         Goroutine
@@ -360,6 +361,7 @@
                 <th>Ping / Lost</th>
                 <th style="min-width:70px">Time</th>
                 <th>Pass / Sleep</th>
+                <th>Conn</th>
                 <th>HTTP I/O</th>
                 <th>TCP I/O</th>
                 <th>Load 5s/60s</th>
@@ -382,6 +384,7 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
                 </td>
+                <td class="center">{{"{{connectionSum}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
                     /
@@ -432,6 +435,8 @@
                     <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
+                </td>
+                <td class="center">{{"{{server.connections}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
                     /
@@ -517,6 +522,9 @@
             },
             load1800sSum: function () {
                 return total(this.home.servers, "load_1800s").toFixed(2)
+            },
+            connectionSum: function () {
+                return total(this.home.servers, "connections").toFixed(2)
             },
             retries: function () {
                 let str = "", k;
