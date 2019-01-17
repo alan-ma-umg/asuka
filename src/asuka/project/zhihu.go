@@ -11,7 +11,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
@@ -58,6 +57,12 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 	}
 
 	spider.AddSleep(time.Duration(rand.Float64() * 200e9))
+
+	if spider.FailureLevel > 10 {
+		jianShuResetSpider(spider)
+	} else if rand.Intn(30) == 10 {
+		jianShuResetSpider(spider)
+	}
 }
 
 func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
@@ -191,19 +196,10 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
-	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
-	if spider.FailureLevel > 10 {
-		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
-		zhiHuResetSpider(spider)
-	} else if rand.Intn(15) == 10 {
-		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
-		zhiHuResetSpider(spider)
-	}
+
 }
 
 func zhiHuResetSpider(spider *spider.Spider) {
-	spider.Transport.Reconnect()
-	jar, _ := cookiejar.New(nil)
-	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: jar, Timeout: time.Second * 30}
 	spider.RequestsMap = map[string]*http.Request{}
+	spider.UpdateTransport()
 }

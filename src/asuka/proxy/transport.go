@@ -3,12 +3,11 @@ package proxy
 import (
 	"asuka/helper"
 	"context"
-	"fmt"
 	"golang.org/x/net/proxy"
+	"log"
 	"math"
 	"net"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -59,34 +58,39 @@ type Transport struct {
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
-	t := http.DefaultTransport
-	if ssAddr == nil {
-		ssAddr = &SsAddr{}
-	}
-
-	if ssAddr.ServerAddr != "" {
-		//socks5 proxy
-		dialer, err := proxy.SOCKS5("tcp", ssAddr.ClientAddr, nil, proxy.Direct)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "can't connect to the proxy:", err)
-			return nil, err
-		}
-
-		//http transport
-		t = &http.Transport{
-			//MaxIdleConnsPerHost: 2,
-			MaxIdleConns:        10,
-			IdleConnTimeout:     20 * time.Second,
-			TLSHandshakeTimeout: 10 * time.Second,
-
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				return dialer.Dial(network, addr)
-			},
-		}
-	}
-	instance := &Transport{S: ssAddr, T: t, LoopCount: 0}
+	instance := &Transport{S: ssAddr, T: createHttpTransport(ssAddr), LoopCount: 0}
 	transportList = append(transportList, instance)
 	return instance, nil
+}
+
+func createHttpTransport(SockInfo *SsAddr) *http.Transport {
+	t := &http.Transport{
+		Proxy:                 nil, //disable system proxy
+		MaxIdleConnsPerHost:   2,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	if SockInfo.ServerAddr == "" { //no socks5 proxy
+
+		t.DialContext = (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext
+	} else { //use socks5 proxy
+		dialer, err := proxy.SOCKS5("tcp", SockInfo.ClientAddr, nil, proxy.Direct)
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+		t.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialer.Dial(network, addr)
+		}
+	}
+	return t
 }
 
 // AddAccess 每次调用请求时增加一次记录, 无论是否成功
@@ -205,6 +209,12 @@ func (transport *Transport) recordFailureCount() {
 }
 
 func (transport *Transport) Reconnect() {
-	transport.S.CloseChan <- true
-	transport.S.Listener.Close()
+	if transport.S.ServerAddr != "" {
+		transport.S.Listener.Close()
+		transport.S.CloseChan <- true
+		transport.S.ClientAddr = ""
+		transport.T.(*http.Transport).CloseIdleConnections()
+		<-transport.S.OpenChan
+	}
+	transport.T = createHttpTransport(transport.S)
 }

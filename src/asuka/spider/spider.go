@@ -103,14 +103,21 @@ type Spider struct {
 	ProjectThrottle func(spider *Spider)
 }
 
-func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
-	if j == nil {
-		j, _ = cookiejar.New(nil)
-	}
-	c := &http.Client{Transport: t.T, Jar: j, Timeout: time.Second * 30}
-	spider := &Spider{Queue: queue, Transport: t, Client: c, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+func New(t *proxy.Transport, queue *queue.Queue) *Spider {
+	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+	spider.updateClient()
 	spiderList = append(spiderList, spider)
 	return spider
+}
+
+func (spider *Spider) UpdateTransport() {
+	spider.Transport.Reconnect()
+	spider.updateClient()
+}
+
+func (spider *Spider) updateClient() {
+	j, _ := cookiejar.New(nil)
+	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: j, Timeout: time.Second * 30}
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {

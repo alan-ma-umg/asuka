@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"golang.org/x/net/html"
-	"hash/crc32"
 	"io/ioutil"
 	"math/rand"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -27,9 +28,11 @@ func TestPageHtml(t *testing.T) {
 	fmt.Println(time.Duration(rand.Float64() * 120e9).Seconds())
 }
 func Test_crc32(t *testing.T) {
+	e := strings.Split(reflect.TypeOf(&JianShu{}).String(), ".")[1]
+	fmt.Println(e)
 
-	crc32q := crc32.ChecksumIEEE([]byte("33861"))
-	fmt.Println(crc32q)
+	//crc32q := crc32.ChecksumIEEE([]byte("33861"))
+	//fmt.Println(crc32q)
 }
 
 func TestZhiHu_PageHtml(t *testing.T) {

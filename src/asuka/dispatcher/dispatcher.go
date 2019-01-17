@@ -7,7 +7,6 @@ import (
 	"asuka/proxy"
 	"asuka/queue"
 	"asuka/spider"
-	"fmt"
 	"log"
 	"net"
 	"net/url"
@@ -30,7 +29,7 @@ func (dispatcher *Dispatcher) GetSpiders() []*spider.Spider {
 func (dispatcher *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
 	dispatcher.initSpiderOnce.Do(func() {
 		for _, t := range dispatcher.InitTransport() {
-			s := spider.New(t, nil, queue)
+			s := spider.New(t, queue)
 			dispatcher.spiderArr = append(dispatcher.spiderArr, s)
 		}
 	})
@@ -41,10 +40,11 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 	dispatcher.initSSOnce.Do(func() {
 		if helper.Env().LocalTransport.Enable {
 			//append default transport
-			dt, _ := proxy.NewTransport(&proxy.SsAddr{})
-			dt.S.Name = helper.Env().LocalTransport.Name
-			dt.S.Enable = helper.Env().LocalTransport.Enable
-			dt.S.Interval = helper.Env().LocalTransport.Interval
+			dt, _ := proxy.NewTransport(&proxy.SsAddr{
+				Name:     helper.Env().LocalTransport.Name,
+				Enable:   helper.Env().LocalTransport.Enable,
+				Interval: helper.Env().LocalTransport.Interval,
+			})
 			dispatcher.transportArr = append(dispatcher.transportArr, dt)
 		}
 
@@ -53,14 +53,7 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 				continue
 			}
 
-			for {
-				if ssAddr.ClientAddr != "" {
-					break
-				}
-				fmt.Println("Waiting for socks proxy")
-				time.Sleep(time.Second / 10)
-			}
-
+			<-ssAddr.OpenChan
 			t, err := proxy.NewTransport(ssAddr)
 			if err != nil {
 				log.Println("proxy error: ", err)
@@ -68,8 +61,6 @@ func (dispatcher *Dispatcher) InitTransport() []*proxy.Transport {
 			}
 			dispatcher.transportArr = append(dispatcher.transportArr, t)
 		}
-
-		fmt.Println("Socks proxy is ready to go")
 	})
 
 	return dispatcher.transportArr
@@ -86,7 +77,6 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 	for _, s := range dispatcher.InitSpider(queue) {
 		go func(spider *spider.Spider) {
 			for {
-
 				Crawl(project, spider)
 			}
 		}(s)

@@ -24,6 +24,7 @@ type SsAddr struct {
 	Connections int
 	Listener    net.Listener
 	CloseChan   chan bool
+	OpenChan    chan bool
 }
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
@@ -41,6 +42,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				CloseChan:  make(chan bool, 1),
+				OpenChan:   make(chan bool),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -76,6 +78,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				CloseChan:  make(chan bool, 1),
+				OpenChan:   make(chan bool),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -130,6 +133,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 	SocksInfo.Listener = l
+	SocksInfo.OpenChan <- true
 
 	for {
 		c, err := l.Accept()
@@ -138,7 +142,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			case <-SocksInfo.CloseChan:
 				// If we called stop() then there will be a value in es.done, so
 				// we'll get here and we can exit without showing the error.
-				SocksInfo.Connections++
+				//SocksInfo.Connections++
 				return
 			default:
 				log.Printf("Accept failed: %v", err)
@@ -151,7 +155,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 				//SocksInfo.Connections--
 			}()
 
-			//SocksInfo.Connections++
+			SocksInfo.Connections++
 
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)

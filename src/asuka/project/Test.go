@@ -22,9 +22,16 @@ func (my *Test) EntryUrl() []string {
 	return links
 }
 
+var times = 0
+
 // frequency
 func (my *Test) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 2e9))
+
+	if times < 10 {
+		spider.UpdateTransport()
+		times++
+	}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
@@ -33,7 +40,7 @@ func (my *Test) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Referer", my.EntryUrl()[0])
 	}
 
-	spider.Client.Timeout = time.Second * 2
+	spider.Client.Timeout = time.Second * 10
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

@@ -53,6 +53,7 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	SocksInfo.Listener = listener
+	SocksInfo.OpenChan <- true
 
 	for {
 		localConn, err := listener.Accept()
@@ -61,10 +62,10 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 			case <-SocksInfo.CloseChan:
 				// If we called stop() then there will be a value in es.done, so
 				// we'll get here and we can exit without showing the error.
-				SocksInfo.Connections++
+				//SocksInfo.Connections++
 				return
 			default:
-				log.Printf("Accept failed: %v", err)
+				log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
 				continue
 			}
 		}
@@ -77,7 +78,7 @@ func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
 		src.Close()
 		//SocksInfo.Connections--
 	}()
-	//SocksInfo.Connections++
+	SocksInfo.Connections++
 	src.(*net.TCPConn).SetKeepAlive(true)
 
 	socks.ReadAddr(src)
