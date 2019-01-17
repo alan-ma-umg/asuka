@@ -205,8 +205,6 @@ func (transport *Transport) recordFailureCount() {
 }
 
 func (transport *Transport) Reconnect() {
-	transport.T.(*http.Transport).DisableKeepAlives = false
-	transport.T.(*http.Transport).CloseIdleConnections()
 	transport.S.CloseChan <- true
 	transport.S.Listener.Close()
 }

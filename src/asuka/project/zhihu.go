@@ -191,9 +191,12 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
+	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
 	if spider.FailureLevel > 10 {
+		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
 		zhiHuResetSpider(spider)
 	} else if rand.Intn(15) == 10 {
+		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
 		zhiHuResetSpider(spider)
 	}
 }

@@ -42,7 +42,7 @@ func init() {
 					failCount++
 				}
 			}
-			if float64(failCount)/float64(len(spiderList)) >= 0.35 {
+			if float64(failCount)/float64(len(spiderList)) >= 0.50 {
 				for _, spider := range spiderList {
 					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
 					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
