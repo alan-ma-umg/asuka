@@ -112,9 +112,10 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 }
 
 func Crawl(project project.Project, spider *spider.Spider) {
-	// throttle
 	if project != nil {
-		project.Throttle(spider)
+		spider.RequestBefore = project.RequestBefore
+		spider.DownloadFilter = project.DownloadFilter
+		spider.ProjectThrottle = project.Throttle
 	}
 	spider.Throttle()
 
@@ -142,8 +143,7 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}()
 
 	spider.Transport.LoopCount++
-	spider.RequestBefore = project.RequestBefore
-	spider.DownloadFilter = project.DownloadFilter
+
 	_, err = spider.Fetch(u)
 	if err != nil {
 		return

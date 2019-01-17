@@ -58,26 +58,22 @@ func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *Test) ResponseAfter(spider *spider.Spider) {
-	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
-	spider.Transport.T.(*http.Transport).CloseIdleConnections()
-	spider.Transport.S.CloseChan <- true
-	spider.Transport.S.Listener.Close()
+	//spider.Transport.T.(*http.Transport).DisableKeepAlives = false
+	//spider.Transport.T.(*http.Transport).CloseIdleConnections()
+	//spider.Transport.S.CloseChan <- true
+	//spider.Transport.S.Listener.Close()
 	//if rand.Intn(10) == 2 {
 	//	spider.Transport.T.(*http.Transport).DisableKeepAlives = true
 	//} else {
 	//	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
 	//}
-
 	//spider.Transport.T.(*http.Transport).CloseIdleConnections()
-
 	//dialer, err := proxy.SOCKS5("tcp", spider.Transport.S.ClientAddr, nil, proxy.Direct)
 	//if err != nil {
 	//	fmt.Fprintln(os.Stderr, "can't connect to the proxy:", err)
 	//	return
 	//}
-
 	//spider.Transport.T
-
 	//http transport
 	//t := &http.Transport{
 	//MaxIdleConnsPerHost: 2,

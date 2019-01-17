@@ -29,31 +29,32 @@ import (
 	"time"
 )
 
-func init() {
-	//Emergency error handling
-	go func() {
-		t := time.NewTicker(time.Second)
-		for {
-			<-t.C
-			failCount := 0
-			//fixme bug !
-			for _, spider := range spiderList {
-				if spider.FailureLevel != 0 && len(spider.Transport.RecentFewTimesResultEmergency) >= RecentSeveralTimesResultCap {
-					failCount++
-				}
-			}
-			if float64(failCount)/float64(len(spiderList)) >= 0.50 {
-				for _, spider := range spiderList {
-					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
-					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
-					spider.FailureLevel = EmergencyFailureLevel
-					spider.ResetSleep()
-					spider.AddSleep(time.Hour * 3)
-				}
-			}
-		}
-	}()
-}
+//
+//func init() {
+//	//Emergency error handling
+//	go func() {
+//		t := time.NewTicker(time.Second)
+//		for {
+//			<-t.C
+//			failCount := 0
+//			//fixme bug !
+//			for _, spider := range spiderList {
+//				if spider.FailureLevel != 0 && len(spider.Transport.RecentFewTimesResultEmergency) >= RecentSeveralTimesResultCap {
+//					failCount++
+//				}
+//			}
+//			if float64(failCount)/float64(len(spiderList)) >= 0.50 {
+//				for _, spider := range spiderList {
+//					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
+//					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
+//					spider.FailureLevel = EmergencyFailureLevel
+//					spider.ResetSleep()
+//					spider.AddSleep(time.Hour * 3)
+//				}
+//			}
+//		}
+//	}()
+//}
 
 const EmergencyFailureLevel = 150
 const RecentFetchCount = 100
@@ -97,8 +98,9 @@ type Spider struct {
 	Stop             bool
 	sleepDuration    time.Duration
 
-	RequestBefore  func(spider *Spider)
-	DownloadFilter func(spider *Spider, response *http.Response) (bool, error)
+	RequestBefore   func(spider *Spider)
+	DownloadFilter  func(spider *Spider, response *http.Response) (bool, error)
+	ProjectThrottle func(spider *Spider)
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
@@ -174,11 +176,12 @@ func (spider *Spider) Throttle() {
 		}
 	}
 
+	spider.ProjectThrottle(spider)
 	//go to sleep and reset sleep duration
 	if duration := spider.GetSleep(); duration > 0 {
-		spider.ResetSleep()
 		time.Sleep(duration)
 	}
+	spider.ResetSleep()
 
 	//reset failureLevel
 	if spider.GetSleep() == 0 { //Maybe change by another goroutine when time.sleep
@@ -222,7 +225,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	}
 
 	if spider.CurrentRequest.UserAgent() == "" {
-		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
+		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 	}
 	return spider
 }

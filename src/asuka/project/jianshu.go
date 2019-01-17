@@ -57,6 +57,15 @@ func (my *JianShu) Throttle(spider *spider.Spider) {
 	}
 
 	spider.AddSleep(time.Duration(rand.Float64() * 120e9))
+
+	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
+	if spider.FailureLevel > 10 {
+		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
+		jianShuResetSpider(spider)
+	} else if rand.Intn(30) == 10 {
+		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
+		jianShuResetSpider(spider)
+	}
 }
 
 func (my *JianShu) RequestBefore(spider *spider.Spider) {
@@ -190,14 +199,6 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *JianShu) ResponseAfter(spider *spider.Spider) {
-	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
-	if spider.FailureLevel > 10 {
-		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
-		jianShuResetSpider(spider)
-	} else if rand.Intn(30) == 10 {
-		spider.Transport.T.(*http.Transport).DisableKeepAlives = true
-		jianShuResetSpider(spider)
-	}
 }
 
 func jianShuResetSpider(spider *spider.Spider) {
