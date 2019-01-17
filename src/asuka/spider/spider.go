@@ -96,6 +96,9 @@ type Spider struct {
 	RequestStartTime time.Time
 	Stop             bool
 	sleepDuration    time.Duration
+
+	RequestBefore  func(spider *Spider)
+	DownloadFilter func(spider *Spider, response *http.Response) (bool, error)
 }
 
 func New(t *proxy.Transport, j *cookiejar.Jar, queue *queue.Queue) *Spider {
@@ -224,11 +227,11 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), downloadFilter func(spider *Spider, response *http.Response) (bool, error)) (resp *http.Response, err error) {
+func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	spider.SetRequest(u, nil) //setting spider.CurrentRequest
 
-	if requestBefore != nil {
-		requestBefore(spider)
+	if spider.RequestBefore != nil {
+		spider.RequestBefore(spider)
 	}
 
 	spider.ResponseStr = ""
@@ -292,8 +295,8 @@ func (spider *Spider) Fetch(u *url.URL, requestBefore func(spider *Spider), down
 	recentFetch.StatusCode = resp.StatusCode
 	recentFetch.ContentType = resp.Header.Get("Content-type")
 
-	if downloadFilter != nil {
-		filter, err := downloadFilter(spider, resp)
+	if spider.DownloadFilter != nil {
+		filter, err := spider.DownloadFilter(spider, resp)
 
 		if err != nil || !filter {
 			//traffic  response header only

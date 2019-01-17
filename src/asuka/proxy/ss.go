@@ -129,7 +129,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 		go func() {
 			defer func() {
 				c.Close()
-				SocksInfo.Connections--
+				//SocksInfo.Connections--
 			}()
 
 			SocksInfo.Connections++

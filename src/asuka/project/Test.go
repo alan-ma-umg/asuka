@@ -2,8 +2,8 @@ package project
 
 import (
 	"asuka/spider"
+	"math/rand"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
@@ -28,7 +28,7 @@ func (my *Test) EntryUrl() []string {
 
 // frequency
 func (my *Test) Throttle(spider *spider.Spider) {
-	//spider.AddSleep(10e9)
+	spider.AddSleep(time.Duration(rand.Float64() * 2e9))
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
@@ -37,7 +37,7 @@ func (my *Test) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Referer", my.EntryUrl()[0])
 	}
 
-	spider.Client.Timeout = time.Second
+	spider.Client.Timeout = time.Second * 2
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -62,9 +62,40 @@ func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 }
 
 func (my *Test) ResponseAfter(spider *spider.Spider) {
+	//if rand.Intn(10) == 2 {
+	//	spider.Transport.T.(*http.Transport).DisableKeepAlives = true
+	//} else {
+	//	spider.Transport.T.(*http.Transport).DisableKeepAlives = false
+	//}
+
+	//spider.Transport.T.(*http.Transport).CloseIdleConnections()
+
+	//dialer, err := proxy.SOCKS5("tcp", spider.Transport.S.ClientAddr, nil, proxy.Direct)
+	//if err != nil {
+	//	fmt.Fprintln(os.Stderr, "can't connect to the proxy:", err)
+	//	return
+	//}
+
+	//spider.Transport.T
+
+	//http transport
+	//t := &http.Transport{
+	//MaxIdleConnsPerHost: 2,
+	//MaxIdleConns:        10,
+	//IdleConnTimeout:     20 * time.Second,
+	//TLSHandshakeTimeout: 10 * time.Second,
+	//
+	//DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+	//	return dialer.Dial(network, addr)
+	//},
+	//}
+	//
+	//spider.Transport.T = nil
+	//spider.Transport.T = t
+
 	//free the memory
-	if len(spider.RequestsMap) > 10 {
-		spider.Client.Jar, _ = cookiejar.New(nil)
-		spider.RequestsMap = map[string]*http.Request{}
-	}
+	//if len(spider.RequestsMap) > 10 {
+	//	spider.Client.Jar, _ = cookiejar.New(nil)
+	//	spider.RequestsMap = map[string]*http.Request{}
+	//}
 }
