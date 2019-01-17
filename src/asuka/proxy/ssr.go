@@ -66,6 +66,7 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 				return
 			default:
 				log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
+				time.Sleep(time.Millisecond)
 				continue
 			}
 		}

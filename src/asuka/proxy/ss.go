@@ -146,6 +146,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 				return
 			default:
 				log.Printf("Accept failed: %v", err)
+				time.Sleep(time.Millisecond)
 				continue
 			}
 		}
