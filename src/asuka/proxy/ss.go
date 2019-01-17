@@ -138,6 +138,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			case <-SocksInfo.CloseChan:
 				// If we called stop() then there will be a value in es.done, so
 				// we'll get here and we can exit without showing the error.
+				SocksInfo.Connections++
 				return
 			default:
 				log.Printf("Accept failed: %v", err)
@@ -150,7 +151,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 				//SocksInfo.Connections--
 			}()
 
-			SocksInfo.Connections++
+			//SocksInfo.Connections++
 
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)
