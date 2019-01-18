@@ -46,7 +46,7 @@ type Transport struct {
 	S *SsAddr
 	T http.RoundTripper
 
-	countSliceMutex         sync.RWMutex
+	countSliceMutex   sync.RWMutex
 	accessCountSecondSlice  []int
 	failureCountSecondSlice []int
 	accessCountMinuteSlice  []int
@@ -157,6 +157,34 @@ func (transport *Transport) LoadRate(second int) float64 {
 	return rate / float64(times)
 }
 
+func (transport *Transport) LoadMinuteRate(minute int) float64 {
+	//Read lock
+	defer func() {
+		transport.countSliceMutex.RUnlock()
+	}()
+	transport.countSliceMutex.RLock()
+
+	updateCountQueueCap(minute * 60) //todo maybe remove it
+	rate := 0.0
+
+	sliceLen := len(transport.accessCountMinuteSlice)
+
+	times := int(math.Ceil(float64(minute) / MinuteInterval))
+	for i := 0; i < times; i++ {
+		currentNum := 0
+		prevNum := 0
+		if i < sliceLen {
+			currentNum = transport.accessCountMinuteSlice[sliceLen-i-1]
+			if i+1 < sliceLen {
+				prevNum = transport.accessCountMinuteSlice[sliceLen-i-2]
+			}
+		}
+		rate += float64(currentNum-prevNum) / MinuteInterval / 60
+	}
+
+	return rate / float64(times)
+}
+
 //AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒
 func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes int) {
 	//Read lock
@@ -227,7 +255,11 @@ func (transport *Transport) recordAccessMinuteCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	//transport.accessCountSecondSlice = append(transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-CountQueueCap, 0):], transport.GetAccessCount())
+	count := 0
+	if len(transport.accessCountSecondSlice) != 0 {
+		count = transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-1, 0)]
+	}
+	transport.accessCountMinuteSlice = append(transport.accessCountMinuteSlice[helper.MaxInt(len(transport.accessCountMinuteSlice)-int(math.Ceil(float64(CountQueueCap)/60/MinuteInterval)), 0):], count)
 }
 
 func (transport *Transport) recordFailureMinuteCount() {
@@ -238,7 +270,11 @@ func (transport *Transport) recordFailureMinuteCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	//transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueCap, 0):], transport.GetFailureCount())
+	count := 0
+	if len(transport.failureCountSecondSlice) != 0 {
+		count = transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-1, 0)]
+	}
+	transport.failureCountMinuteSlice = append(transport.failureCountMinuteSlice[helper.MaxInt(len(transport.failureCountMinuteSlice)-int(math.Ceil(float64(CountQueueCap)/60/MinuteInterval)), 0):], count)
 }
 
 func (transport *Transport) Reconnect() {
