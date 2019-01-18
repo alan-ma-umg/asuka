@@ -171,16 +171,16 @@ func (spider *Spider) Throttle() {
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 			if accessCountAll > 40 && failureRateAll > 95 {
 				spider.FailureLevel = 100
-				spider.AddSleep(time.Hour * 2)
+				spider.AddSleep(time.Hour * 3)
 			} else if accessCountAll > 40 && failureRateAll > 85 {
 				spider.FailureLevel = 80
-				spider.AddSleep(time.Minute * 40)
+				spider.AddSleep(time.Hour)
 			} else if accessCountAll > 30 && failureRateAll > 70 {
 				spider.FailureLevel = 60
-				spider.AddSleep(time.Minute * 10)
+				spider.AddSleep(time.Minute * 30)
 			} else if accessCountAll > 30 && failureRateAll > 60 {
 				spider.FailureLevel = 40
-				spider.AddSleep(time.Minute * 5)
+				spider.AddSleep(time.Minute * 10)
 			} else if spider.FailureLevel <= 20 {
 				spider.FailureLevel = 20
 				spider.AddSleep(time.Minute * 2)
