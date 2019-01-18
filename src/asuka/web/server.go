@@ -87,7 +87,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, runtime.GOOS)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, runtime.GOOS)
 }
 func IO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -163,7 +163,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -242,6 +242,8 @@ func homeJson(sType string) []byte {
 		server["load_60s"] = strconv.FormatFloat(s.Transport.LoadRate(60), 'f', 2, 64)     //todo slowly, make improvement
 		server["load_900s"] = strconv.FormatFloat(s.Transport.LoadRate(900), 'f', 2, 64)   //todo slowly, make improvement
 		server["load_1800s"] = strconv.FormatFloat(s.Transport.LoadRate(1800), 'f', 2, 64) //todo slowly, make improvement
+		server["load_5h"] = strconv.FormatFloat(s.Transport.LoadRate(18000), 'f', 2, 64)   //todo slowly, make improvement
+		server["load_10h"] = strconv.FormatFloat(s.Transport.LoadRate(36000), 'f', 2, 64)  //todo slowly, make improvement
 		server["access_count"] = s.Transport.GetAccessCount()
 		server["failure_count"] = s.Transport.GetFailureCount()
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)

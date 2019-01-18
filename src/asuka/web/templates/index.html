@@ -301,13 +301,13 @@
                         Load 5h
                     </td>
                     <td>
-                        <strong>-</strong>
+                        <strong>{{"{{load5hSum}}"}}</strong>
                     </td>
                     <td>
                         Load 10h
                     </td>
                     <td>
-                        <strong>-</strong>
+                        <strong>{{"{{load10hSum}}"}}</strong>
                     </td>
                 </tr>
                 </tbody>
@@ -522,6 +522,12 @@
             },
             load1800sSum: function () {
                 return total(this.home.servers, "load_1800s").toFixed(2)
+            },
+            load5hSum: function () {
+                return total(this.home.servers, "load_5h").toFixed(2)
+            },
+            load10hSum: function () {
+                return total(this.home.servers, "load_10h").toFixed(2)
             },
             connectionSum: function () {
                 return total(this.home.servers, "connections")

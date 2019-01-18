@@ -1,7 +1,9 @@
 #! /usr/bin/env bash
 
 echo 'Welcome! Asuka'
-git pull --rebase  --quiet && go get asuka && killall asuka >/dev/null 2>/dev/null
+git pull --rebase
+
+go get asuka && killall asuka >/dev/null 2>/dev/null
 echo 'Killed Asuka!'
 
 
