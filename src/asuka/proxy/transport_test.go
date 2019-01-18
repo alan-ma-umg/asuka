@@ -62,5 +62,5 @@ func TestTransport(t *testing.T) {
 	fmt.Println(time.Since(s))
 	fmt.Println("Load: ", t1.LoadRate(30*60))
 	time.Sleep(1e9)
-	log.Println(len(t1.accessCountSlice))
+	log.Println(len(t1.accessCountSecondSlice))
 }

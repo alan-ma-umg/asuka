@@ -13,6 +13,7 @@ import (
 )
 
 const SecondInterval = 1
+const MinuteInterval = 10
 
 var CountQueueLen = 0 //Dynamic changes
 
@@ -37,9 +38,11 @@ type Transport struct {
 	S *SsAddr
 	T http.RoundTripper
 
-	countSliceMutex   sync.RWMutex
-	accessCountSlice  []int
-	failureCountSlice []int
+	countSliceMutex         sync.RWMutex
+	accessCountSecondSlice        []int
+	failureCountSecondSlice       []int
+	accessCountMinuteSlice  []int
+	failureCountMinuteSlice []int
 
 	accessCountHistory  int
 	FailureCountHistory int
@@ -128,16 +131,16 @@ func (transport *Transport) LoadRate(second int) float64 {
 	updateCountQueueLen(second)
 	rate := 0.0
 
-	sliceLen := len(transport.accessCountSlice)
+	sliceLen := len(transport.accessCountSecondSlice)
 
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	for i := 0; i < times; i++ {
 		currentNum := 0
 		prevNum := 0
 		if i < sliceLen {
-			currentNum = transport.accessCountSlice[sliceLen-i-1]
+			currentNum = transport.accessCountSecondSlice[sliceLen-i-1]
 			if i+1 < sliceLen {
-				prevNum = transport.accessCountSlice[sliceLen-i-2]
+				prevNum = transport.accessCountSecondSlice[sliceLen-i-2]
 			}
 		}
 		rate += float64(currentNum-prevNum) / SecondInterval
@@ -156,26 +159,26 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 
 	updateCountQueueLen(second)
 
-	accessSliceLen := len(transport.accessCountSlice)
-	failureSliceLen := len(transport.failureCountSlice)
+	accessSliceLen := len(transport.accessCountSecondSlice)
+	failureSliceLen := len(transport.failureCountSecondSlice)
 
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	for i := 0; i < times; i++ {
 		currentFailureNum := 0
 		prevFailureNum := 0
 		if i < failureSliceLen {
-			currentFailureNum = transport.failureCountSlice[failureSliceLen-i-1]
+			currentFailureNum = transport.failureCountSecondSlice[failureSliceLen-i-1]
 			if i+1 < failureSliceLen {
-				prevFailureNum = transport.failureCountSlice[failureSliceLen-i-2]
+				prevFailureNum = transport.failureCountSecondSlice[failureSliceLen-i-2]
 			}
 		}
 
 		currentAccessNum := 0
 		prevAccessNum := 0
 		if i < accessSliceLen {
-			currentAccessNum = transport.accessCountSlice[accessSliceLen-i-1]
+			currentAccessNum = transport.accessCountSecondSlice[accessSliceLen-i-1]
 			if i+1 < accessSliceLen {
-				prevAccessNum = transport.accessCountSlice[accessSliceLen-i-2]
+				prevAccessNum = transport.accessCountSecondSlice[accessSliceLen-i-2]
 			}
 		}
 
@@ -194,7 +197,7 @@ func (transport *Transport) recordAccessCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	transport.accessCountSlice = append(transport.accessCountSlice[helper.MaxInt(len(transport.accessCountSlice)-CountQueueLen, 0):], transport.GetAccessCount())
+	transport.accessCountSecondSlice = append(transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-CountQueueLen, 0):], transport.GetAccessCount())
 }
 
 func (transport *Transport) recordFailureCount() {
@@ -205,7 +208,7 @@ func (transport *Transport) recordFailureCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	transport.failureCountSlice = append(transport.failureCountSlice[helper.MaxInt(len(transport.failureCountSlice)-CountQueueLen, 0):], transport.GetFailureCount())
+	transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueLen, 0):], transport.GetFailureCount())
 }
 
 func (transport *Transport) Reconnect() {
