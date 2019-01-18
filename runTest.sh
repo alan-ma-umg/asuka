@@ -1,10 +1,13 @@
 #! /usr/bin/env bash
 
 echo 'Welcome! Asuka'
-git reset HEAD --hard --quiet
-git pull --rebase --quiet
+git reset HEAD --hard --quiet && git pull --rebase --quiet && go get asuka
+if [ $? -ne 0 ];then
+    echo 'Update failed!'
+    exit 1;
+fi
 
-go get asuka && killall asuka >/dev/null 2>/dev/null
+killall asuka >/dev/null 2>/dev/null
 echo 'Killed Asuka!'
 
 
