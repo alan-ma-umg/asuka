@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -145,8 +146,11 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 				//SocksInfo.Connections++
 				return
 			default:
-				log.Printf("Accept failed: %v", err)
-				time.Sleep(time.Millisecond)
+				if strings.Contains(err.Error(), "use of closed network connection") {
+					time.Sleep(time.Millisecond)
+				} else {
+					log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
+				}
 				continue
 			}
 		}

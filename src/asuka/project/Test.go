@@ -29,8 +29,8 @@ func (my *Test) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 2e9))
 
 	if times < 10 {
-		spider.UpdateTransport()
 		times++
+		spider.UpdateTransport()
 	}
 }
 
