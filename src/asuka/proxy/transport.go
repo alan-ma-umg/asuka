@@ -13,21 +13,10 @@ import (
 )
 
 const SecondInterval = 1
-const MinuteInterval = 10
 
-var CountQueueCap = MinuteInterval*60 + SecondInterval //initial value, will dynamic changes
+var CountQueueCap = 0 //initial value, will dynamic changes
 
 func init() {
-	go func() {
-		m := time.NewTicker(time.Minute * MinuteInterval)
-		for {
-			<-m.C
-			for _, t := range transportList {
-				t.recordAccessMinuteCount()
-				t.recordFailureMinuteCount()
-			}
-		}
-	}()
 	go func() {
 		s := time.NewTicker(time.Second * SecondInterval)
 		for {
@@ -46,11 +35,9 @@ type Transport struct {
 	S *SsAddr
 	T http.RoundTripper
 
-	countSliceMutex   sync.RWMutex
+	countSliceMutex         sync.RWMutex
 	accessCountSecondSlice  []int
 	failureCountSecondSlice []int
-	accessCountMinuteSlice  []int
-	failureCountMinuteSlice []int
 
 	accessCountHistory  int
 	FailureCountHistory int
@@ -129,7 +116,7 @@ func updateCountQueueCap(second int) {
 }
 
 // LoadRate 获取指定秒数内的负载值.参数最小值SecondInterval秒
-func (transport *Transport) LoadRate(second int) float64 {
+func (transport *Transport) LoadRate(second int) (rate float64) {
 	//Read lock
 	defer func() {
 		transport.countSliceMutex.RUnlock()
@@ -137,52 +124,14 @@ func (transport *Transport) LoadRate(second int) float64 {
 	transport.countSliceMutex.RLock()
 
 	updateCountQueueCap(second)
-	rate := 0.0
 
 	sliceLen := len(transport.accessCountSecondSlice)
+	if sliceLen == 0 || second == 0 {
+		return
+	}
 
 	times := int(math.Ceil(float64(second) / SecondInterval))
-	for i := 0; i < times; i++ {
-		currentNum := 0
-		prevNum := 0
-		if i < sliceLen {
-			currentNum = transport.accessCountSecondSlice[sliceLen-i-1]
-			if i+1 < sliceLen {
-				prevNum = transport.accessCountSecondSlice[sliceLen-i-2]
-			}
-		}
-		rate += float64(currentNum-prevNum) / SecondInterval
-	}
-
-	return rate / float64(times)
-}
-
-func (transport *Transport) LoadMinuteRate(minute int) float64 {
-	//Read lock
-	defer func() {
-		transport.countSliceMutex.RUnlock()
-	}()
-	transport.countSliceMutex.RLock()
-
-	updateCountQueueCap(minute * 60) //todo maybe remove it
-	rate := 0.0
-
-	sliceLen := len(transport.accessCountMinuteSlice)
-
-	times := int(math.Ceil(float64(minute) / MinuteInterval))
-	for i := 0; i < times; i++ {
-		currentNum := 0
-		prevNum := 0
-		if i < sliceLen {
-			currentNum = transport.accessCountMinuteSlice[sliceLen-i-1]
-			if i+1 < sliceLen {
-				prevNum = transport.accessCountMinuteSlice[sliceLen-i-2]
-			}
-		}
-		rate += float64(currentNum-prevNum) / MinuteInterval / 60
-	}
-
-	return rate / float64(times)
+	return float64(transport.accessCountSecondSlice[sliceLen-1]-transport.accessCountSecondSlice[helper.MaxInt(sliceLen-times-1, 0)]) / float64(times)
 }
 
 //AccessCount  获取指定秒数内的访问数/失败j数量.参数最小值SecondInterval秒
@@ -199,27 +148,16 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 	failureSliceLen := len(transport.failureCountSecondSlice)
 
 	times := int(math.Ceil(float64(second) / SecondInterval))
-	for i := 0; i < times; i++ {
-		currentFailureNum := 0
-		prevFailureNum := 0
-		if i < failureSliceLen {
-			currentFailureNum = transport.failureCountSecondSlice[failureSliceLen-i-1]
-			if i+1 < failureSliceLen {
-				prevFailureNum = transport.failureCountSecondSlice[failureSliceLen-i-2]
-			}
-		}
+	if times == 0 {
+		return
+	}
 
-		currentAccessNum := 0
-		prevAccessNum := 0
-		if i < accessSliceLen {
-			currentAccessNum = transport.accessCountSecondSlice[accessSliceLen-i-1]
-			if i+1 < accessSliceLen {
-				prevAccessNum = transport.accessCountSecondSlice[accessSliceLen-i-2]
-			}
-		}
+	if accessSliceLen != 0 {
+		accessTimes = transport.accessCountSecondSlice[accessSliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(accessSliceLen-times-1, 0)]
+	}
 
-		accessTimes += currentAccessNum - prevAccessNum
-		failureTimes += currentFailureNum - prevFailureNum
+	if failureSliceLen != 0 {
+		failureTimes = transport.failureCountSecondSlice[failureSliceLen-1] - transport.failureCountSecondSlice[helper.MaxInt(failureSliceLen-times-1, 0)]
 	}
 
 	return
@@ -245,36 +183,6 @@ func (transport *Transport) recordFailureSecondCount() {
 
 	//slice fifo
 	transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueCap, 0):], transport.GetFailureCount())
-}
-
-func (transport *Transport) recordAccessMinuteCount() {
-	//Write lock
-	defer func() {
-		transport.countSliceMutex.Unlock()
-	}()
-	transport.countSliceMutex.Lock()
-
-	//slice fifo
-	count := 0
-	if len(transport.accessCountSecondSlice) != 0 {
-		count = transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-1, 0)]
-	}
-	transport.accessCountMinuteSlice = append(transport.accessCountMinuteSlice[helper.MaxInt(len(transport.accessCountMinuteSlice)-int(math.Ceil(float64(CountQueueCap)/60/MinuteInterval)), 0):], count)
-}
-
-func (transport *Transport) recordFailureMinuteCount() {
-	//Write lock
-	defer func() {
-		transport.countSliceMutex.Unlock()
-	}()
-	transport.countSliceMutex.Lock()
-
-	//slice fifo
-	count := 0
-	if len(transport.failureCountSecondSlice) != 0 {
-		count = transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-1, 0)]
-	}
-	transport.failureCountMinuteSlice = append(transport.failureCountMinuteSlice[helper.MaxInt(len(transport.failureCountMinuteSlice)-int(math.Ceil(float64(CountQueueCap)/60/MinuteInterval)), 0):], count)
 }
 
 func (transport *Transport) Reconnect() {

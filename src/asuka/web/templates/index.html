@@ -139,7 +139,7 @@
 
     .head-item {
         min-width: 300px;
-        padding: 0 30px 15px;
+        padding: 0 20px 15px;
         flex: 1;
     }
 
@@ -191,12 +191,6 @@
                         </strong>
                     </td>
                 </tr>
-                <tr>
-                    <td>Retries</td>
-                    <td colspan="3">
-                        <strong>{{"{{retries}}"}}</strong>
-                    </td>
-                </tr>
                 </tbody>
             </table>
         </div>
@@ -226,6 +220,27 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Retries</td>
+                    <td colspan="3">
+                        <strong>{{"{{retries}}"}}</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="head-item">
+            <div style="float:right">
+                <h1>{{"{{basic.net_out}}"}}</h1>
+                <small>TCP traffic out</small>
+            </div>
+            <div>
+                <h1>{{"{{basic.net_in}}"}}</h1>
+                <small>TCP traffic in</small>
+            </div>
+            <br>
+            <table>
+                <tbody>
+                <tr>
                     <td>
                         Request
                     </td>
@@ -251,63 +266,6 @@
                     </td>
                     <td>
                         <strong>{{"{{failureAllAvg}}"}}%</strong>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="head-item">
-            <div style="float:right">
-                <h1>{{"{{basic.net_out}}"}}</h1>
-                <small>TCP traffic out</small>
-            </div>
-            <div>
-                <h1>{{"{{basic.net_in}}"}}</h1>
-                <small>TCP traffic in</small>
-            </div>
-            <br>
-            <table>
-                <tbody>
-                <tr>
-                    <td>
-                        Load 5s
-                    </td>
-                    <td>
-                        <strong>{{"{{load5sSum}}"}}</strong>
-                    </td>
-                    <td>
-                        Load 60s
-                    </td>
-                    <td>
-                        <strong>{{"{{load60sSum}}"}}</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Load 15min
-                    </td>
-                    <td>
-                        <strong>{{"{{load900sSum}}"}}</strong>
-                    </td>
-                    <td>
-                        Load 30min
-                    </td>
-                    <td>
-                        <strong>{{"{{load1800sSum}}"}}</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Load 5h
-                    </td>
-                    <td>
-                        <strong>{{"{{load5hSum}}"}}</strong>
-                    </td>
-                    <td>
-                        Load 10h
-                    </td>
-                    <td>
-                        <strong>{{"{{load10hSum}}"}}</strong>
                     </td>
                 </tr>
                 </tbody>
@@ -396,9 +354,9 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
                 </td>
                 <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{load5sSum}}"}}</div>
+                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
                     /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{load60sSum}}"}}</div>
+                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
@@ -448,9 +406,11 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
                 </td>
                 <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{server.load_5s}}"}}</div>
+                    <div style="display:inline-block;width:45px"
+                         class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
                     /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{server.load_60s}}"}}</div>
+                    <div style="display:inline-block;width:45px"
+                         class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
@@ -510,24 +470,6 @@
             },
             statusAvg: function () {
                 return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
-            },
-            load5sSum: function () {
-                return total(this.home.servers, "load_5s").toFixed(2)
-            },
-            load60sSum: function () {
-                return total(this.home.servers, "load_60s").toFixed(2)
-            },
-            load900sSum: function () {
-                return total(this.home.servers, "load_900s").toFixed(2)
-            },
-            load1800sSum: function () {
-                return total(this.home.servers, "load_1800s").toFixed(2)
-            },
-            load5hSum: function () {
-                return total(this.home.servers, "load_5h").toFixed(2)
-            },
-            load10hSum: function () {
-                return total(this.home.servers, "load_10h").toFixed(2)
             },
             connectionSum: function () {
                 return total(this.home.servers, "connections")
@@ -654,15 +596,14 @@
             let data = JSON.parse(evt.data);
             vueContent.$data[data.type] = data;
             vueContent.$data.basic = data.basic;
-            document.title = "Asuka " + data.basic.load_avg + " / " + data.basic.load_sum + " / " + data.basic.time;
+            document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
             ws.send("");
-
 
             //chart
             if (vueContent.chart1) {
-                vueContent.chart1.data.datasets[0].data.push(data.basic.load_sum);
-                if (vueContent.chart1.data.labels.length < vueContent.chart1.data.datasets[0].data.length) {
-                    vueContent.chart1.data.datasets[0].data.shift();
+                vueContent.chart1.data.datasets[0].data = [];
+                for (let s in data.basic.loads) {
+                    vueContent.chart1.data.datasets[0].data.push(data.basic.loads[s]);
                 }
                 vueContent.chart1.update();
             } else {
@@ -696,11 +637,11 @@
         return {
             type: 'line',
             data: {
-                labels: new Array(10),
+                labels: new Array(9),
                 datasets: [{label: '', data: [], borderColor: 'rgb(97, 100, 102)', borderWidth: 0.5, fill: false}]
             },
             options: {
-                layout: {padding: {left: 0, right: 10, top: 5, bottom: 10}},
+                layout: {padding: {left: 10, right: 10, top: 5, bottom: 10}},
                 elements: {point: {pointStyle: "crossRot"}, line: {tension: 0.2}},
                 responsive: false,
                 legend: {display: false},
