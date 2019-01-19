@@ -266,6 +266,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 		}
 
+		if recentFetch.StatusCode != 0 && recentFetch.StatusCode != 200 {
+			if spider.FailureLevel == 0 {
+				spider.FailureLevel = 10
+				spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+			}
+		}
+
 		//A few times result of http request
 		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
 		spider.Transport.RecentFewTimesResultEmergency = append(spider.Transport.RecentFewTimesResultEmergency, spider.FailureLevel == 0)
@@ -368,10 +375,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	//http status
 	if resp.StatusCode != 200 && err == nil {
-		if spider.FailureLevel == 0 {
-			spider.FailureLevel = 10
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
-		}
 		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
 	}
 
