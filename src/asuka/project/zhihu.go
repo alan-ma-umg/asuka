@@ -188,7 +188,7 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	//	return false
 	//}
 
-	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/people") || !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question") {
+	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/people") || !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question") || !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/collection") {
 		return false
 	}
 
