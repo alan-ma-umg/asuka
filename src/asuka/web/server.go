@@ -81,7 +81,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
 	})
-	http.Handle("/js/", commonHandle(http.StripPrefix("/js", http.FileServer(http.Dir(helper.Env().TemplatePath+"js")))))
+	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir(helper.Env().TemplatePath+"static")))))
 
 	log.Fatal(http.ListenAndServe(address, nil))
 }
