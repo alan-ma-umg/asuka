@@ -95,7 +95,7 @@ func (dispatcher *Dispatcher) Run(project project.Project, queue *queue.Queue) {
 					s.Transport.PingFailureRate = float64(fail) / float64(times)
 				}
 
-				time.Sleep(7)
+				time.Sleep(7 * time.Second)
 			}
 		}(s)
 	}
