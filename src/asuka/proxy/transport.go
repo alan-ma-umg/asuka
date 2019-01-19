@@ -36,8 +36,8 @@ type Transport struct {
 	T http.RoundTripper
 
 	countSliceMutex         sync.RWMutex
-	accessCountSecondSlice  []int
-	failureCountSecondSlice []int
+	accessCountSecondSlice  []uint32
+	failureCountSecondSlice []uint32
 
 	accessCountHistory  int
 	FailureCountHistory int
@@ -153,11 +153,11 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 	}
 
 	if accessSliceLen != 0 {
-		accessTimes = transport.accessCountSecondSlice[accessSliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(accessSliceLen-times-1, 0)]
+		accessTimes = int(transport.accessCountSecondSlice[accessSliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(accessSliceLen-times-1, 0)])
 	}
 
 	if failureSliceLen != 0 {
-		failureTimes = transport.failureCountSecondSlice[failureSliceLen-1] - transport.failureCountSecondSlice[helper.MaxInt(failureSliceLen-times-1, 0)]
+		failureTimes = int(transport.failureCountSecondSlice[failureSliceLen-1] - transport.failureCountSecondSlice[helper.MaxInt(failureSliceLen-times-1, 0)])
 	}
 
 	return
@@ -171,7 +171,7 @@ func (transport *Transport) recordAccessSecondCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	transport.accessCountSecondSlice = append(transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-CountQueueCap, 0):], transport.GetAccessCount())
+	transport.accessCountSecondSlice = append(transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-CountQueueCap, 0):], uint32(transport.GetAccessCount()))
 }
 
 func (transport *Transport) recordFailureSecondCount() {
@@ -182,7 +182,7 @@ func (transport *Transport) recordFailureSecondCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueCap, 0):], transport.GetFailureCount())
+	transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueCap, 0):], uint32(transport.GetFailureCount()))
 }
 
 func (transport *Transport) Reconnect() {

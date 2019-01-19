@@ -11,9 +11,9 @@ import (
 func TestTransport(t *testing.T) {
 	t1, _ := NewTransport(&SsAddr{})
 
-	t1.LoadRate(1360000)
+	t1.LoadRate(86400 * 2 * 200)
 
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < CountQueueCap; i++ {
 		t1.AddAccess("sfdsfsdf")
 		t1.AddAccess("sfdsfsdf")
 		t1.AddAccess("sfdsfsdf")

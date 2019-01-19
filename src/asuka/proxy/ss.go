@@ -180,14 +180,14 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 					}
 				}
 
-				log.Println("failed to get target address: %v", err)
+				log.Println("failed to get target address: ", err)
 				return
 			}
 
 			rc, err := net.Dial("tcp", SocksInfo.ServerAddr)
 			if err != nil {
 				//2019/01/13 22:56:01 ss.go:158: failed to connect to server %v: %v hk.......domain......72 dial tcp: lookup hk05.bilibilivpn.com: no such host
-				log.Println("failed to connect to server %v: %v", SocksInfo.ServerAddr, err)
+				log.Println("failed to connect to server: ", SocksInfo.ServerAddr, err)
 				return
 			}
 			defer rc.Close()
@@ -195,7 +195,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			rc = shadow(rc)
 
 			if _, err = rc.Write(tgt); err != nil {
-				log.Println("failed to send target address: %v", err)
+				log.Println("failed to send target address:", err)
 				return
 			}
 

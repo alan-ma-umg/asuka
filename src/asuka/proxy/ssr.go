@@ -101,7 +101,7 @@ func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
 				return
 			}
 		}
-		log.Println("failed to get target address: %v", err)
+		log.Println("failed to get target address: ", err)
 		return
 	}
 
