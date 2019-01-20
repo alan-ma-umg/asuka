@@ -1,7 +1,6 @@
 package main
 
 import (
-	"asuka/database"
 	"asuka/dispatcher"
 	"asuka/helper"
 	"asuka/project"
@@ -10,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -31,12 +29,12 @@ func main() {
 	}()
 
 	//todo for test
-	for i := 0; i < 10; i++ {
-		os.Remove(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
-	}
-	database.Mysql().Exec("truncate asuka_dou_ban")      //todo for test
-	database.Bl().ClearAll()                             //todo for test
-	database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	//for i := 0; i < 10; i++ {
+	//	os.Remove(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
+	//}
+	//database.Mysql().Exec("truncate asuka_dou_ban")      //todo for test
+	//database.Bl().ClearAll()                             //todo for test
+	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
 	c := &dispatcher.Dispatcher{}
 	c.Run(&project.DouBan{}, queue.NewQueue())
