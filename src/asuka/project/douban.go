@@ -23,7 +23,7 @@ type AsukaDouBan struct {
 	Title     string   `xorm:"varchar(1024)"`
 	Name      string   `xorm:"varchar(1024)"`
 	Alias     []string `xorm:"json"`
-	Date      int
+	Date      int64
 	DateStr   string
 	Rating    float64
 	Votes     int64
@@ -109,6 +109,19 @@ func (my *DouBan) DownloadFilter(spider *spider.Spider, response *http.Response)
 	return true, nil
 }
 
+func stateInString(c byte) bool {
+	if c == '"' {
+		return true
+	}
+	if c == '\\' {
+		return true
+	}
+	if c < 0x20 {
+		return false
+	}
+	return true
+}
+
 func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 	if n.Type == html.ElementNode {
 
@@ -121,8 +134,17 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		if model.Data == nil && n.Data == "script" && n.FirstChild != nil {
 			for _, attr := range n.Attr {
 				if attr.Val == "application/ld+json" {
-					if err := json.Unmarshal([]byte(n.FirstChild.Data), &model.Data); err != nil {
-						log.Println(err)
+
+					jsonStr := []byte(n.FirstChild.Data)
+
+					for i, ch := range jsonStr {
+						if !stateInString(ch) {
+							jsonStr[i] = ' '
+						}
+					}
+
+					if err := json.Unmarshal(jsonStr, &model.Data); err != nil {
+						log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 					} else {
 						if v, ok := model.Data["author"]; ok {
 							for _, v := range v.([]interface{}) {
@@ -170,11 +192,11 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 						if v, ok := model.Data["datePublished"]; ok {
 							model.DateStr = strings.TrimSpace(v.(string))
 							if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-								model.Date = int(t.Unix())
+								model.Date = t.Unix()
 							} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-								model.Date = int(t.Unix())
+								model.Date = t.Unix()
 							} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-								model.Date = int(t.Unix())
+								model.Date = t.Unix()
 							}
 						}
 
@@ -223,11 +245,11 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		if model.DateStr == "" && n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "出版年:" && n.NextSibling != nil && n.NextSibling.Data != "" {
 			model.DateStr = strings.TrimSpace(n.NextSibling.Data)
 			if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-				model.Date = int(t.Unix())
+				model.Date = t.Unix()
 			} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-				model.Date = int(t.Unix())
+				model.Date = t.Unix()
 			} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-				model.Date = int(t.Unix())
+				model.Date = t.Unix()
 			}
 		}
 
@@ -371,6 +393,10 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 // queue
 func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if !strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/subject") && !strings.HasPrefix(strings.ToLower(l.String()), "https://book.douban.com/subject") && !strings.HasPrefix(strings.ToLower(l.String()), "https://book.douban.com/tag") && !strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/tag") {
+		return
+	}
+
+	if strings.HasSuffix(strings.ToLower(l.String()), "buylinks") {
 		return
 	}
 
