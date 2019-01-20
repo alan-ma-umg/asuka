@@ -2,6 +2,7 @@ package project
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/net/html"
 	"io/ioutil"
@@ -13453,7 +13454,7 @@ func TestDouBanPageHtml(t *testing.T) {
 		log.Fatal(u, err)
 	}
 	model := &AsukaDouBan{
-		DouBanID: int64(douBanId),
+		DouBanId: int64(douBanId),
 	}
 
 	if strings.HasPrefix(u.String(), "https://movie.douban.com") {
@@ -13477,7 +13478,7 @@ func TestDouBanPageHtml(t *testing.T) {
 	}
 
 	book := &AsukaDouBan{
-		DouBanID: int64(douBanId),
+		DouBanId: int64(douBanId),
 	}
 
 	if strings.HasPrefix(u.String(), "https://movie.douban.com") {
@@ -13500,7 +13501,7 @@ func TestDouBanPageHtml(t *testing.T) {
 	}
 
 	movie := &AsukaDouBan{
-		DouBanID: int64(douBanId),
+		DouBanId: int64(douBanId),
 	}
 
 	if strings.HasPrefix(u.String(), "https://movie.douban.com") {
@@ -13524,7 +13525,7 @@ func TestDouBanPageHtml(t *testing.T) {
 	}
 
 	movie3 := &AsukaDouBan{
-		DouBanID: int64(douBanId),
+		DouBanId: int64(douBanId),
 	}
 
 	if strings.HasPrefix(u.String(), "https://movie.douban.com") {
@@ -13566,16 +13567,40 @@ func TestDouBan_EntryUrl(t *testing.T) {
 }
 
 func TestTime(t *testing.T) {
+	jsonStr := []byte(`{
+  "@context":"http://schema.org",
+  "@type":"Book",
+  "workExample": [],
+  "name" : "九州·旅人·崔罗石",
+  "author": 
+  [
+    {
+      "@type": "Person",
+      "name": "江南/今何在\ 潘海天"
+    }
+  ]
+,
+  "url" : "https://book.douban.com/subject/3188511/",
+  "isbn" : "9781004885015",
+  "sameAs": "https://book.douban.com/subject/3188511/"
+}
+`)
 
-	//(豆瓣) 18 May, 2004
-	//(21 juin 2006)
-	//s := "2009年11月"
+	for i, ch := range jsonStr {
+		if ch == 92 {
+			jsonStr[i] = '/'
+		}
+	}
 
-	fmt.Println(regexp.MustCompile(`[1-2][0-9]{3}`).FindStringSubmatch("2009年11月"))
+	//log.Println(byte('\\'))
+	//jsonStr = strings.Replace(jsonStr, `\`, `/`, len(jsonStr))
 
-	//if len(s) > 3 {
-	//fmt.Println(strconv.ParseInt(s[:4], 0, 64))
-	//}
+	fmt.Println(json.Valid(jsonStr))
+
+	d := make(map[string]interface{})
+	log.Println(json.Unmarshal(jsonStr, &d))
+	fmt.Println(d)
+
 }
 
 func printAll(v reflect.Value) {

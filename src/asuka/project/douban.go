@@ -161,6 +161,27 @@ func DouBanPageHtmlSecondly(n *html.Node, model *AsukaDouBan) {
 	return
 }
 
+func DouBanJsonUnmarshal(jsonStr []byte, model *AsukaDouBan) (err error) {
+	for i, ch := range jsonStr {
+		if !stateInString(ch) {
+			jsonStr[i] = ' '
+		}
+	}
+
+	err = json.Unmarshal(jsonStr, &model.Data)
+
+	if err != nil && strings.Contains(err.Error(), `in string escape code`) {
+		for i, ch := range jsonStr {
+			if ch == 92 { // \ = 92
+				jsonStr[i] = '/'
+			}
+		}
+		err = json.Unmarshal(jsonStr, &model.Data)
+	}
+
+	return
+}
+
 func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -179,16 +200,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		if model.Data == nil && n.Data == "script" && n.FirstChild != nil {
 			for _, attr := range n.Attr {
 				if attr.Val == "application/ld+json" {
-
-					jsonStr := []byte(n.FirstChild.Data)
-
-					for i, ch := range jsonStr {
-						if !stateInString(ch) {
-							jsonStr[i] = ' '
-						}
-					}
-
-					if err := json.Unmarshal(jsonStr, &model.Data); err != nil {
+					if err := DouBanJsonUnmarshal([]byte(n.FirstChild.Data), model); err != nil {
 						log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 					} else {
 						if v, ok := model.Data["author"]; ok {
