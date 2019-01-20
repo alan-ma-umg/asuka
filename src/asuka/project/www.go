@@ -113,28 +113,28 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 }
 
 // queue
-func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
+func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 
 	tld, err := helper.TldDomain(l)
 	if err != nil {
-		return false
+		return
 	}
 
 	if strings.Contains(strings.ToLower(tld), "com.cn") {
-		return false
+		return
 	}
 
 	if strings.Contains(strings.ToLower(tld), "gov") {
-		return false
+		return
 	}
 
 	tldFilterMutex.Lock()
 	defer tldFilterMutex.Unlock()
 	if tldFilter.TestAndAddString(tld) {
-		return false
+		return
 	}
 
-	return true
+	return l.String()
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {

@@ -2,7 +2,6 @@ package project
 
 import (
 	"asuka/database"
-	"asuka/helper"
 	"asuka/spider"
 	"bytes"
 	"golang.org/x/net/html"
@@ -16,42 +15,55 @@ import (
 	"time"
 )
 
-type AsukaZhiHu struct {
-	Id        int64  `xorm:"pk autoincr"`
-	Url       string `xorm:"varchar(1024)"`
-	UrlCrc32  int64
-	Title     string                 `xorm:"varchar(1024)"`
-	Tag       []string               `xorm:"json"`
+type AsukaDouBan struct {
+	Id        int64 `xorm:"pk autoincr"`
+	DouBanID  int64
+	Title     string   `xorm:"varchar(1024)"`
+	Name      string   `xorm:"varchar(1024)"`
+	Alias     []string `xorm:"json"`
+	Rating    float64
+	Votes     int64
+	Img       string   `xorm:"varchar(1024)"`
+	Type      []string `xorm:"json"`
+	Summary   string   `xorm:"varchar(10240)"`
+	Author    []string `xorm:"json"`
+	Director  []string `xorm:"json"`
+	Celebrity []string `xorm:"json"`
+	IMDB      string   `xorm:"varchar(1024)"`
+	ISBN      int64
 	Data      map[string]interface{} `xorm:"json"`
-	Referer   string                 `xorm:"varchar(1024)"` //todo for test
-	Cookie    string                 `xorm:"varchar(2048)"` //todo for test
-	Version   int                    `xorm:"version"`
-	UpdatedAt int                    `xorm:"updated"`
-	CreatedAt int                    `xorm:"created"`
+	Url       string                 `xorm:"varchar(1024)"`
+	UrlCrc32  int64
+	Version   int `xorm:"version"`
+	UpdatedAt int `xorm:"updated"`
+	CreatedAt int `xorm:"created"`
 }
 
-type ZhiHu struct {
+type DouBan struct {
 	lastRequestUrl string
 }
 
-func (my *ZhiHu) EntryUrl() []string {
-	err := database.Mysql().CreateTables(&AsukaZhiHu{})
+func (my *DouBan) EntryUrl() []string {
+	err := database.Mysql().CreateTables(&AsukaDouBan{})
 	if err != nil {
 		panic(err)
 	}
 	return []string{
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
-		"https://www.zhihu.com/explore",
+		"https://book.douban.com/tag/",
+		"https://book.douban.com/tag/",
+		"https://book.douban.com/tag/",
+		"https://book.douban.com/tag/",
+		"https://book.douban.com/tag/",
+		"https://movie.douban.com/tag/",
+		"https://movie.douban.com/tag/",
+		"https://movie.douban.com/tag/",
+		"https://movie.douban.com/tag/",
+		"https://movie.douban.com/tag/",
 	}
 }
 
 // frequency
-func (my *ZhiHu) Throttle(spider *spider.Spider) {
+func (my *DouBan) Throttle(spider *spider.Spider) {
 	if spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(120e9)
 	}
@@ -59,13 +71,13 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 20e9))
 
 	if spider.FailureLevel > 1 {
-		zhiHuResetSpider(spider)
+		DouBanResetSpider(spider)
 	} else if rand.Intn(30) == 10 {
-		zhiHuResetSpider(spider)
+		DouBanResetSpider(spider)
 	}
 }
 
-func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
+func (my *DouBan) RequestBefore(spider *spider.Spider) {
 	//accept
 	if spider.CurrentRequest != nil {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
@@ -81,7 +93,7 @@ func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
-func (my *ZhiHu) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
+func (my *DouBan) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
 	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
 		return false, nil
 	}
@@ -91,7 +103,7 @@ func (my *ZhiHu) DownloadFilter(spider *spider.Spider, response *http.Response) 
 	return true, nil
 }
 
-func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
+func DouBanPageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 	if n.Type == html.ElementNode {
 
 		//title
@@ -137,7 +149,7 @@ func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		PageHtml(c, title, watch, view, tag)
+		DouBanPageHtml(c, title, watch, view, tag)
 	}
 
 	return
@@ -145,7 +157,7 @@ func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
-func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
+func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	my.lastRequestUrl = spider.CurrentRequest.URL.String()
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
 	if err != nil {
@@ -155,19 +167,16 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 	var title, watch, view string
 	var tag []string
 
-	PageHtml(node, &title, &watch, &view, &tag)
+	DouBanPageHtml(node, &title, &watch, &view, &tag)
 	if title == "" {
 		return
 	}
 
-	//2019/01/14 16:41:03 zhihu.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
-	_, err = database.Mysql().Insert(&AsukaZhiHu{
+	//2019/01/14 16:41:03 DouBan.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
+	_, err = database.Mysql().Insert(&AsukaDouBan{
 		Url:      spider.CurrentRequest.URL.String(),
-		Referer:  spider.CurrentRequest.Referer(),                                                  //todo only test
-		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest.Header.Get("cookie")), 2000, ""), //todo only test
 		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest.URL.String()))),
 		Title:    title,
-		Tag:      tag,
 		Data: map[string]interface{}{
 			"server": spider.Transport.S.ServerAddr,
 			"time":   time.Since(spider.RequestStartTime).String(),
@@ -181,25 +190,25 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 }
 
 // queue
-func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
+func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 
 	//tld, err := helper.TldDomain(l)
 	//if err != nil {
 	//	return false
 	//}
 
-	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/people") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/collection") {
-		return
+	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.DouBan.com/people") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.DouBan.com/question") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.DouBan.com/collection") {
+		return false
 	}
 
-	return l.String()
+	return true
 }
 
-func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
+func (my *DouBan) ResponseAfter(spider *spider.Spider) {
 
 }
 
-func zhiHuResetSpider(spider *spider.Spider) {
+func DouBanResetSpider(spider *spider.Spider) {
 	spider.RequestsMap = map[string]*http.Request{}
 	spider.UpdateTransport()
 }

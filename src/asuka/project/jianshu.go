@@ -180,7 +180,7 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 }
 
 // queue
-func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
+func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 
 	//tld, err := helper.TldDomain(l)
 	//if err != nil {
@@ -188,10 +188,10 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
 	//}
 
 	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.jianshu.com/p/") {
-		return false
+		return
 	}
 
-	return true
+	return l.String()
 }
 
 func (my *JianShu) ResponseAfter(spider *spider.Spider) {

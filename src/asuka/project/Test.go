@@ -60,8 +60,8 @@ func (my *Test) ResponseSuccess(spider *spider.Spider) {
 }
 
 // queue
-func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) bool {
-	return true
+func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
+	return l.String()
 }
 
 func (my *Test) ResponseAfter(spider *spider.Spider) {

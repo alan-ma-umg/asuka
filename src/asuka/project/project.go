@@ -30,9 +30,9 @@ type Project interface {
 	// Fifth
 	ResponseSuccess(spider *spider.Spider)
 
-	// EnqueueFilter HTTP完成并成功后, 从HTML中解析的每条URL都会经过这个筛选. 返回true则加入url queue
+	// EnqueueFilter HTTP完成并成功后, 从HTML中解析的每条URL都会经过这个筛选和处理. 空字符串则不入队列
 	// Sixth
-	EnqueueFilter(spider *spider.Spider, l *url.URL) bool
+	EnqueueFilter(spider *spider.Spider, l *url.URL) string
 
 	// ResponseAfter HTTP请求失败/成功之后
 	// At Last

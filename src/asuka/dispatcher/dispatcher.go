@@ -144,15 +144,20 @@ func Crawl(project project.Project, spider *spider.Spider) {
 	}
 
 	for _, l := range spider.GetLinksByTokenizer() {
-		if database.BlTestAndAddString(l.String()) {
+		enqueueUrl := ""
+		if project != nil {
+			enqueueUrl = project.EnqueueFilter(spider, l)
+		} else {
+			enqueueUrl = l.String()
+		}
+
+		if enqueueUrl != "" && database.BlTestAndAddString(enqueueUrl) {
 			continue
 		}
 
-		if project != nil && !project.EnqueueFilter(spider, l) {
-			continue
+		if enqueueUrl != "" {
+			spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
 		}
-
-		spider.Queue.Enqueue(strings.TrimSpace(l.String()))
 	}
 }
 
