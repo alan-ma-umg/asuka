@@ -387,6 +387,12 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 					model.Date = t.Unix()
 				} else if t, err := time.Parse("2006/1", model.DateStr); err == nil {
 					model.Date = t.Unix()
+				} else if t, err := time.Parse("06/01/02", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("060102", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("06/1/2", model.DateStr); err == nil {
+					model.Date = t.Unix()
 				} else if re := regexp.MustCompile(`[1-2][0-9]{3}`).FindStringSubmatch(model.DateStr); len(re) > 0 {
 					if t, err := time.Parse("2006", re[0]); err == nil {
 						model.Date = t.Unix()

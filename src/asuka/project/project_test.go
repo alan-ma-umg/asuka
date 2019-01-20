@@ -13599,8 +13599,12 @@ func TestTime(t *testing.T) {
 
 	d := make(map[string]interface{})
 	log.Println(json.Unmarshal(jsonStr, &d))
-	fmt.Println(d)
+	//fmt.Println(d)
 
+	fmt.Println(time.Parse("06/01/02", "92/12/11"))
+	fmt.Println(time.Parse("060102", "921211"))
+	fmt.Println(time.Parse("06/1/2", "92/12/11"))
+	fmt.Println(time.Parse("0612", "921211"))
 }
 
 func printAll(v reflect.Value) {
