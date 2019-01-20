@@ -21,7 +21,7 @@ import (
 
 type AsukaDouBan struct {
 	Id        int64 `xorm:"pk autoincr"`
-	DouBanID  int64
+	DouBanId  int64
 	Title     string   `xorm:"varchar(1024)"`
 	Name      string   `xorm:"varchar(1024)"`
 	Alias     []string `xorm:"json"`
@@ -31,14 +31,14 @@ type AsukaDouBan struct {
 	Votes     int64
 	Img       string   `xorm:"varchar(1024)"`
 	Area      []string `xorm:"json"`
-	Cate      string   //图书/电影
+	Cate      string
 	Genre     []string `xorm:"json"`
 	Summary   string   `xorm:"varchar(10240)"`
 	Author    []string `xorm:"json"`
 	Director  []string `xorm:"json"`
 	Actor     []string `xorm:"json"`
-	IMDB      string   `xorm:"varchar(1024)"`
-	ISBN      int64
+	Imdb      string   `xorm:"varchar(1024)"`
+	Isbn      int64
 	Data      map[string]interface{} `xorm:"json"`
 	Url       string                 `xorm:"varchar(1024)"`
 	UrlCrc32  int64
@@ -293,7 +293,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 						if v, ok := model.Data["isbn"]; ok {
 							if v, ok := v.(string); ok {
 								if i, err := strconv.ParseInt(v, 0, 64); err == nil {
-									model.ISBN = int64(i)
+									model.Isbn = int64(i)
 								}
 							} else {
 								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
@@ -305,10 +305,10 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		}
 
 		//IMDb
-		if model.IMDB == "" && n.Data == "a" && n.FirstChild != nil {
+		if model.Imdb == "" && n.Data == "a" && n.FirstChild != nil {
 			for _, attr := range n.Attr {
 				if attr.Key == "href" && strings.Contains(attr.Val, "www.imdb.com") {
-					model.IMDB = strings.TrimSpace(n.FirstChild.Data)
+					model.Imdb = strings.TrimSpace(n.FirstChild.Data)
 				}
 			}
 		}
@@ -457,7 +457,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	}
 
 	if paths := strings.Split(spider.CurrentRequest.URL.Path, "/"); len(paths) > 2 {
-		model.DouBanID, _ = strconv.ParseInt(paths[2], 0, 64)
+		model.DouBanId, _ = strconv.ParseInt(paths[2], 0, 64)
 	}
 
 	if strings.HasPrefix(spider.CurrentRequest.URL.String(), "https://movie.douban.com") {
