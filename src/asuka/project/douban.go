@@ -78,7 +78,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 20e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 30e9))
 
 	if spider.FailureLevel > 1 {
 		DouBanResetSpider(spider)
@@ -124,6 +124,41 @@ func stateInString(c byte) bool {
 		return false
 	}
 	return true
+}
+
+func DouBanPageHtmlSecondly(n *html.Node, model *AsukaDouBan) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r, model.Url, model.Title)
+		}
+	}()
+
+	if n.Type == html.ElementNode {
+		//date
+		if model.DateStr == "" && n.Data == "span" && n.FirstChild != nil {
+			for _, attr := range n.Attr {
+				if attr.Val == "year" {
+					model.DateStr = strings.TrimRight(strings.TrimLeft(strings.TrimSpace(n.FirstChild.Data), "("), ")")
+					if model.DateStr != "" {
+						if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
+							model.Date = t.Unix()
+						} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
+							model.Date = t.Unix()
+						} else if t, err := time.Parse("2006", model.DateStr); err == nil {
+							model.Date = t.Unix()
+						} else {
+							log.Println(err, model.Url, model.Title, model.DateStr)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		DouBanPageHtmlSecondly(c, model)
+	}
+	return
 }
 
 func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
@@ -239,14 +274,16 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 						if v, ok := model.Data["datePublished"]; ok {
 							if v, ok := v.(string); ok {
 								model.DateStr = strings.TrimSpace(v)
-								if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-									model.Date = t.Unix()
-								} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-									model.Date = t.Unix()
-								} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-									model.Date = t.Unix()
-								} else {
-									log.Println(err, model.Url, model.Title, model.DateStr)
+								if model.DateStr != "" {
+									if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
+										model.Date = t.Unix()
+									} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
+										model.Date = t.Unix()
+									} else if t, err := time.Parse("2006", model.DateStr); err == nil {
+										model.Date = t.Unix()
+									} else {
+										log.Println(err, model.Url, model.Title, model.DateStr)
+									}
 								}
 							} else {
 								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
@@ -301,12 +338,52 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		//date
 		if model.DateStr == "" && n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "出版年:" && n.NextSibling != nil && n.NextSibling.Data != "" {
 			model.DateStr = strings.TrimSpace(n.NextSibling.Data)
-			if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-				model.Date = t.Unix()
-			} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-				model.Date = t.Unix()
-			} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-				model.Date = t.Unix()
+			if model.DateStr != "" {
+				if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年01月", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年1月", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年1月第一版", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年01月第一版", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("20060102", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年1月2日", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年01月02日", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006年1月第1版", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006.1", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006.01", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006/01/01", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006/01", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006/1/2", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("2006/1", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if re := regexp.MustCompile(`[1-2][0-9]{3}`).FindStringSubmatch(model.DateStr); len(re) > 0 {
+					if t, err := time.Parse("2006", re[0]); err == nil {
+						model.Date = t.Unix()
+					} else {
+						log.Println(err, model.Url, model.Title, model.DateStr)
+					}
+				} else {
+					log.Println(err, model.Url, model.Title, model.DateStr)
+				}
 			}
 		}
 
@@ -395,6 +472,9 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		DouBanPageHtml(node, model)
 		if model.Title == "" {
 			return
+		}
+		if model.DateStr == "" {
+			DouBanPageHtmlSecondly(node, model)
 		}
 	}
 

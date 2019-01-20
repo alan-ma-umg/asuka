@@ -16,6 +16,3189 @@ import (
 	"time"
 )
 
+var html66 = `
+
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" class="ua-windows ua-webkit">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="renderer" content="webkit">
+    <meta name="referrer" content="always">
+    <meta name="google-site-verification" content="ok0wCgT20tBBgo9_zat2iAcimtN4Ftf5ccsh092Xeyw" />
+    <title>
+        三少爷的剑 (豆瓣)
+</title>
+    
+    <meta name="baidu-site-verification" content="cZdR4xxR7RxmM4zE" />
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="Sun, 6 Mar 2005 01:00:00 GMT">
+    
+    <link rel="apple-touch-icon" href="https://img3.doubanio.com/f/movie/d59b2715fdea4968a450ee5f6c95c7d7a2030065/pics/movie/apple-touch-icon.png">
+    <link href="https://img3.doubanio.com/f/shire/bf61b1fa02f564a4a8f809da7c7179b883a56146/css/douban.css" rel="stylesheet" type="text/css">
+    <link href="https://img3.doubanio.com/f/shire/ae3f5a3e3085968370b1fc63afcecb22d3284848/css/separation/_all.css" rel="stylesheet" type="text/css">
+    <link href="https://img3.doubanio.com/f/movie/8864d3756094f5272d3c93e30ee2e324665855b0/css/movie/base/init.css" rel="stylesheet">
+    <script type="text/javascript">var _head_start = new Date();</script>
+    <script type="text/javascript" src="https://img3.doubanio.com/f/movie/0495cb173e298c28593766009c7b0a953246c5b5/js/movie/lib/jquery.js"></script>
+    <script type="text/javascript" src="https://img3.doubanio.com/f/shire/f010949d3f23dd7c972ad7cb40b800bf70723c93/js/douban.js"></script>
+    <script type="text/javascript" src="https://img3.doubanio.com/f/shire/0efdc63b77f895eaf85281fb0e44d435c6239a3f/js/separation/_all.js"></script>
+    
+    <meta name="keywords" content="三少爷的剑,三少爷的剑,三少爷的剑影评,剧情介绍,图片,论坛">
+    <meta name="description" content="三少爷的剑电视剧简介和剧情介绍,三少爷的剑影评、图片、论坛">
+    <meta name="mobile-agent" content="format=html5; url=http://m.douban.com/movie/subject/2279835/"/>
+    <link rel="alternate" href="android-app://com.douban.movie/doubanmovie/subject/2279835/" />
+    <link rel="stylesheet" href="https://img3.doubanio.com/dae/cdnlib/libs/LikeButton/1.0.5/style.min.css">
+    <script type="text/javascript" src="https://img3.doubanio.com/f/shire/77323ae72a612bba8b65f845491513ff3329b1bb/js/do.js" data-cfg-autoload="false"></script>
+    <script type="text/javascript">
+      Do.add('dialog', {path: 'https://img3.doubanio.com/f/shire/4ea3216519a6183c7bcd4f7d1a6d4fd57ce1a244/js/ui/dialog.js', type: 'js'});
+      Do.add('dialog-css', {path: 'https://img3.doubanio.com/f/shire/8377b9498330a2e6f056d863987cc7a37eb4d486/css/ui/dialog.css', type: 'css'});
+      Do.add('handlebarsjs', {path: 'https://img3.doubanio.com/f/movie/3d4f8e4a8918718256450eb6e57ec8e1f7a2e14b/js/movie/lib/handlebars.current.js', type: 'js'});
+    </script>
+    
+  <script type='text/javascript'>
+  var _vwo_code = (function() {
+    var account_id = 249272,
+      settings_tolerance = 0,
+      library_tolerance = 2500,
+      use_existing_jquery = false,
+      // DO NOT EDIT BELOW THIS LINE
+      f=false,d=document;return{use_existing_jquery:function(){return use_existing_jquery;},library_tolerance:function(){return library_tolerance;},finish:function(){if(!f){f=true;var a=d.getElementById('_vis_opt_path_hides');if(a)a.parentNode.removeChild(a);}},finished:function(){return f;},load:function(a){var b=d.createElement('script');b.src=a;b.type='text/javascript';b.innerText;b.onerror=function(){_vwo_code.finish();};d.getElementsByTagName('head')[0].appendChild(b);},init:function(){settings_timer=setTimeout('_vwo_code.finish()',settings_tolerance);var a=d.createElement('style'),b='body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}',h=d.getElementsByTagName('head')[0];a.setAttribute('id','_vis_opt_path_hides');a.setAttribute('type','text/css');if(a.styleSheet)a.styleSheet.cssText=b;else a.appendChild(d.createTextNode(b));h.appendChild(a);this.load('//dev.visualwebsiteoptimizer.com/j.php?a='+account_id+'&u='+encodeURIComponent(d.URL)+'&r='+Math.random());return settings_timer;}};}());
+
+  +function () {
+    var bindEvent = function (el, type, handler) {
+        var $ = window.jQuery || window.Zepto || window.$
+       if ($ && $.fn && $.fn.on) {
+           $(el).on(type, handler)
+       } else if($ && $.fn && $.fn.bind) {
+           $(el).bind(type, handler)
+       } else if (el.addEventListener){
+         el.addEventListener(type, handler, false);
+       } else if (el.attachEvent){
+         el.attachEvent("on" + type, handler);
+       } else {
+         el["on" + type] = handler;
+       }
+     }
+
+    var _origin_load = _vwo_code.load
+    _vwo_code.load = function () {
+      var args = [].slice.call(arguments)
+      bindEvent(window, 'load', function () {
+        _origin_load.apply(_vwo_code, args)
+      })
+    }
+  }()
+
+  _vwo_settings_timer = _vwo_code.init();
+  </script>
+
+
+    
+
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "name": "三少爷的剑",
+  "url": "/subject/2279835/",
+  "image": "https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2256387990.webp",
+  "director": 
+  [
+    {
+      "@type": "Person",
+      "url": "/celebrity/1320042/",
+      "name": "靳德茂 De-mao Jin"
+    }
+  ]
+,
+  "author": 
+  [
+    {
+      "@type": "Person",
+      "url": "/celebrity/1315799/",
+      "name": "古龙 Lung Ku"
+    }
+  ]
+,
+  "actor": 
+  [
+    {
+      "@type": "Person",
+      "url": "/celebrity/1314497/",
+      "name": "何中华 Zhonghua He "
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1014618/",
+      "name": "俞飞鸿 Faye Yu"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1314478/",
+      "name": "陈龙 Long Chen"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1318452/",
+      "name": "陈继铭 Jiming Chen"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1323125/",
+      "name": "张伊函 Yihan Zhang"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1000145/",
+      "name": "霍思燕 Siyan Huo"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1276110/",
+      "name": "刘莉莉 Lili Liu"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1274488/",
+      "name": "杨若兮 Ruoxi Yang"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1274566/",
+      "name": "石小满 Xiaoman Shi"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1313611/",
+      "name": "岳跃利 Yueli Yue"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1274559/",
+      "name": "戴春荣 Chunrong Dai"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1274564/",
+      "name": "陈莹 Ying Chen"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1016668/",
+      "name": "张静初 Jingchu Zhang"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1314844/",
+      "name": "赵毅 Yi Zhao"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1322790/",
+      "name": "刘大刚 Dagang Liu"
+    }
+    ,
+    {
+      "@type": "Person",
+      "url": "/celebrity/1318619/",
+      "name": "刘莉莉 Lili Liu "
+    }
+  ]
+,
+  "datePublished": "",
+  "genre": ["\u6b66\u4fa0", "\u53e4\u88c5"],
+  "duration": "PT0H47M",
+  "description": "江湖纷争，麻烦不断。神剑山庄的三少爷谢晓峰（何中华 饰）和慕容世家的独女慕容秋荻（俞飞鸿 饰）在百般波折之下，终于迎来了二人要大喜的日子。可大婚当天，谢晓峰却不得不与夺命十三剑——燕十三（王冰 饰）进...",
+  "@type": "TVSeries",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingCount": "5475",
+    "bestRating": "10",
+    "worstRating": "2",
+    "ratingValue": "6.9"
+  }
+}
+</script>
+
+
+    <style type="text/css">
+  
+</style>
+    <style type="text/css">img { max-width: 100%; }</style>
+    <script type="text/javascript"></script>
+    <link rel="stylesheet" href="https://img3.doubanio.com/misc/mixed_static/703752ab692b1cba.css">
+
+    <link rel="shortcut icon" href="https://img3.doubanio.com/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  
+    <script type="text/javascript">var _body_start = new Date();</script>
+
+    
+    
+
+
+
+    <link href="//img3.doubanio.com/dae/accounts/resources/984c231/shire/bundle.css" rel="stylesheet" type="text/css">
+
+
+
+<div id="db-global-nav" class="global-nav">
+  <div class="bd">
+    
+<div class="top-nav-info">
+  <a href="https://www.douban.com/accounts/login?source=movie" class="nav-login" rel="nofollow">登录</a>
+  <a href="https://www.douban.com/accounts/register?source=movie" class="nav-register" rel="nofollow">注册</a>
+</div>
+
+
+    <div class="top-nav-doubanapp">
+  <a href="https://www.douban.com/doubanapp/app?channel=top-nav" class="lnk-doubanapp">下载豆瓣客户端</a>
+  <div id="doubanapp-tip">
+    <a href="https://www.douban.com/doubanapp/app?channel=qipao" class="tip-link">豆瓣 <span class="version">6.0</span> 全新发布</a>
+    <a href="javascript: void 0;" class="tip-close">×</a>
+  </div>
+  <div id="top-nav-appintro" class="more-items">
+    <p class="appintro-title">豆瓣</p>
+    <p class="qrcode">扫码直接下载</p>
+    <div class="download">
+      <a href="https://www.douban.com/doubanapp/redirect?channel=top-nav&direct_dl=1&download=iOS">iPhone</a>
+      <span>·</span>
+      <a href="https://www.douban.com/doubanapp/redirect?channel=top-nav&direct_dl=1&download=Android" class="download-android">Android</a>
+    </div>
+  </div>
+</div>
+
+    
+
+
+<div class="global-nav-items">
+  <ul>
+    <li class="">
+      <a href="https://www.douban.com" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-main&quot;,&quot;uid&quot;:&quot;0&quot;}">豆瓣</a>
+    </li>
+    <li class="">
+      <a href="https://book.douban.com" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-book&quot;,&quot;uid&quot;:&quot;0&quot;}">读书</a>
+    </li>
+    <li class="on">
+      <a href="https://movie.douban.com"  data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-movie&quot;,&quot;uid&quot;:&quot;0&quot;}">电影</a>
+    </li>
+    <li class="">
+      <a href="https://music.douban.com" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-music&quot;,&quot;uid&quot;:&quot;0&quot;}">音乐</a>
+    </li>
+    <li class="">
+      <a href="https://www.douban.com/location" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-location&quot;,&quot;uid&quot;:&quot;0&quot;}">同城</a>
+    </li>
+    <li class="">
+      <a href="https://www.douban.com/group" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-group&quot;,&quot;uid&quot;:&quot;0&quot;}">小组</a>
+    </li>
+    <li class="">
+      <a href="https://read.douban.com&#47;?dcs=top-nav&amp;dcm=douban" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-read&quot;,&quot;uid&quot;:&quot;0&quot;}">阅读</a>
+    </li>
+    <li class="">
+      <a href="https://douban.fm&#47;?from_=shire_top_nav" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-fm&quot;,&quot;uid&quot;:&quot;0&quot;}">FM</a>
+    </li>
+    <li class="">
+      <a href="https://time.douban.com&#47;?dt_time_source=douban-web_top_nav" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-time&quot;,&quot;uid&quot;:&quot;0&quot;}">时间</a>
+    </li>
+    <li class="">
+      <a href="https://market.douban.com&#47;?utm_campaign=douban_top_nav&amp;utm_source=douban&amp;utm_medium=pc_web" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-market&quot;,&quot;uid&quot;:&quot;0&quot;}">豆品</a>
+    </li>
+    <li>
+      <a href="#more" class="bn-more"><span>更多</span></a>
+      <div class="more-items">
+        <table cellpadding="0" cellspacing="0">
+          <tbody>
+            <tr>
+              <td>
+                <a href="https://ypy.douban.com" target="_blank" data-moreurl-dict="{&quot;from&quot;:&quot;top-nav-click-ypy&quot;,&quot;uid&quot;:&quot;0&quot;}">豆瓣摄影</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+  </ul>
+</div>
+
+  </div>
+</div>
+<script>
+  ;window._GLOBAL_NAV = {
+    DOUBAN_URL: "https://www.douban.com",
+    N_NEW_NOTIS: 0,
+    N_NEW_DOUMAIL: 0
+  };
+</script>
+
+
+
+    <script src="//img3.doubanio.com/dae/accounts/resources/984c231/shire/bundle.js" defer="defer"></script>
+
+
+
+
+    
+
+
+
+    <link href="//img3.doubanio.com/dae/accounts/resources/8c80301/movie/bundle.css" rel="stylesheet" type="text/css">
+
+
+
+
+<div id="db-nav-movie" class="nav">
+  <div class="nav-wrap">
+  <div class="nav-primary">
+    <div class="nav-logo">
+      <a href="https:&#47;&#47;movie.douban.com">豆瓣电影</a>
+    </div>
+    <div class="nav-search">
+      <form action="https:&#47;&#47;movie.douban.com/subject_search" method="get">
+        <fieldset>
+          <legend>搜索：</legend>
+          <label for="inp-query">
+          </label>
+          <div class="inp"><input id="inp-query" name="search_text" size="22" maxlength="60" placeholder="搜索电影、电视剧、综艺、影人" value=""></div>
+          <div class="inp-btn"><input type="submit" value="搜索"></div>
+          <input type="hidden" name="cat" value="1002" />
+        </fieldset>
+      </form>
+    </div>
+  </div>
+  </div>
+  <div class="nav-secondary">
+    
+
+<div class="nav-items">
+  <ul>
+    <li    ><a href="https://movie.douban.com/cinema/nowplaying/"
+     >影讯&购票</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/explore"
+     >选电影</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/tv/"
+     >电视剧</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/chart"
+     >排行榜</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/tag/"
+     >分类</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/review/best/"
+     >影评</a>
+    </li>
+    <li    ><a href="https://movie.douban.com/annual/2018?source=navigation"
+     >2018年度榜单</a>
+    </li>
+    <li    ><a href="https://www.douban.com/standbyme/2018?source=navigation"
+     >2018书影音报告</a>
+    </li>
+  </ul>
+</div>
+
+    <a href="https://movie.douban.com/annual/2018?source=movie_navigation" class="movieannual2018"></a>
+  </div>
+</div>
+
+<script id="suggResult" type="text/x-jquery-tmpl">
+  <li data-link="{{= url}}">
+            <a href="{{= url}}" onclick="moreurl(this, {from:'movie_search_sugg', query:'{{= keyword }}', subject_id:'{{= id}}', i: '{{= index}}', type: '{{= type}}'})">
+            <img src="{{= img}}" width="40" />
+            <p>
+                <em>{{= title}}</em>
+                {{if year}}
+                    <span>{{= year}}</span>
+                {{/if}}
+                {{if sub_title}}
+                    <br /><span>{{= sub_title}}</span>
+                {{/if}}
+                {{if address}}
+                    <br /><span>{{= address}}</span>
+                {{/if}}
+                {{if episode}}
+                    {{if episode=="unknow"}}
+                        <br /><span>集数未知</span>
+                    {{else}}
+                        <br /><span>共{{= episode}}集</span>
+                    {{/if}}
+                {{/if}}
+            </p>
+        </a>
+        </li>
+  </script>
+
+
+
+
+    <script src="//img3.doubanio.com/dae/accounts/resources/8c80301/movie/bundle.js" defer="defer"></script>
+
+
+
+
+
+    
+    <div id="wrapper">
+        
+
+        
+    <div id="content">
+        
+
+    <div id="dale_movie_subject_top_icon"></div>
+    <h1>
+        <span property="v:itemreviewed">三少爷的剑</span>
+            <span class="year">(2000)</span>
+    </h1>
+
+        <div class="grid-16-8 clearfix">
+            
+
+            
+            <div class="article">
+                
+    
+
+    
+
+
+
+
+
+        <div class="indent clearfix">
+            <div class="subjectwrap clearfix">
+                <div class="subject clearfix">
+                    
+
+
+
+<div id="mainpic" class="">
+    <a class="nbgnbg" href="https://movie.douban.com/subject/2279835/photos?type=R" title="点击看更多海报">
+        <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2256387990.webp" title="点击看更多海报" alt="三少爷的剑" rel="v:image" />
+   </a>
+</div>
+
+                    
+
+
+<div id="info">
+        <span ><span class='pl'>导演</span>: <span class='attrs'><a href="/celebrity/1320042/" rel="v:directedBy">靳德茂</a></span></span><br/>
+        <span ><span class='pl'>编剧</span>: <span class='attrs'><a href="/subject_search?search_text=%E8%B5%B5%E5%BF%97%E7%BA%A2">赵志红</a> / <a href="/celebrity/1315799/">古龙</a></span></span><br/>
+        <span class="actor"><span class='pl'>主演</span>: <span class='attrs'><a href="/celebrity/1314497/" rel="v:starring">何中华</a> / <a href="/celebrity/1014618/" rel="v:starring">俞飞鸿</a> / <a href="/celebrity/1314478/" rel="v:starring">陈龙</a> / <a href="/celebrity/1318452/" rel="v:starring">陈继铭</a> / <a href="/celebrity/1323125/" rel="v:starring">张伊函</a> / <a href="/celebrity/1000145/" rel="v:starring">霍思燕</a> / <a href="/celebrity/1276110/" rel="v:starring">刘莉莉</a> / <a href="/celebrity/1274488/" rel="v:starring">杨若兮</a> / <a href="/celebrity/1274566/" rel="v:starring">石小满</a> / <a href="/celebrity/1313611/" rel="v:starring">岳跃利</a> / <a href="/celebrity/1274559/" rel="v:starring">戴春荣</a> / <a href="/celebrity/1274564/" rel="v:starring">陈莹</a> / <a href="/celebrity/1016668/" rel="v:starring">张静初</a> / <a href="/celebrity/1314844/" rel="v:starring">赵毅</a></span></span><br/>
+        <span class="pl">类型:</span> <span property="v:genre">武侠</span> / <span property="v:genre">古装</span><br/>
+        
+        <span class="pl">制片国家/地区:</span> 中国大陆<br/>
+        <span class="pl">语言:</span> 汉语普通话<br/>
+        <span class="pl">首播:</span> <span property="v:initialReleaseDate" content="2001">2001</span><br/>
+        
+        <span class="pl">集数:</span> 34<br/>
+        <span class="pl">单集片长:</span> 47分钟<br/>
+        
+        
+
+</div>
+
+
+
+
+                </div>
+                    
+
+
+<div id="interest_sectl">
+    <div class="rating_wrap clearbox" rel="v:rating">
+        <div class="clearfix">
+          <div class="rating_logo ll">豆瓣评分</div>
+          <div class="output-btn-wrap rr" style="display:none">
+            <img src="https://img3.doubanio.com/f/movie/692e86756648f29457847c5cc5e161d6f6b8aaac/pics/movie/reference.png" />
+            <a class="download-output-image" href="#">引用</a>
+          </div>
+          
+          
+        </div>
+        
+
+
+<div class="rating_self clearfix" typeof="v:Rating">
+    <strong class="ll rating_num" property="v:average">6.9</strong>
+    <span property="v:best" content="10.0"></span>
+    <div class="rating_right ">
+        <div class="ll bigstar bigstar35"></div>
+        <div class="rating_sum">
+                <a href="collections" class="rating_people"><span property="v:votes">5475</span>人评价</a>
+        </div>
+    </div>
+</div>
+<div class="ratings-on-weight">
+    
+        <div class="item">
+        
+        <span class="stars5 starstop" title="力荐">
+            5星
+        </span>
+        <div class="power" style="width:15px"></div>
+        <span class="rating_per">11.5%</span>
+        <br />
+        </div>
+        <div class="item">
+        
+        <span class="stars4 starstop" title="推荐">
+            4星
+        </span>
+        <div class="power" style="width:43px"></div>
+        <span class="rating_per">32.7%</span>
+        <br />
+        </div>
+        <div class="item">
+        
+        <span class="stars3 starstop" title="还行">
+            3星
+        </span>
+        <div class="power" style="width:64px"></div>
+        <span class="rating_per">47.7%</span>
+        <br />
+        </div>
+        <div class="item">
+        
+        <span class="stars2 starstop" title="较差">
+            2星
+        </span>
+        <div class="power" style="width:8px"></div>
+        <span class="rating_per">6.6%</span>
+        <br />
+        </div>
+        <div class="item">
+        
+        <span class="stars1 starstop" title="很差">
+            1星
+        </span>
+        <div class="power" style="width:2px"></div>
+        <span class="rating_per">1.5%</span>
+        <br />
+        </div>
+</div>
+
+    </div>
+</div>
+
+
+                
+            </div>
+                
+
+
+
+
+<div id="interest_sect_level" class="clearfix">
+        
+            <a href="https://www.douban.com/reason=collectwish&amp;ck=" rel="nofollow" class="j a_show_login colbutt ll" name="pbtn-2279835-wish">
+                <span>想看</span>
+            </a>
+            <a href="https://www.douban.com/reason=collectdo&amp;ck=" rel="nofollow" class="j a_show_login colbutt ll" name="pbtn-2279835-do">
+                <span>在看</span>
+            </a>
+            <a href="https://www.douban.com/reason=collectcollect&amp;ck=" rel="nofollow" class="j a_show_login colbutt ll" name="pbtn-2279835-collect">
+                <span>看过</span>
+            </a>
+        <div class="ll j a_stars">
+            
+    
+    评价:
+    <span id="rating"> <span id="stars" data-solid="https://img3.doubanio.com/f/shire/5a2327c04c0c231bced131ddf3f4467eb80c1c86/pics/rating_icons/star_onmouseover.png" data-hollow="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" data-solid-2x="https://img3.doubanio.com/f/shire/7258904022439076d57303c3b06ad195bf1dc41a/pics/rating_icons/star_onmouseover@2x.png" data-hollow-2x="https://img3.doubanio.com/f/shire/95cc2fa733221bb8edd28ad56a7145a5ad33383e/pics/rating_icons/star_hollow_hover@2x.png">
+
+            <a href="https://www.douban.com/register?reason=rate" class="j a_show_login" name="pbtn-2279835-1">
+        <img src="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" id="star1" width="16" height="16"/></a>
+            <a href="https://www.douban.com/register?reason=rate" class="j a_show_login" name="pbtn-2279835-2">
+        <img src="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" id="star2" width="16" height="16"/></a>
+            <a href="https://www.douban.com/register?reason=rate" class="j a_show_login" name="pbtn-2279835-3">
+        <img src="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" id="star3" width="16" height="16"/></a>
+            <a href="https://www.douban.com/register?reason=rate" class="j a_show_login" name="pbtn-2279835-4">
+        <img src="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" id="star4" width="16" height="16"/></a>
+            <a href="https://www.douban.com/register?reason=rate" class="j a_show_login" name="pbtn-2279835-5">
+        <img src="https://img3.doubanio.com/f/shire/2520c01967207a1735171056ec588c8c1257e5f8/pics/rating_icons/star_hollow_hover.png" id="star5" width="16" height="16"/></a>
+    </span><span id="rateword" class="pl"></span>
+    <input id="n_rating" type="hidden" value=""  />
+    </span>
+
+        </div>
+    
+
+</div>
+
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="gtleft">
+    <ul class="ul_subject_menu bicelink color_gray pt6 clearfix">
+        
+    
+        
+                <li> 
+    <img src="https://img3.doubanio.com/f/shire/cc03d0fcf32b7ce3af7b160a0b85e5e66b47cc42/pics/short-comment.gif" />&nbsp;
+        <a onclick="moreurl(this, {from:'mv_sbj_wr_cmnt_login'})" class="j a_show_login" href="https://www.douban.com/register?reason=review" rel="nofollow">写短评</a>
+ </li>
+                    <li> 
+    
+    <img src="https://img3.doubanio.com/f/shire/5bbf02b7b5ec12b23e214a580b6f9e481108488c/pics/add-review.gif" />&nbsp;
+        <a onclick="moreurl(this, {from:'mv_sbj_wr_rv_login'})" class="j a_show_login" href="https://www.douban.com/register?reason=review" rel="nofollow">写影评</a>
+ </li>
+                <li> 
+    
+
+
+
+ </li>
+                <li> 
+   
+
+   
+    
+    <span class="rec" id="电视剧-2279835">
+    <a href= "#"
+        data-type="电视剧"
+        data-url="https://movie.douban.com/subject/2279835/"
+        data-desc="电视剧《三少爷的剑》 (来自豆瓣) "
+        data-title="电视剧《三少爷的剑》 (来自豆瓣) "
+        data-pic="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2256387990.jpeg"
+        class="bn-sharing ">
+        分享到
+    </a> &nbsp;&nbsp;
+    </span>
+
+    <script>
+        if (!window.DoubanShareMenuList) {
+            window.DoubanShareMenuList = [];
+        }
+        var __cache_url = __cache_url || {};
+
+        (function(u){
+            if(__cache_url[u]) return;
+            __cache_url[u] = true;
+            window.DoubanShareIcons = 'https://img3.doubanio.com/f/shire/d15ffd71f3f10a7210448fec5a68eaec66e7f7d0/pics/ic_shares.png';
+
+            var initShareButton = function() {
+                $.ajax({url:u,dataType:'script',cache:true});
+            };
+
+            if (typeof Do == 'function' && 'ready' in Do) {
+                Do(
+                    'https://img3.doubanio.com/f/shire/8377b9498330a2e6f056d863987cc7a37eb4d486/css/ui/dialog.css',
+                    'https://img3.doubanio.com/f/shire/4ea3216519a6183c7bcd4f7d1a6d4fd57ce1a244/js/ui/dialog.js',
+                    'https://img3.doubanio.com/f/movie/c4ab132ff4d3d64a83854c875ea79b8b541faf12/js/movie/lib/qrcode.min.js',
+                    initShareButton
+                );
+            } else if(typeof Douban == 'object' && 'loader' in Douban) {
+                Douban.loader.batch(
+                    'https://img3.doubanio.com/f/shire/8377b9498330a2e6f056d863987cc7a37eb4d486/css/ui/dialog.css',
+                    'https://img3.doubanio.com/f/shire/4ea3216519a6183c7bcd4f7d1a6d4fd57ce1a244/js/ui/dialog.js',
+                    'https://img3.doubanio.com/f/movie/c4ab132ff4d3d64a83854c875ea79b8b541faf12/js/movie/lib/qrcode.min.js'
+                ).done(initShareButton);
+            }
+
+        })('https://img3.doubanio.com/f/movie/32be6727ed3ad8f6c4a417d8a086355c3e7d1d27/js/movie/lib/sharebutton.js');
+    </script>
+
+
+  </li>
+            
+
+    </ul>
+
+    <script type="text/javascript">
+        $(function(){
+            $(".ul_subject_menu li.rec .bn-sharing").bind("click", function(){
+                $.get("/blank?sbj_page_click=bn_sharing");
+            });
+            $(".ul_subject_menu .create_from_menu").bind("click", function(e){
+                e.preventDefault();
+                var $el = $(this);
+                var glRoot = document.getElementById('gallery-topics-selection');
+                if (window.has_gallery_topics && glRoot) {
+                    // 判断是否有话题
+                    glRoot.style.display = 'block';
+                } else {
+                    location.href = $el.attr('href');
+                }
+            });
+        });
+    </script>
+</div>
+
+
+
+
+                
+
+
+
+
+
+<div class="rec-sec">
+<span class="rec">
+    <script id="movie-share" type="text/x-html-snippet">
+        
+    <form class="movie-share" action="/j/share" method="POST">
+        <div class="clearfix form-bd">
+            <div class="input-area">
+                <textarea name="text" class="share-text" cols="72" data-mention-api="https://api.douban.com/shuo/in/complete?alt=xd&amp;callback=?"></textarea>
+                <input type="hidden" name="target-id" value="2279835">
+                <input type="hidden" name="target-type" value="0">
+                <input type="hidden" name="title" value="三少爷的剑‎ (2001)">
+                <input type="hidden" name="desc" value="导演 靳德茂 主演 何中华 / 俞飞鸿 / 中国大陆 / 6.9分(5475评价)">
+                <input type="hidden" name="redir" value=""/>
+                <div class="mentioned-highlighter"></div>
+            </div>
+
+            <div class="info-area">
+                    <img class="media" src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2256387990.webp" />
+                <strong>三少爷的剑‎ (2001)</strong>
+                <p>导演 靳德茂 主演 何中华 / 俞飞鸿 / 中国大陆 / 6.9分(5475评价)</p>
+                <p class="error server-error">&nbsp;</p>
+            </div>
+        </div>
+        <div class="form-ft">
+            <div class="form-ft-inner">
+                
+
+
+
+                <span class="avail-num-indicator">140</span>
+                <span class="bn-flat">
+                    <input type="submit" value="推荐" />
+                </span>
+            </div>
+        </div>
+    </form>
+    
+    <div id="suggest-mention-tmpl" style="display:none;">
+        <ul>
+            {{#users}}
+            <li id="{{uid}}">
+              <img src="{{avatar}}">{{{username}}}&nbsp;<span>({{{uid}}})</span>
+            </li>
+            {{/users}}
+        </ul>
+    </div>
+
+
+    </script>
+
+        
+        <a href="/accounts/register?reason=recommend"  class="j a_show_login lnk-sharing" share-id="2279835" data-mode="plain" data-name="三少爷的剑‎ (2001)" data-type="movie" data-desc="导演 靳德茂 主演 何中华 / 俞飞鸿 / 中国大陆 / 6.9分(5475评价)" data-href="https://movie.douban.com/subject/2279835/" data-image="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2256387990.webp" data-properties="{}" data-redir="" data-text="" data-apikey="" data-curl="" data-count="10" data-object_kind="1002" data-object_id="2279835" data-target_type="rec" data-target_action="1" data-action_props="{&#34;subject_url&#34;:&#34;https:\/\/movie.douban.com\/subject\/2279835\/&#34;,&#34;subject_title&#34;:&#34;三少爷的剑‎ (2001)&#34;}">推荐</a>
+</span>
+
+
+</div>
+
+
+
+
+
+
+            <script type="text/javascript">
+                $(function() {
+                    $('.collect_btn', '#interest_sect_level').each(function() {
+                        Douban.init_collect_btn(this);
+                    });
+                    $('html').delegate(".indent .rec-sec .lnk-sharing", "click", function() {
+                        moreurl(this, {
+                            from : 'mv_sbj_db_share'
+                        });
+                    });
+                });
+            </script>
+        </div>
+            
+
+
+    <div id="collect_form_2279835"></div>
+
+        
+
+
+
+
+
+
+
+    <h2>
+        <i class="">三少爷的剑的分集短评</i>
+              · · · · · ·
+    </h2>
+
+    
+
+
+    
+    <div class="episode_list">
+
+
+            
+
+            <a class=" item" href="/subject/2279835/episode/1/">1集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/2/">2集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/3/">3集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/4/">4集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/5/">5集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/6/">6集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/7/">7集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/8/">8集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/9/">9集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/10/">10集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/11/">11集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/12/">12集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/13/">13集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/14/">14集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/15/">15集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/16/">16集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/17/">17集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/18/">18集</a>
+            
+
+            <a class=" item" href="/subject/2279835/episode/19/">19集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/20/">20集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/21/">21集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/22/">22集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/23/">23集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/24/">24集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/25/">25集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/26/">26集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/27/">27集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/28/">28集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/29/">29集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/30/">30集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/31/">31集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/32/">32集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/33/">33集</a>
+            
+
+            <a class="hide item" href="/subject/2279835/episode/34/">34集</a>
+
+            <a href="#" class="ep_more"><span></span></a>
+
+    </div>
+
+
+
+
+        
+
+
+
+<div class="related-info" style="margin-bottom:-10px;">
+    <a name="intro"></a>
+    
+        
+            
+            
+    <h2>
+        <i class="">三少爷的剑的剧情简介</i>
+              · · · · · ·
+    </h2>
+
+            <div class="indent" id="link-report">
+                    
+                        <span property="v:summary" class="">
+                                　　江湖纷争，麻烦不断。神剑山庄的三少爷谢晓峰（何中华 饰）和慕容世家的独女慕容秋荻（俞飞鸿 饰）在百般波折之下，终于迎来了二人要大喜的日子。可大婚当天，谢晓峰却不得不与夺命十三剑——燕十三（王冰 饰）进行一场比试，而这时意外发生，谢晓峰被他的兄弟铁铉之妻吕香华带走。而这背后竟牵扯到攸关国家生死存亡的大事。
+                                    <br />
+                                　　燕王朱棣发生兵变，为了保护太子朱文奎的出逃，无奈之举下，谢晓峰答应了铁铉的请求，把他们一家杀死，让太子得以出逃。可这真相外人却不知，于是，谢晓峰背下了天下的骂名，被逐出家门，也和慕容秋荻分散。他们的孩子在凄凉中诞生，这样兜兜转转数十年，一切阴谋与真相到了不得不揭晓的时刻……
+                        </span>
+                        <span class="pl"><a href="https://movie.douban.com/help/movie#t0-qs">&copy;豆瓣</a></span>
+            </div>
+</div>
+
+
+    
+
+
+
+
+
+
+
+
+<div id="celebrities" class="celebrities related-celebrities">
+
+  
+    <h2>
+        <i class="">三少爷的剑的演职员</i>
+              · · · · · ·
+            <span class="pl">
+            (
+                <a href="/subject/2279835/celebrities">全部 20</a>
+            )
+            </span>
+    </h2>
+
+
+  <ul class="celebrities-list from-subject __oneline">
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1320042/" title="靳德茂 De-mao Jin" class="">
+      <div class="avatar" style="background-image: url(https://img1.doubanio.com/view/celebrity/s_ratio_celebrity/public/p1405557781.07.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1320042/" title="靳德茂 De-mao Jin" class="name">靳德茂</a></span>
+
+      <span class="role" title="导演">导演</span>
+
+    </div>
+  </li>
+
+
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1314497/" title="何中华 Zhonghua He " class="">
+      <div class="avatar" style="background-image: url(https://img1.doubanio.com/view/celebrity/s_ratio_celebrity/public/p24707.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1314497/" title="何中华 Zhonghua He " class="name">何中华</a></span>
+
+      <span class="role" title="演员">演员</span>
+
+    </div>
+  </li>
+
+
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1014618/" title="俞飞鸿 Faye Yu" class="">
+      <div class="avatar" style="background-image: url(https://img1.doubanio.com/view/celebrity/s_ratio_celebrity/public/p1364106535.09.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1014618/" title="俞飞鸿 Faye Yu" class="name">俞飞鸿</a></span>
+
+      <span class="role" title="演员">演员</span>
+
+    </div>
+  </li>
+
+
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1314478/" title="陈龙 Long Chen" class="">
+      <div class="avatar" style="background-image: url(https://img3.doubanio.com/view/celebrity/s_ratio_celebrity/public/p44205.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1314478/" title="陈龙 Long Chen" class="name">陈龙</a></span>
+
+      <span class="role" title="演员">演员</span>
+
+    </div>
+  </li>
+
+
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1318452/" title="陈继铭 Jiming Chen" class="">
+      <div class="avatar" style="background-image: url(https://img3.doubanio.com/view/celebrity/s_ratio_celebrity/public/p1408451397.63.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1318452/" title="陈继铭 Jiming Chen" class="name">陈继铭</a></span>
+
+      <span class="role" title="演员">演员</span>
+
+    </div>
+  </li>
+
+
+        
+    
+
+    
+  
+  <li class="celebrity">
+    
+
+  <a href="https://movie.douban.com/celebrity/1323125/" title="张伊函 Yihan Zhang" class="">
+      <div class="avatar" style="background-image: url(https://img3.doubanio.com/view/celebrity/s_ratio_celebrity/public/p55526.webp)">
+    </div>
+  </a>
+
+    <div class="info">
+      <span class="name"><a href="https://movie.douban.com/celebrity/1323125/" title="张伊函 Yihan Zhang" class="name">张伊函</a></span>
+
+      <span class="role" title="演员">演员</span>
+
+    </div>
+  </li>
+
+
+  </ul>
+</div>
+
+
+    
+
+
+<link rel="stylesheet" href="https://img3.doubanio.com/f/verify/16c7e943aee3b1dc6d65f600fcc0f6d62db7dfb4/entry_creator/dist/author_subject/style.css">
+<div id="author_subject" class="author-wrapper">
+    <div class="loading"></div>
+</div>
+<script type="text/javascript">
+    var answerObj = {
+      ISALL: 'False',
+      TYPE: 'tv',
+      SUBJECT_ID: '2279835',
+      USER_ID: 'None'
+    }
+</script>
+<script type="text/javascript" src="https://img3.doubanio.com/f/movie/61252f2f9b35f08b37f69d17dfe48310dd295347/js/movie/lib/react/15.4/bundle.js"></script>
+<script type="text/javascript" src="https://img3.doubanio.com/f/verify/ac140ef86262b845d2be7b859e352d8196f3f6d4/entry_creator/dist/author_subject/index.js"></script>
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+    <div id="related-pic" class="related-pic">
+        
+    
+    
+    <h2>
+        <i class="">三少爷的剑的图片</i>
+              · · · · · ·
+            <span class="pl">
+            (
+                <a href="/video/create?subject_id=2279835">添加视频评论</a>&nbsp;|&nbsp;<a href="https://movie.douban.com/subject/2279835/all_photos">图片92</a>&nbsp;·&nbsp;<a href="https://movie.douban.com/subject/2279835/mupload">添加</a>
+            )
+            </span>
+    </h2>
+
+
+        <ul class="related-pic-bd  ">
+                <li>
+                    <a href="https://movie.douban.com/photos/photo/1804805724/"><img src="https://img3.doubanio.com/view/photo/sqxs/public/p1804805724.webp" alt="图片" /></a>
+                </li>
+                <li>
+                    <a href="https://movie.douban.com/photos/photo/1804799930/"><img src="https://img3.doubanio.com/view/photo/sqxs/public/p1804799930.webp" alt="图片" /></a>
+                </li>
+                <li>
+                    <a href="https://movie.douban.com/photos/photo/1972569287/"><img src="https://img1.doubanio.com/view/photo/sqxs/public/p1972569287.webp" alt="图片" /></a>
+                </li>
+                <li>
+                    <a href="https://movie.douban.com/photos/photo/2175339426/"><img src="https://img3.doubanio.com/view/photo/sqxs/public/p2175339426.webp" alt="图片" /></a>
+                </li>
+                <li>
+                    <a href="https://movie.douban.com/photos/photo/2224943330/"><img src="https://img3.doubanio.com/view/photo/sqxs/public/p2224943330.webp" alt="图片" /></a>
+                </li>
+        </ul>
+    </div>
+
+
+
+      
+
+
+
+
+
+
+
+
+<div class="mod">
+<div class="hd-ops">
+  
+  <a class="comment_btn j a_show_login" href="https://www.douban.com/register?reason=discussion" rel="nofollow">
+      <span>发起新的讨论</span>
+  </a>
+
+</div>
+
+    <h2>
+        <i class="">讨论区</i>
+              · · · · · ·
+            <span class="pl">
+            (
+                <a href="https://movie.douban.com/subject/2279835/discussion/">全部</a>
+            )
+            </span>
+    </h2>
+
+<div class="bd">
+<div class="mv-discussion-nav">
+<a href="https://movie.douban.com/subject/2279835/discussion/" class="on">最新</a>
+<a href="https://movie.douban.com/subject/2279835/discussion/?sort=vote" data-epid="hot">热门</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=1" data-epid="44772" data-num="1">1集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=2" data-epid="44773" data-num="2">2集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=3" data-epid="44774" data-num="3">3集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=4" data-epid="44775" data-num="4">4集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=5" data-epid="44776" data-num="5">5集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=6" data-epid="44777" data-num="6">6集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=7" data-epid="44778" data-num="7">7集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/" data-epid="more" title="更多">&#8230;</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=8" data-epid="44779" data-num="8" class="more-item">8集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=9" data-epid="44780" data-num="9" class="more-item">9集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=10" data-epid="44781" data-num="10" class="more-item">10集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=11" data-epid="44782" data-num="11" class="more-item">11集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=12" data-epid="44783" data-num="12" class="more-item">12集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=13" data-epid="44784" data-num="13" class="more-item">13集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=14" data-epid="44785" data-num="14" class="more-item">14集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=15" data-epid="44786" data-num="15" class="more-item">15集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=16" data-epid="44787" data-num="16" class="more-item">16集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=17" data-epid="44788" data-num="17" class="more-item">17集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=18" data-epid="44789" data-num="18" class="more-item">18集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=19" data-epid="44790" data-num="19" class="more-item">19集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=20" data-epid="44791" data-num="20" class="more-item">20集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=21" data-epid="44792" data-num="21" class="more-item">21集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=22" data-epid="44793" data-num="22" class="more-item">22集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=23" data-epid="44794" data-num="23" class="more-item">23集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=24" data-epid="44795" data-num="24" class="more-item">24集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=25" data-epid="44796" data-num="25" class="more-item">25集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=26" data-epid="44797" data-num="26" class="more-item">26集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=27" data-epid="44798" data-num="27" class="more-item">27集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=28" data-epid="44799" data-num="28" class="more-item">28集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=29" data-epid="44800" data-num="29" class="more-item">29集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=30" data-epid="44801" data-num="30" class="more-item">30集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=31" data-epid="44802" data-num="31" class="more-item">31集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=32" data-epid="44803" data-num="32" class="more-item">32集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=33" data-epid="44804" data-num="33" class="more-item">33集</a>
+  <a href="https://movie.douban.com/subject/2279835/discussion/?ep_num=34" data-epid="44805" data-num="34" class="more-item">34集</a>
+</div>
+
+<div class="mv-discussion-list discussion-list">
+  
+
+<table>
+  <thead>
+  <tr>
+    <td>讨论</td>
+    <td>作者</td>
+    <td nowrap="nowrap">回应</td>
+    <td align="right">最后回应</td>
+  </tr>
+  </thead>
+  <tbody>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/614890854/" title="看到演员表有张静初">看到演员表有张静初</a>
+        <span class="with-pic">[图]</span>
+    </td>
+    <td><a href="https://www.douban.com/people/no1guangming/">獨孤求敗</a></td>
+    <td class="reply-num">2</td>
+    <td class="time">2018-09-12 09:34</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/17232361/" title="这也许，是天意吧">这也许，是天意吧</a>
+    </td>
+    <td><a href="https://www.douban.com/people/androtommy/">Andro</a></td>
+    <td class="reply-num">2</td>
+    <td class="time">2016-11-06 18:53</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/59579786/" title="主演何中华为何不注明？陈龙未出演好吧？！气愤！">主演何中华为何不注明？陈龙未出演好吧？！气愤！</a>
+    </td>
+    <td><a href="https://www.douban.com/people/luojianxun/">拉来的小提琴手</a></td>
+    <td class="reply-num">3</td>
+    <td class="time">2015-07-07 22:23</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/21828148/" title="为了俞飞鸿我能忍受这部烂剧...">为了俞飞鸿我能忍受这部烂剧...</a>
+    </td>
+    <td><a href="https://www.douban.com/people/iamguoguo/">断翅诺言</a></td>
+    <td class="reply-num">7</td>
+    <td class="time">2012-01-13 21:19</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/24907470/" title="霍思燕才是亮点~~">霍思燕才是亮点~~</a>
+    </td>
+    <td><a href="https://www.douban.com/people/3693020/">居里</a></td>
+    <td class="reply-num">5</td>
+    <td class="time">2011-12-14 00:09</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/18621850/" title="重温了……">重温了……</a>
+    </td>
+    <td><a href="https://www.douban.com/people/angelclaudia/">时有锦绣</a></td>
+    <td class="reply-num">4</td>
+    <td class="time">2011-06-11 14:54</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/13481276/" title="喜欢俞飞鸿">喜欢俞飞鸿</a>
+    </td>
+    <td><a href="https://www.douban.com/people/grace2046/">grace</a></td>
+    <td class="reply-num">7</td>
+    <td class="time">2011-06-11 14:47</td>
+  </tr>
+  </tbody>
+</table>
+
+<a href="https://movie.douban.com/subject/2279835/discussion/">&gt; 全部讨论7条</a>
+</div>
+
+<div class="mv-hot-discussion-list hide">
+  
+
+<table>
+  <thead>
+  <tr>
+    <td>讨论</td>
+    <td>作者</td>
+    <td nowrap="nowrap">回应</td>
+    <td align="right">最后回应</td>
+  </tr>
+  </thead>
+  <tbody>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/21828148/" title="为了俞飞鸿我能忍受这部烂剧...">为了俞飞鸿我能忍受这部烂剧...</a>
+    </td>
+    <td><a href="https://www.douban.com/people/iamguoguo/">断翅诺言</a></td>
+    <td class="reply-num">7</td>
+    <td class="time">2012-01-13 21:19</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/13481276/" title="喜欢俞飞鸿">喜欢俞飞鸿</a>
+    </td>
+    <td><a href="https://www.douban.com/people/grace2046/">grace</a></td>
+    <td class="reply-num">7</td>
+    <td class="time">2011-06-11 14:47</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/24907470/" title="霍思燕才是亮点~~">霍思燕才是亮点~~</a>
+    </td>
+    <td><a href="https://www.douban.com/people/3693020/">居里</a></td>
+    <td class="reply-num">5</td>
+    <td class="time">2011-12-14 00:09</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/18621850/" title="重温了……">重温了……</a>
+    </td>
+    <td><a href="https://www.douban.com/people/angelclaudia/">时有锦绣</a></td>
+    <td class="reply-num">4</td>
+    <td class="time">2011-06-11 14:54</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/59579786/" title="主演何中华为何不注明？陈龙未出演好吧？！气愤！">主演何中华为何不注明？陈龙未出演好吧？！气愤！</a>
+    </td>
+    <td><a href="https://www.douban.com/people/luojianxun/">拉来的小提琴手</a></td>
+    <td class="reply-num">3</td>
+    <td class="time">2015-07-07 22:23</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/614890854/" title="看到演员表有张静初">看到演员表有张静初</a>
+        <span class="with-pic">[图]</span>
+    </td>
+    <td><a href="https://www.douban.com/people/no1guangming/">獨孤求敗</a></td>
+    <td class="reply-num">2</td>
+    <td class="time">2018-09-12 09:34</td>
+  </tr>
+  
+  <tr>
+    <td class="title">
+      <a href="https://movie.douban.com/subject/2279835/discussion/17232361/" title="这也许，是天意吧">这也许，是天意吧</a>
+    </td>
+    <td><a href="https://www.douban.com/people/androtommy/">Andro</a></td>
+    <td class="reply-num">2</td>
+    <td class="time">2016-11-06 18:53</td>
+  </tr>
+  </tbody>
+</table>
+
+<a href="https://movie.douban.com/subject/2279835/discussion/?sort=vote">&gt; 全部讨论7条</a>
+</div>
+
+</div>
+</div>
+
+
+
+
+
+
+    
+    
+
+
+
+<style type="text/css">
+.award li { display: inline; margin-right: 5px }
+.awards { margin-bottom: 20px }
+.awards h2 { background: none; color: #000; font-size: 14px; padding-bottom: 5px; margin-bottom: 8px; border-bottom: 1px dashed #dddddd }
+.awards .year { color: #666666; margin-left: -5px }
+.mod { margin-bottom: 25px }
+.mod .hd { margin-bottom: 10px }
+.mod .hd h2 {margin:24px 0 3px 0}
+</style>
+
+
+
+    
+
+
+
+
+
+
+
+
+    <div id="recommendations" class="">
+        
+        
+    <h2>
+        <i class="">喜欢这部剧集的人也喜欢</i>
+              · · · · · ·
+    </h2>
+
+        
+    
+    <div class="recommendations-bd">
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/3055383/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2386881058.webp" alt="策马啸西风" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/3055383/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>策马啸西风</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/3114923/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2375000270.webp" alt="白发魔女" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/3114923/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>白发魔女</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2282477/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2354199260.webp" alt="武林外史" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2282477/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>武林外史</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2279825/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2372424064.webp" alt="小李飞刀" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2279825/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>小李飞刀</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2347271/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2190567792.webp" alt="萧十一郎" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2347271/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>萧十一郎</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2311147/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2214654588.webp" alt="绝代双骄" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2311147/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>绝代双骄</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2295783/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1928871095.webp" alt="碧血剑" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2295783/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>碧血剑</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/2279816/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2373056002.webp" alt="少年张三丰" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/2279816/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>少年张三丰</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/3098693/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2374999078.webp" alt="金蚕丝雨" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/3098693/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>金蚕丝雨</a>
+            </dd>
+        </dl>
+        <dl class="">
+            <dt>
+                <a href="https://movie.douban.com/subject/3546595/?from=subject-page" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>
+                    <img src="https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2539586282.webp" alt="圆月弯刀" class="" />
+                </a>
+            </dt>
+            <dd>
+                <a href="https://movie.douban.com/subject/3546595/?from=subject-page" class="" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-recommended-subject&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>圆月弯刀</a>
+            </dd>
+        </dl>
+    </div>
+
+    </div>
+
+
+
+        
+
+
+<script type="text/x-handlebar-tmpl" id="comment-tmpl">
+    <div class="dummy-fold">
+        {{#each comments}}
+        <div class="comment-item" data-cid="id">
+            <div class="comment">
+                <h3>
+                    <span class="comment-vote">
+                            <span class="votes">{{votes}}</span>
+                        <input value="{{id}}" type="hidden"/>
+                        <a href="javascript:;" class="j {{#if ../if_logined}}a_vote_comment{{else}}a_show_login{{/if}}">有用</a>
+                    </span>
+                    <span class="comment-info">
+                        <a href="{{user.path}}" class="">{{user.name}}</a>
+                        {{#if rating}}
+                        <span class="allstar{{rating}}0 rating" title="{{rating_word}}"></span>
+                        {{/if}}
+                        <span>
+                            {{time}}
+                        </span>
+                        <p> {{content_tmpl content}} </p>
+                    </span>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    <div id="comments-section">
+        <div class="mod-hd">
+            
+        <a class="comment_btn j a_show_login" href="https://www.douban.com/register?reason=review" rel="nofollow">
+            <span>我要写短评</span>
+        </a>
+
+            
+            
+    <h2>
+        <i class="">三少爷的剑的短评</i>
+              · · · · · ·
+            <span class="pl">
+            (
+                <a href="https://movie.douban.com/subject/2279835/comments?status=P">全部 1036 条</a>
+            )
+            </span>
+    </h2>
+
+        </div>
+        <div class="mod-bd">
+                
+    <div class="tab-hd">
+        <a id="hot-comments-tab" href="comments" data-id="hot" class="on">热门</a>&nbsp;/&nbsp;
+        <a id="new-comments-tab" href="comments?sort=time" data-id="new">最新</a>&nbsp;/&nbsp;
+        <a id="following-comments-tab" href="follows_comments" data-id="following"  class="j a_show_login">好友</a>
+    </div>
+
+    <div class="tab-bd">
+        <div id="hot-comments" class="tab">
+            
+    
+        
+        <div class="comment-item" data-cid="147524057">
+            
+    
+    <div class="comment">
+        <h3>
+            <span class="comment-vote">
+                <span class="votes">59</span>
+                <input value="147524057" type="hidden"/>
+                <a href="javascript:;" class="j a_show_login" onclick="">有用</a>
+            </span>
+            <span class="comment-info">
+                <a href="https://www.douban.com/people/smarttutu/" class="">十二</a>
+                    <span>看过</span>
+                    <span class="allstar40 rating" title="推荐"></span>
+                <span class="comment-time " title="2009-11-01 18:21:08">
+                    2009-11-01
+                </span>
+            </span>
+        </h3>
+        <p class="">
+            
+                <span class="short">我只恨他们只有那么短暂的谈情说爱镜头。俞姐姐那双大眼啊，真是顾盼生辉。</span>
+        </p>
+    </div>
+
+        </div>
+        
+        <div class="comment-item" data-cid="1192975988">
+            
+    
+    <div class="comment">
+        <h3>
+            <span class="comment-vote">
+                <span class="votes">9</span>
+                <input value="1192975988" type="hidden"/>
+                <a href="javascript:;" class="j a_show_login" onclick="">有用</a>
+            </span>
+            <span class="comment-info">
+                <a href="https://www.douban.com/people/152434281/" class="">元宝宝</a>
+                    <span>看过</span>
+                    <span class="allstar30 rating" title="还行"></span>
+                <span class="comment-time " title="2017-05-21 21:03:39">
+                    2017-05-21
+                </span>
+            </span>
+        </h3>
+        <p class="">
+            
+                <span class="short">俞飞鸿简直美的不可方物！</span>
+        </p>
+    </div>
+
+        </div>
+        
+        <div class="comment-item" data-cid="1020220923">
+            
+    
+    <div class="comment">
+        <h3>
+            <span class="comment-vote">
+                <span class="votes">2</span>
+                <input value="1020220923" type="hidden"/>
+                <a href="javascript:;" class="j a_show_login" onclick="">有用</a>
+            </span>
+            <span class="comment-info">
+                <a href="https://www.douban.com/people/131809416/" class="">天意怜幽草</a>
+                    <span>看过</span>
+                    <span class="allstar30 rating" title="还行"></span>
+                <span class="comment-time " title="2016-03-11 22:15:35">
+                    2016-03-11
+                </span>
+            </span>
+        </h3>
+        <p class="">
+            
+                <span class="short">一个人背负着人人所不耻的骂名，忍辱偷生的过着流浪的生活，只为了大义，剧情是可圈可点，人设也好，演员也是很到位，武打场面挺好看，现今的特效过多毫无味道</span>
+        </p>
+    </div>
+
+        </div>
+        
+        <div class="comment-item" data-cid="1192997251">
+            
+    
+    <div class="comment">
+        <h3>
+            <span class="comment-vote">
+                <span class="votes">3</span>
+                <input value="1192997251" type="hidden"/>
+                <a href="javascript:;" class="j a_show_login" onclick="">有用</a>
+            </span>
+            <span class="comment-info">
+                <a href="https://www.douban.com/people/155986723/" class="">梦梦梦梦</a>
+                    <span>看过</span>
+                    <span class="allstar40 rating" title="推荐"></span>
+                <span class="comment-time " title="2017-05-21 21:45:49">
+                    2017-05-21
+                </span>
+            </span>
+        </h3>
+        <p class="">
+            
+                <span class="short">小的时候看这个，感觉何中华特别帅，特别适合演古装正派角色，可惜一直没有太火。俞飞鸿真的很漂亮，喜欢这种古装武侠剧</span>
+        </p>
+    </div>
+
+        </div>
+        
+        <div class="comment-item" data-cid="440281402">
+            
+    
+    <div class="comment">
+        <h3>
+            <span class="comment-vote">
+                <span class="votes">0</span>
+                <input value="440281402" type="hidden"/>
+                <a href="javascript:;" class="j a_show_login" onclick="">有用</a>
+            </span>
+            <span class="comment-info">
+                <a href="https://www.douban.com/people/32623137/" class="">段古母辛</a>
+                    <span>看过</span>
+                    <span class="allstar30 rating" title="还行"></span>
+                <span class="comment-time " title="2011-09-27 16:40:08">
+                    2011-09-27
+                </span>
+            </span>
+        </h3>
+        <p class="">
+            
+                <span class="short">里面几个女的都还蛮漂亮的，但那时候的古装剧好像是一个人拍出来，怎么总拍个大脸啊，真变态。</span>
+        </p>
+    </div>
+
+        </div>
+
+
+
+                
+                &gt; <a href="comments?sort=new_score&status=P" data-moreurl-dict={&#34;subject_id&#34;:&#34;2279835&#34;,&#34;from&#34;:&#34;tv-more-comments&#34;,&#34;bid&#34;:&#34;auSsK8Dk5cg&#34;}>更多短评1036条</a>
+        </div>
+        <div id="new-comments" class="tab">
+            <div id="normal">
+            </div>
+            <div class="fold-hd hide">
+                <a class="qa" href="/help/opinion#t2-q0" target="_blank">为什么被折叠？</a>
+                <a class="btn-unfold" href="#">有一些短评被折叠了</a>
+                <div class="qa-tip">
+                    评论被折叠，是因为发布这条评论的帐号行为异常。评论仍可以被展开阅读，对发布人的账号不造成其他影响。如果认为有问题，可以<a href="https://help.douban.com/help/ask?category=movie">联系</a>豆瓣电影。
+                </div>
+            </div>
+            <div class="fold-bd">
+            </div>
+            <span id="total-num"></span>
+        </div>
+        <div id="following-comments" class="tab">
+            
+    
+
+
+        <div class="comment-item">
+            你关注的人还没写过短评
+        </div>
+
+        </div>
+    </div>
+
+
+            
+            
+        </div>
+    </div>
+
+
+
+        
+
+<link rel="stylesheet" href="https://img3.doubanio.com/misc/mixed_static/73ed658484f98d44.css">
+
+<section class="topics mod">
+    <header>
+        <h2>
+            三少爷的剑的话题 · · · · · ·
+            <span class="pl">( <span class="gallery_topics">全部 <span id="topic-count"></span> 条</span> )</span>
+        </h2>
+    </header>
+
+    
+
+
+
+
+<section class="subject-topics">
+    <div class="topic-guide" id="topic-guide">
+        <img class="ic_question" src="//img3.doubanio.com/f/ithildin/b1a3edea3d04805f899e9d77c0bfc0d158df10d5/pics/export/icon_question.png">
+        <div class="tip_content">
+            <div class="tip_title">什么是话题</div>
+            <div class="tip_desc">
+                <div>无论是一部作品、一个人，还是一件事，都往往可以衍生出许多不同的话题。将这些话题细分出来，分别进行讨论，会有更多收获。</div>
+            </div>
+        </div>
+        <img class="ic_guide" src="//img3.doubanio.com/f/ithildin/529f46d86bc08f55cd0b1843d0492242ebbd22de/pics/export/icon_guide_arrow.png">
+        <img class="ic_close" id="topic-guide-close" src="//img3.doubanio.com/f/ithildin/2eb4ad488cb0854644b23f20b6fa312404429589/pics/export/close@3x.png">
+    </div>
+
+    <div id="topic-items"></div>
+
+    <script>
+        window.subject_id = 2279835;
+        window.join_label_text = '写剧评参与';
+
+        window.topic_display_count = 4;
+        window.topic_item_display_count = 1;
+        window.no_content_fun_call_name = "no_topic";
+
+        window.guideNode = document.getElementById('topic-guide');
+        window.guideNodeClose = document.getElementById('topic-guide-close');
+    </script>
+    
+        <link rel="stylesheet" href="https://img3.doubanio.com/f/ithildin/f731c9ea474da58c516290b3a6b1dd1237c07c5e/css/export/subject_topics.css">
+        <script src="https://img3.doubanio.com/f/ithildin/d3590fc6ac47b33c804037a1aa7eec49075428c8/js/export/moment-with-locales-only-zh.js"></script>
+        <script src="https://img3.doubanio.com/f/ithildin/c600fdbe69e3ffa5a3919c81ae8c8b4140e99a3e/js/export/subject_topics.js"></script>
+
+</section>
+
+    <script>
+        function no_topic(){
+            $('#content .topics').remove();
+        }
+    </script>
+</section>
+
+<section class="reviews mod movie-content">
+    <header>
+        <a href="new_review" rel="nofollow" class="create-review comment_btn"
+            data-isverify="False"
+            data-verify-url="https://www.douban.com/accounts/phone/verify?redir=http://movie.douban.com/subject/2279835/new_review">
+            <span>我要写剧评</span>
+        </a>
+        <h2>
+            三少爷的剑的剧评 · · · · · ·
+            <span class="pl">( <a href="reviews">全部 9 条</a> )</span>
+        </h2>
+    </header>
+
+    
+
+<style>
+#gallery-topics-selection {
+  position: fixed;
+  width: 595px;
+  padding: 40px 40px 33px 40px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.2);
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+#gallery-topics-selection h1 {
+  font-size: 18px;
+  color: #007722;
+  margin-bottom: 36px;
+  padding: 0;
+  line-height: 28px;
+  font-weight: normal;
+}
+#gallery-topics-selection .gl_topics {
+  border-bottom: 1px solid #dfdfdf;
+  max-height: 298px;
+  overflow-y: scroll;
+}
+#gallery-topics-selection .topic {
+  margin-bottom: 24px;
+}
+#gallery-topics-selection .topic_name {
+  font-size: 15px;
+  color: #333;
+  margin: 0;
+  line-height: inherit;
+}
+#gallery-topics-selection .topic_meta {
+  font-size: 13px;
+  color: #999;
+}
+#gallery-topics-selection .topics_skip {
+  display: block;
+  cursor: pointer;
+  font-size: 16px;
+  color: #3377AA;
+  text-align: center;
+  margin-top: 33px;
+}
+#gallery-topics-selection .topics_skip:hover {
+  background: transparent;
+}
+#gallery-topics-selection .close_selection {
+  position: absolute;
+  width: 30px;
+  height: 20px;
+  top: 46px;
+  right: 40px;
+  background: #fff;
+  color: #999;
+  text-align: right;
+}
+#gallery-topics-selection .close_selection:hover{
+  background: #fff;
+  color: #999;
+}
+</style>
+
+
+
+
+        <div class="review_filter">
+            <a href="javascript:;;" class="cur" data-sort="">热门</a href="javascript:;;"> /
+            <a href="javascript:;;" data-sort="time">最新</a href="javascript:;;"> /
+            <a href="javascript:;;" data-sort="follow">好友</a href="javascript:;;">
+            
+        </div>
+
+
+        
+
+
+
+<div class="review-list  ">
+        
+    
+
+        
+    
+    <div data-cid="2207301">
+        <div class="main review-item" id="2207301">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/2531185/" class="avator">
+            <img width="24" height="24" src="https://img1.doubanio.com/icon/u2531185-67.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/2531185/" class="name">熏衣草的小香水</a>
+
+            <span class="allstar20 main-title-rating" title="较差"></span>
+
+        <span content="2009-08-08" class="main-meta">2009-08-08 17:51:16</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/2207301/">令人嫌弃的三少爷</a></h2>
+
+                <div id="review_2207301_short" class="review-short" data-rid="2207301">
+                    <div class="short-content">
+
+                            在古龙笔下的男主角中，若说不喜欢的，三少爷谢晓峰可算是名列前茅。原因无他，只为了被他辜负的慕容秋荻们不值。    真人版的谢晓峰，总是被编剧加上了很多无可奈何的理由，如此片中的“为国为民”。可惜“政治”和“朝廷”这种事情，从来不是古龙世界里的江湖。    古龙...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-2207301-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_2207301_full" class="hidden">
+                    <div id="review_2207301_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="2207301" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-2207301">
+                                25
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="2207301" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-2207301">
+                                12
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/2207301/#comments" class="reply">24回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+    
+    <div data-cid="5083913">
+        <div class="main review-item" id="5083913">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/43768284/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/u43768284-3.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/43768284/" class="name">五月晴天</a>
+
+            <span class="allstar30 main-title-rating" title="还行"></span>
+
+        <span content="2011-09-01" class="main-meta">2011-09-01 16:12:48</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/5083913/">情感淡然</a></h2>
+
+                <div id="review_5083913_short" class="review-short" data-rid="5083913">
+                    <div class="short-content">
+                            <p class="spoiler-tip">这篇剧评可能有剧透</p>
+
+                               十几岁的谢晓峰和秋荻有点做作，一开始对谢晓峰期望很高，但最后还是弃秋荻而去，为什么不跟她讲明当时的原因呢？一个深爱你的女人不管你做了什么错事，只要你还爱她、肯回改，她都会原谅你的；即使你已经不爱她了，也要说明真相，那样她才不会归因错误、走火入魔，这是...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-5083913-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_5083913_full" class="hidden">
+                    <div id="review_5083913_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="5083913" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-5083913">
+                                12
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="5083913" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-5083913">
+                                3
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/5083913/#comments" class="reply">2回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+    
+    <div data-cid="3498825">
+        <div class="main review-item" id="3498825">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/1856756/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/u1856756-2.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/1856756/" class="name">sandy</a>
+
+            <span class="allstar10 main-title-rating" title="很差"></span>
+
+        <span content="2010-08-03" class="main-meta">2010-08-03 16:31:35</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/3498825/">痛心</a></h2>
+
+                <div id="review_3498825_short" class="review-short" data-rid="3498825">
+                    <div class="short-content">
+
+                        他最爱的三少爷，我最爱的俞飞鸿，怎么就弄成了这么个鬼样子！ 剧情更是乱七八糟、莫名其妙！ 明明三少爷是无羁绊的，而她也是个绝顶的女人。
+
+                        &nbsp;(<a href="javascript:;" id="toggle-3498825-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_3498825_full" class="hidden">
+                    <div id="review_3498825_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="3498825" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-3498825">
+                                7
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="3498825" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-3498825">
+                                3
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/3498825/#comments" class="reply">1回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+    
+    <div data-cid="9709907">
+        <div class="main review-item" id="9709907">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/rywbl/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/u125046742-3.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/rywbl/" class="name">媛心清烃</a>
+
+            <span class="allstar50 main-title-rating" title="力荐"></span>
+
+        <span content="2018-10-16" class="main-meta">2018-10-16 22:59:21</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/9709907/">评 三少爷的剑 剧版</a></h2>
+
+                <div id="review_9709907_short" class="review-short" data-rid="9709907">
+                    <div class="short-content">
+
+                        不是偶然的原因，选择去看这部剧其实我当初想追这部剧吧，是因为沉鱼的原因的，具体原因不便透露。对于武侠吧，也不怎么感冒，不是特意的喜欢古龙或者是武侠又或者是经典而去追这部剧的，但是一旦选择了这部剧，真的发现这部剧是挺好看的，十几年前的电视剧，不仅仅是经典，而...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-9709907-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_9709907_full" class="hidden">
+                    <div id="review_9709907_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="9709907" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-9709907">
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="9709907" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-9709907">
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/9709907/#comments" class="reply">1回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+    
+    <div data-cid="6569101">
+        <div class="main review-item" id="6569101">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/2744224/" class="avator">
+            <img width="24" height="24" src="https://img1.doubanio.com/icon/u2744224-39.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/2744224/" class="name">加西亚</a>
+
+            <span class="allstar10 main-title-rating" title="很差"></span>
+
+        <span content="2014-03-01" class="main-meta">2014-03-01 22:27:10</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/6569101/">奇葩</a></h2>
+
+                <div id="review_6569101_short" class="review-short" data-rid="6569101">
+                    <div class="short-content">
+
+                        看了简介就直接不想看了。  虽然书写的比较杯具和让人郁闷。但是这个电视剧，明显就是名字而已。其他的都是编剧自己写的，和小说完全无关。  我还是很想看小说版本的电视剧的。  谢晓峰虽然让人讨厌，因为很自私。可是里面还是有很多很精彩的剧情的。。。  这电视剧，您改名字...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-6569101-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_6569101_full" class="hidden">
+                    <div id="review_6569101_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="6569101" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-6569101">
+                                2
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="6569101" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-6569101">
+                                4
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/6569101/#comments" class="reply">0回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        <div class="fold-hd">
+                <a class="btn-unfold" href="#">有一些影评被折叠了</a>
+                    <a class="qa" href="https://help.douban.com/opinion?app=movie#t1-q2">为什么被折叠？</a>
+            <div class="qa-tip">评论被折叠，是因为发布这条评论的帐号行为异常。评论仍可以被展开阅读，对发布人的账号不造成其他影响。如果认为有问题，可以<a href="https://help.douban.com/help/ask?category=movie">联系</a>豆瓣电影。</div>
+        </div>
+        <div class="fold-bd">
+                
+    
+    <div data-cid="9564004">
+        <div class="main review-item" id="9564004">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/161332326/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/u161332326-5.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/161332326/" class="name">沙里晶</a>
+
+            <span class="allstar40 main-title-rating" title="推荐"></span>
+
+        <span content="2018-08-04" class="main-meta">2018-08-04 20:20:14</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/9564004/">说的是剑，谈的却是人生</a></h2>
+
+                <div id="review_9564004_short" class="review-short" data-rid="9564004">
+                    <div class="short-content">
+
+                        三少爷谢晓峰，是古龙笔下的经典人物，他用跌宕起伏的人生，验证了杀机重重的江湖，和喜怒无常的人心，这样一个出身于“一剑功成万骨枯”的绝世高手，其实是众多江湖传说中的巨大悲剧故事，既有人在高处不胜寒的孤独，也有放下武器为凡人的向往，但正如常说：人在江湖，身不由...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-9564004-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_9564004_full" class="hidden">
+                    <div id="review_9564004_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="9564004" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-9564004">
+                                9
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="9564004" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-9564004">
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/9564004/#comments" class="reply">0回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                
+    
+    <div data-cid="6585279">
+        <div class="main review-item" id="6585279">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/27776377/" class="avator">
+            <img width="24" height="24" src="https://img1.doubanio.com/icon/u27776377-8.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/27776377/" class="name">紫仓鼠</a>
+
+            <span class="allstar30 main-title-rating" title="还行"></span>
+
+        <span content="2014-03-12" class="main-meta">2014-03-12 22:28:33</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/6585279/">那个梦想的年代</a></h2>
+
+                <div id="review_6585279_short" class="review-short" data-rid="6585279">
+                    <div class="short-content">
+
+                        这是一篇很水的随笔，想到哪写到哪。  近日《大丈夫》大火，人人惊叹俞美人容颜不老，可我还是觉得她的角色变了。俞美人演过一次又一次武林/天下第一美人，而我印象最深刻的角色是杨艳（尽管那里面武林第一美人应该是林诗音吧）。惊鸿仙子的眼中全是智慧与笃定，爱得自信而真切...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-6585279-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_6585279_full" class="hidden">
+                    <div id="review_6585279_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="6585279" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-6585279">
+                                6
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="6585279" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-6585279">
+                                1
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/6585279/#comments" class="reply">1回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                
+    
+    <div data-cid="8870656">
+        <div class="main review-item" id="8870656">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/49886349/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/user_normal_f.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/49886349/" class="name">月舞于星渊</a>
+
+            <span class="allstar30 main-title-rating" title="还行"></span>
+
+        <span content="2017-10-17" class="main-meta">2017-10-17 12:51:47</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/8870656/">童年回忆褪去，只是一部烂剧</a></h2>
+
+                <div id="review_8870656_short" class="review-short" data-rid="8870656">
+                    <div class="short-content">
+                            <p class="spoiler-tip">这篇剧评可能有剧透</p>
+
+                        2017.10.17《三少爷的剑》        虽然有童年回忆做加持，但我不得不承认，这是一部很糟糕的剧。        重温这部剧的原因有两个，一个是看了飞鸿姐姐的《十三邀》，惊讶于她的美貌和风度，所以又想到了这部老剧；另一个是当年追剧的时候觉得自己根本就没看懂剧情内容，所以想...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-8870656-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_8870656_full" class="hidden">
+                    <div id="review_8870656_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="8870656" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-8870656">
+                                1
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="8870656" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-8870656">
+                                2
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/8870656/#comments" class="reply">4回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                
+    
+    <div data-cid="8583845">
+        <div class="main review-item" id="8583845">
+
+            
+    
+    <header class="main-hd">
+        <a href="https://www.douban.com/people/137137237/" class="avator">
+            <img width="24" height="24" src="https://img3.doubanio.com/icon/u137137237-1.jpg">
+        </a>
+
+        <a href="https://www.douban.com/people/137137237/" class="name">周小环</a>
+
+            <span class="allstar40 main-title-rating" title="推荐"></span>
+
+        <span content="2017-06-05" class="main-meta">2017-06-05 16:50:34</span>
+
+
+    </header>
+
+
+            <div class="main-bd">
+
+                <h2><a href="https://movie.douban.com/review/8583845/">这就是个悲剧。。。</a></h2>
+
+                <div id="review_8583845_short" class="review-short" data-rid="8583845">
+                    <div class="short-content">
+
+                        六月十七日，京城发生兵变，燕王朱棣率军攻陷都城，继承了帝位。铁铉带着年仅七岁的逊太子朱文奎出逃，被朱棣派的大批高手追捕。万般无奈之下，铁铉夫妇与谢晓峰合演了一场苦肉计，铁铉把太子的服装套在自己亲生儿子的身上，让谢晓峰杀死自己和儿子，以使敌人产生误解就此罢手...
+
+                        &nbsp;(<a href="javascript:;" id="toggle-8583845-copy" class="unfold" title="展开">展开</a>)
+                    </div>
+                </div>
+
+                <div id="review_8583845_full" class="hidden">
+                    <div id="review_8583845_full_content" class="full-content"></div>
+                </div>
+
+                <div class="action">
+                    <a href="javascript:;" class="action-btn up" data-rid="8583845" title="有用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/536fd337139250b5fb3cf9e79cb65c6193f8b20b/pics/up.png" />
+                        <span id="r-useful_count-8583845">
+                                1
+                        </span>
+                    </a>
+                    <a href="javascript:;" class="action-btn down" data-rid="8583845" title="没用">
+                        <img src="https://img3.doubanio.com/f/zerkalo/68849027911140623cf338c9845893c4566db851/pics/down.png" />
+                        <span id="r-useless_count-8583845">
+                                1
+                        </span>
+                    </a>
+                    <a href="https://movie.douban.com/review/8583845/#comments" class="reply">1回应</a>
+
+                    <a href="javascript:;;" class="fold hidden">收起</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+
+
+    
+
+    
+
+    <script type="text/javascript" src="https://img3.doubanio.com/misc/mixed_static/1ccaa3188342e8c5.js"></script>
+    <!-- COLLECTED CSS -->
+</div>
+
+
+
+
+
+
+
+
+            <p class="pl">
+                &gt;
+                <a href="reviews">
+                    更多剧评9篇
+                </a>
+            </p>
+</section>
+
+<!-- COLLECTED JS -->
+
+    <br/>
+
+        <div class="section-discussion">
+                <p class="discussion_link">
+    <a href="https://movie.douban.com/subject/2279835/tv_discuss">&gt; 查看 三少爷的剑 的分集短评（全部9条）</a>
+</p>
+
+        </div>
+
+
+    <script type="text/javascript">
+        $(function(){if($.browser.msie && $.browser.version == 6.0){
+            var $info = $('#info'),
+                maxWidth = parseInt($info.css('max-width'));
+            if($info.width() > maxWidth) {
+                $info.width(maxWidth);
+            }
+        }});
+    </script>
+
+
+            </div>
+            <div class="aside">
+                
+
+
+    
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+    
+
+<script id="episode-tmpl" type="text/x-jsrender">
+<div id="tv-play-source" class="play-source">
+    <div class="cross">
+        <span style="color:#494949; font-size:16px">{{:cn}}</span>
+        <span style="cursor:pointer">✕</span>
+    </div>
+    <div class="episode-list">
+        {{for playlist}}
+            <a href="{{:play_link}}&episode={{:ep}}" target="_blank">{{:ep}}集</a>
+        {{/for}}
+     <div>
+ </div>
+</script>
+
+<div class="gray_ad">
+    
+    <h2>
+        在哪儿看这部剧集
+            &nbsp;&middot;&nbsp;&middot;&nbsp;&middot;&nbsp;&middot;&nbsp;&middot;&nbsp;&middot;
+    </h2>
+
+    
+    <ul class="bs">
+                <li>
+                        <a class="playBtn" data-cn="优酷视频" href="https://www.douban.com/link2/?url=http%3A%2F%2Fv.youku.com%2Fv_show%2Fid_XMjE3OTI3NDQ1Mg%3D%3D.html%3Ftpa%3DdW5pb25faWQ9MTAzNTY1XzEwMDAwMV8wMV8wMQ&amp;subtype=3&amp;type=online-video" target="_blank">
+                            优酷视频
+                        </a>
+                    <span class="buylink-price"><span>
+                        免费观看
+                    </span></span>
+                </li>
+                <li>
+                        <a class="playBtn" data-cn="哔哩哔哩" data-source="8"  href="javascript: void 0;">
+                            哔哩哔哩
+                        </a>
+                    <span class="buylink-price"><span>
+                        免费观看
+                    </span></span>
+                </li>
+
+    </ul>
+</div>
+
+
+    <!-- douban ad begin -->
+    <div id="dale_movie_subject_top_right"></div>
+    <div id="dale_movie_subject_top_middle"></div>
+    <!-- douban ad end -->
+
+    
+
+
+
+<style type="text/css">
+    .m4 {margin-bottom:8px; padding-bottom:8px;}
+    .movieOnline {background:#FFF6ED; padding:10px; margin-bottom:20px;}
+    .movieOnline h2 {margin:0 0 5px;}
+    .movieOnline .sitename {line-height:2em; width:160px;}
+    .movieOnline td,.movieOnline td a:link,.movieOnline td a:visited{color:#666;}
+    .movieOnline td a:hover {color:#fff;}
+    .link-bt:link,
+    .link-bt:visited,
+    .link-bt:hover,
+    .link-bt:active {margin:5px 0 0; padding:2px 8px; background:#a8c598; color:#fff; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; display:inline-block;}
+</style>
+
+
+
+    
+
+
+
+
+
+
+
+    
+    <div class="tags">
+        
+        
+    <h2>
+        <i class="">豆瓣成员常用的标签</i>
+              · · · · · ·
+    </h2>
+
+        <div class="tags-body">
+                <a href="/tag/武侠" class="">武侠</a>
+                <a href="/tag/电视剧" class="">电视剧</a>
+                <a href="/tag/古龙" class="">古龙</a>
+                <a href="/tag/俞飞鸿" class="">俞飞鸿</a>
+                <a href="/tag/国产电视剧" class="">国产电视剧</a>
+                <a href="/tag/古装" class="">古装</a>
+                <a href="/tag/看过的电视剧" class="">看过的电视剧</a>
+                <a href="/tag/华语标签" class="">华语标签</a>
+        </div>
+    </div>
+
+
+    <div id="dale_movie_subject_inner_middle"></div>
+    <div id="dale_movie_subject_download_middle"></div>
+        
+
+
+
+
+
+
+
+
+<div id="subject-doulist">
+    
+    
+    <h2>
+        <i class="">以下豆列推荐</i>
+              · · · · · ·
+            <span class="pl">
+            (
+                <a href="https://movie.douban.com/subject/2279835/doulists">全部</a>
+            )
+            </span>
+    </h2>
+
+
+    
+    <ul>
+            <li>
+                <a href="https://www.douban.com/doulist/111448/" target="_blank">80末出生的人是这样成长的</a>
+                <span>(沉歌)</span>
+            </li>
+            <li>
+                <a href="https://www.douban.com/doulist/558514/" target="_blank">♡°那些年我们一起追过的「古装剧」</a>
+                <span>(姽婳。)</span>
+            </li>
+            <li>
+                <a href="https://www.douban.com/doulist/642764/" target="_blank">我看过的电视剧——古装情结</a>
+                <span>(辰夕)</span>
+            </li>
+            <li>
+                <a href="https://www.douban.com/doulist/40978873/" target="_blank">影视，良心制作大杂烩</a>
+                <span>(李大虾)</span>
+            </li>
+            <li>
+                <a href="https://www.douban.com/doulist/991297/" target="_blank">古装剧是场不能苛刻的梦。壹。</a>
+                <span>(某J。624)</span>
+            </li>
+    </ul>
+
+</div>
+
+        
+
+
+
+
+
+
+
+
+<div id="subject-others-interests">
+    
+    
+    <h2>
+        <i class="">谁在看这部剧集</i>
+              · · · · · ·
+    </h2>
+
+    
+    <ul class="">
+            
+            <li class="">
+                <a href="https://www.douban.com/people/59949251/" class="others-interest-avatar">
+                    <img src="https://img3.doubanio.com/icon/u59949251-5.jpg" class="pil" alt="kobesdu">
+                </a>
+                <div class="others-interest-info">
+                    <a href="https://www.douban.com/people/59949251/" class="">kobesdu</a>
+                    <div class="">
+                        今天下午
+                        看过
+                        
+                    </div>
+                </div>
+            </li>
+            
+            <li class="">
+                <a href="https://www.douban.com/people/148519898/" class="others-interest-avatar">
+                    <img src="https://img3.doubanio.com/icon/u148519898-1.jpg" class="pil" alt="忽然而已">
+                </a>
+                <div class="others-interest-info">
+                    <a href="https://www.douban.com/people/148519898/" class="">忽然而已</a>
+                    <div class="">
+                        昨天
+                        想看
+                        
+                    </div>
+                </div>
+            </li>
+            
+            <li class="">
+                <a href="https://www.douban.com/people/159200542/" class="others-interest-avatar">
+                    <img src="https://img3.doubanio.com/icon/u159200542-1.jpg" class="pil" alt="默默">
+                </a>
+                <div class="others-interest-info">
+                    <a href="https://www.douban.com/people/159200542/" class="">默默</a>
+                    <div class="">
+                        昨天
+                        想看
+                        
+                    </div>
+                </div>
+            </li>
+    </ul>
+
+    
+    <div class="subject-others-interests-ft">
+        
+            <a href="https://movie.douban.com/subject/2279835/doings">54人在看</a>
+                &nbsp;/&nbsp;
+            <a href="https://movie.douban.com/subject/2279835/collections">7034人看过</a>
+                &nbsp;/&nbsp;
+            <a href="https://movie.douban.com/subject/2279835/wishes">484人想看</a>
+    </div>
+
+</div>
+
+
+
+    
+    
+
+<!-- douban ad begin -->
+<div id="dale_movie_subject_middle_right"></div>
+<script type="text/javascript">
+    (function (global) {
+        if(!document.getElementsByClassName) {
+            document.getElementsByClassName = function(className) {
+                return this.querySelectorAll("." + className);
+            };
+            Element.prototype.getElementsByClassName = document.getElementsByClassName;
+
+        }
+        var articles = global.document.getElementsByClassName('article'),
+            asides = global.document.getElementsByClassName('aside');
+
+        if (articles.length > 0 && asides.length > 0 && articles[0].offsetHeight >= asides[0].offsetHeight) {
+            (global.DoubanAdSlots = global.DoubanAdSlots || []).push('dale_movie_subject_middle_right');
+        }
+    })(this);
+</script>
+<!-- douban ad end -->
+
+
+
+    <br/>
+
+    
+<p class="pl">订阅三少爷的剑的影评: <br/><span class="feed">
+    <a href="https://movie.douban.com/feed/subject/2279835/reviews"> feed: rss 2.0</a></span></p>
+
+
+            </div>
+            <div class="extra">
+                
+    
+<!-- douban ad begin -->
+<div id="dale_movie_subject_bottom_super_banner"></div>
+<script type="text/javascript">
+    (function (global) {
+        var body = global.document.body,
+            html = global.document.documentElement;
+
+        var height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+        if (height >= 2000) {
+            (global.DoubanAdSlots = global.DoubanAdSlots || []).push('dale_movie_subject_bottom_super_banner');
+        }
+    })(this);
+</script>
+<!-- douban ad end -->
+
+
+            </div>
+        </div>
+    </div>
+
+        
+    <div id="footer">
+            <div class="footer-extra"></div>
+        
+<span id="icp" class="fleft gray-link">
+    &copy; 2005－2019 douban.com, all rights reserved 北京豆网科技有限公司
+</span>
+
+<a href="https://www.douban.com/hnypt/variformcyst.py" style="display: none;"></a>
+
+<span class="fright">
+    <a href="https://www.douban.com/about">关于豆瓣</a>
+    · <a href="https://www.douban.com/jobs">在豆瓣工作</a>
+    · <a href="https://www.douban.com/about?topic=contactus">联系我们</a>
+    · <a href="https://www.douban.com/about?policy=disclaimer">免责声明</a>
+    
+    · <a href="https://help.douban.com/?app=movie" target="_blank">帮助中心</a>
+    · <a href="https://www.douban.com/doubanapp/">移动应用</a>
+    · <a href="https://www.douban.com/partner/">豆瓣广告</a>
+</span>
+
+    </div>
+
+    </div>
+    <script type="text/javascript" src="https://img3.doubanio.com/misc/mixed_static/13f9f0eb40433947.js"></script><script type="text/javascript">
+        if (!Do.ready) {
+            !function(){var t,e,n=document,r=window,i=window.__external_files_loaded=window.__external_files_loaded||{},o=window.__external_files_loading=window.__external_files_loading||{},a=function(t){return t.constructor===Array},s={autoLoad:!0,coreLib:["//img3.doubanio.com/js/jquery.min.js"],mods:{}},c=n.getElementsByTagName("script"),d=c[c.length-1],u=[],l=!1,f=[],h=function(t,e,r,a,s){var d=c[0];if(t){if(i[t])return o[t]=!1,void(a&&a(t,s));if(o[t])return void setTimeout(function(){h(t,e,r,a,s)},1);o[t]=!0;var u,l=e||t.toLowerCase().split(/\./).pop().replace(/[\?#].*/,"");if("js"===l?(u=n.createElement("script"),u.setAttribute("type","text/javascript"),u.setAttribute("src",t),u.setAttribute("async",!0)):"css"===l&&(u=n.createElement("link"),u.setAttribute("type","text/css"),u.setAttribute("rel","stylesheet"),u.setAttribute("href",t),i[t]=!0),u){if(r&&(u.charset=r),"css"===l)return d.parentNode.insertBefore(u,d),void(a&&a(t,s));u.onload=u.onreadystatechange=function(){this.readyState&&"loaded"!==this.readyState&&"complete"!==this.readyState||(i[this.getAttribute("src")]=!0,a&&a(this.getAttribute("src"),s),u.onload=u.onreadystatechange=null)},d.parentNode.insertBefore(u,d)}}},p=function(t){if(t&&a(t)){for(var e,n=0,r=[],i=s.mods,o=[],c={},d=function(t){var e,n,r=0;if(c[t])return o;if(c[t]=!0,i[t].requires){for(n=i[t].requires;"undefined"!=typeof(e=n[r++]);)i[e]?(d(e),o.push(e)):o.push(e);return o}return o};"undefined"!=typeof(e=t[n++]);)i[e]&&i[e].requires&&i[e].requires[0]&&(o=[],c={},r=r.concat(d(e))),r.push(e);return r}},y=function(){l=!0,u.length>0&&(e.apply(this,u),u=[])},m=function(){n.addEventListener?n.removeEventListener("DOMContentLoaded",m,!1):n.attachEvent&&n.detachEvent("onreadystatechange",m),y()},v=function(){if(!l){try{n.documentElement.doScroll("left")}catch(t){return r.setTimeout(v,1)}y()}},g=function(){if("complete"===n.readyState)return r.setTimeout(y,1);var t=!1;if(n.addEventListener)n.addEventListener("DOMContentLoaded",m,!1),r.addEventListener("load",y,!1);else if(n.attachEvent){n.attachEvent("onreadystatechange",m),r.attachEvent("onload",y);try{t=null===r.frameElement}catch(t){}document.documentElement.doScroll&&t&&v()}},E=function(t){t&&a(t)&&(this.queue=t,this.current=null)};E.prototype={_interval:10,start:function(){return this.current=this.next(),this.current?void this.run():void(this.end=!0)},run:function(){var t,e=this,n=this.current;return"function"==typeof n?(n(),void this.start()):void("string"==typeof n&&(s.mods[n]?(t=s.mods[n],h(t.path,t.type,t.charset,function(t){e.start()},e)):/\.js|\.css/i.test(n)?h(n,"","",function(t,e){e.start()},e):this.start()))},next:function(){return this.queue.shift()}},t=d.getAttribute("data-cfg-autoload"),"string"==typeof t&&(s.autoLoad="true"===t.toLowerCase()),t=d.getAttribute("data-cfg-corelib"),"string"==typeof t&&(s.coreLib=t.split(",")),e=function(){var t,e=[].slice.call(arguments);f.length>0&&(e=f.concat(e)),s.autoLoad&&(e=s.coreLib.concat(e)),t=new E(p(e)),t.start()},e.add=function(t,e){t&&e&&e.path&&(s.mods[t]=e)},e.delay=function(){var t=[].slice.call(arguments),n=t.shift();r.setTimeout(function(){e.apply(this,t)},n)},e.global=function(){var t=[].slice.call(arguments);f=f.concat(t)},e.ready=function(){var t=[].slice.call(arguments);return l?e.apply(this,t):void(u=u.concat(t))},e.css=function(t){var e=n.getElementById("do-inline-css");e||(e=n.createElement("style"),e.type="text/css",e.id="do-inline-css",n.getElementsByTagName("head")[0].appendChild(e)),e.styleSheet?e.styleSheet.cssText=e.styleSheet.cssText+t:e.appendChild(n.createTextNode(t))},s.autoLoad&&e(s.coreLib),e.define=e.add,e._config=s,e._mods=s.mods,this.Do=e,g()}();
+
+        }
+        Do.ready(
+            'https://img3.doubanio.com/f/movie/b2a06a0332fc1526f4caaf8c76c2717d24da408d/js/movie/lib/jsrender.min.js',
+            function(){
+                $(document).on('click', '.cross span', function(e) {
+                    var $this = $(this);
+                    var $dialog = $this.parents('#tv-play-source');
+                    $dialog.remove();
+                });
+                $('body').bind('click', function(e) {
+                    var $this = $(e.target),
+                        $source = $('.play-source');
+                    if (!$this.is('.playBtn') && !$this.parents('.play-source').length) {
+                        $source.remove();
+                    }
+                });
+                var sources = {};
+                sources[3] = [
+                            {play_link: "https://www.douban.com/link2/?url=http%3A%2F%2Fv.youku.com%2Fv_show%2Fid_XMjE3OTI3NDQ1Mg%3D%3D.html%3Ftpa%3DdW5pb25faWQ9MTAzNTY1XzEwMDAwMV8wMV8wMQ&amp;subtype=3&amp;type=online-video", ep: "1"},
+                ];
+                sources[8] = [
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143183%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "1"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143184%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "2"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143185%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "3"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143186%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "4"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143187%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "5"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143188%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "6"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143189%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "7"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143190%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "8"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143191%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "9"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143192%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "10"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143193%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "11"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143194%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "12"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143195%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "13"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143196%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "14"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143197%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "15"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143198%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "16"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143199%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "17"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143200%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "18"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143201%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "19"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143202%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "20"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143203%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "21"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143204%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "22"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143205%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "23"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143206%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "24"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143207%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "25"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143208%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "26"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143209%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "27"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143210%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "28"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143211%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "29"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143212%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "30"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143213%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "31"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143214%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "32"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143215%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "33"},
+                            {play_link: "https://www.douban.com/link2/?url=https%3A%2F%2Fwww.bilibili.com%2Fbangumi%2Fplay%2Fep143216%3Fbsource%3Ddouban&amp;subtype=8&amp;type=online-video&amp;link2key=9d72eb3373", ep: "34"},
+                ];
+                $('.playBtn').click(function(e){
+                    $('.play-source').remove();
+
+                    var height, width, tmpl, cn, source;
+                    var $dialog = $('#tv-play-source');
+                    var $this = $(this);
+                    source = $this.data('source');
+                    if(!source)return;
+                    cn = $this.data('cn');
+
+                    tmpl = $.templates('#episode-tmpl');
+                    $dialog = $(tmpl.render({playlist: sources[source], cn: cn}));
+
+                    $dialog.hide();
+                    $('body').append($dialog);
+                    width = $dialog.outerWidth();
+
+                    $dialog.css({
+                        marginLeft: -width / 2,
+                        top: $this.offset().top + $this.outerHeight()
+                    }).show();
+                });
+            });
+    </script><script type="text/javascript" src="https://img3.doubanio.com/misc/mixed_static/3255d8b0f0133dae.js"></script>
+        
+        
+    <link rel="stylesheet" type="text/css" href="https://img3.doubanio.com/f/shire/8377b9498330a2e6f056d863987cc7a37eb4d486/css/ui/dialog.css" />
+    <link rel="stylesheet" type="text/css" href="https://img3.doubanio.com/f/movie/1d829b8605b9e81435b127cbf3d16563aaa51838/css/movie/mod/reg_login_pop.css" />
+    <script type="text/javascript" src="https://img3.doubanio.com/f/shire/77323ae72a612bba8b65f845491513ff3329b1bb/js/do.js" data-cfg-autoload="false"></script>
+    <script type="text/javascript" src="https://img3.doubanio.com/f/shire/4ea3216519a6183c7bcd4f7d1a6d4fd57ce1a244/js/ui/dialog.js"></script>
+    <script type="text/javascript">
+        var HTTPS_DB='https://www.douban.com';
+var account_pop={open:function(o,e){e?referrer="?referrer="+encodeURIComponent(e):referrer="?referrer="+window.location.href;var n="",i="",t=382;"reg"===o?(n="用户注册",i="https://accounts.douban.com/popup/login?source=movie#popup_register",t=480):"login"===o&&(n="用户登录",i="https://accounts.douban.com/popup/login?source=movie");var r=document.location.protocol+"//"+document.location.hostname,a=dui.Dialog({width:478,title:n,height:t,cls:"account_pop",isHideTitle:!0,modal:!0,content:"<iframe scrolling='no' frameborder='0' width='478' height='"+t+"' src='"+i+"' name='"+r+"'></iframe>"},!0),c=a.node;if(c.undelegate(),c.delegate(".dui-dialog-close","click",function(){var o=$("body");o.find("#login_msk").hide(),o.find(".account_pop").remove()}),$(window).width()<478){var u="";"reg"===o?u=HTTPS_DB+"/accounts/register"+referrer:"login"===o&&(u=HTTPS_DB+"/accounts/login"+referrer),window.location.href=u}else a.open();$(window).bind("message",function(o){"https://accounts.douban.com"===o.originalEvent.origin&&(c.find("iframe").css("height",o.originalEvent.data),c.height(o.originalEvent.data),a.update())})}};Douban&&Douban.init_show_login&&(Douban.init_show_login=function(o){var e=$(o);e.click(function(){var o=e.data("ref")||"";return account_pop.open("login",o),!1})}),Do(function(){$("body").delegate(".pop_register","click",function(o){o.preventDefault();var e=$(this).data("ref")||"";return account_pop.open("reg",e),!1}),$("body").delegate(".pop_login","click",function(o){o.preventDefault();var e=$(this).data("ref")||"";return account_pop.open("login",e),!1})});
+    </script>
+
+    
+    
+    
+    
+
+
+
+
+    
+<script type="text/javascript">
+    (function (global) {
+        var newNode = global.document.createElement('script'),
+            existingNode = global.document.getElementsByTagName('script')[0],
+            adSource = '//erebor.douban.com/',
+            userId = '',
+            browserId = 'auSsK8Dk5cg',
+            criteria = '7:杨若兮|7:戴春荣|7:陈继铭|7:刘大刚|7:赵毅|7:武侠|7:古龙|7:电视剧|7:看过的电视剧|7:陈莹|7:张静初|7:国产电视剧|7:岳跃利|7:陈龙|7:霍思燕|7:何中华|7:石小满|7:刘莉莉|7:俞飞鸿|7:古装|7:中国|7:华语标签|7:张伊函|7:靳德茂|3:/subject/2279835/',
+            preview = '',
+            debug = false,
+            adSlots = ['dale_movie_subject_top_icon', 'dale_movie_subject_top_right', 'dale_movie_subject_top_middle', 'dale_movie_subject_inner_middle', 'dale_movie_subject_download_middle'];
+
+        global.DoubanAdRequest = {src: adSource, uid: userId, bid: browserId, crtr: criteria, prv: preview, debug: debug};
+        global.DoubanAdSlots = (global.DoubanAdSlots || []).concat(adSlots);
+
+        newNode.setAttribute('type', 'text/javascript');
+        newNode.setAttribute('src', 'https://img3.doubanio.com/f/adjs/dd37385211bc8deb01376096bfa14d2c0436a98c/ad.release.js');
+        newNode.setAttribute('async', true);
+        existingNode.parentNode.insertBefore(newNode, existingNode);
+    })(this);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+    
+  
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+var _paq = _paq || [];
+_paq.push(['trackPageView']);
+_paq.push(['enableLinkTracking']);
+(function() {
+    var p=(('https:' == document.location.protocol) ? 'https' : 'http'), u=p+'://fundin.douban.com/';
+    _paq.push(['setTrackerUrl', u+'piwik']);
+    _paq.push(['setSiteId', '100001']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript';
+    g.defer=true;
+    g.async=true;
+    g.src=p+'://img3.doubanio.com/dae/fundin/piwik.js';
+    s.parentNode.insertBefore(g,s);
+})();
+</script>
+
+<script type="text/javascript">
+var setMethodWithNs = function(namespace) {
+  var ns = namespace ? namespace + '.' : ''
+    , fn = function(string) {
+        if(!ns) {return string}
+        return ns + string
+      }
+  return fn
+}
+
+var gaWithNamespace = function(fn, namespace) {
+  var method = setMethodWithNs(namespace)
+  fn.call(this, method)
+}
+
+var _gaq = _gaq || []
+  , accounts = [
+      { id: 'UA-7019765-1', namespace: 'douban' }
+    , { id: 'UA-7019765-19', namespace: '' }
+    ]
+  , gaInit = function(account) {
+      gaWithNamespace(function(method) {
+        gaInitFn.call(this, method, account)
+      }, account.namespace)
+    }
+  , gaInitFn = function(method, account) {
+      _gaq.push([method('_setAccount'), account.id]);
+      _gaq.push([method('_setSampleRate'), '5']);
+
+      
+  _gaq.push([method('_addOrganic'), 'google', 'q'])
+  _gaq.push([method('_addOrganic'), 'baidu', 'wd'])
+  _gaq.push([method('_addOrganic'), 'soso', 'w'])
+  _gaq.push([method('_addOrganic'), 'youdao', 'q'])
+  _gaq.push([method('_addOrganic'), 'so.360.cn', 'q'])
+  _gaq.push([method('_addOrganic'), 'sogou', 'query'])
+  if (account.namespace) {
+    _gaq.push([method('_addIgnoredOrganic'), '豆瓣'])
+    _gaq.push([method('_addIgnoredOrganic'), 'douban'])
+    _gaq.push([method('_addIgnoredOrganic'), '豆瓣网'])
+    _gaq.push([method('_addIgnoredOrganic'), 'www.douban.com'])
+  }
+
+      if (account.namespace === 'douban') {
+        _gaq.push([method('_setDomainName'), '.douban.com'])
+      }
+
+        _gaq.push([method('_setCustomVar'), 1, 'responsive_view_mode', 'desktop', 3])
+
+        _gaq.push([method('_setCustomVar'), 2, 'login_status', '0', 2]);
+
+      _gaq.push([method('_trackPageview')])
+    }
+
+for(var i = 0, l = accounts.length; i < l; i++) {
+  var account = accounts[i]
+  gaInit(account)
+}
+
+
+;(function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+})()
+</script>
+
+
+
+
+
+
+
+
+      
+    
+
+    <!-- brand10-docker-->
+
+  <script>_SPLITTEST=''</script>
+</body>
+
+</html>
+
+
+`
 var ZhiHuByte = []byte(`
 <!doctype html>
 <html lang="zh" data-hairline="true" data-theme="light"><head><meta charSet="utf-8"/><title data-react-helmet="true">你为什么支持死刑？ - 知乎</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/><meta name="renderer" content="webkit"/><meta name="force-rendering" content="webkit"/><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/><meta name="google-site-verification" content="FTeR0c8arOPKh8c5DYh_9uu98_zJbaWw53J-Sch9MTg"/><title>知乎 - 有问题上知乎</title><meta name="description" content="有问题，上知乎。知乎是中文互联网知名知识分享平台，以「知识连接一切」为愿景，致力于构建一个人人都可以便捷接入的知识分享网络，让人们便捷地与世界分享知识、经验和见解，发现更大的世界。"/><link rel="shortcut icon" type="image/x-icon" href="https://static.zhihu.com/static/favicon.ico"/><link rel="search" type="application/opensearchdescription+xml" href="https://static.zhihu.com/static/search.xml" title="知乎"/><link rel="dns-prefetch" href="//static.zhimg.com"/><link rel="dns-prefetch" href="//pic1.zhimg.com"/><link rel="dns-prefetch" href="//pic2.zhimg.com"/><link rel="dns-prefetch" href="//pic3.zhimg.com"/><link rel="dns-prefetch" href="//pic4.zhimg.com"/><link href="https://static.zhihu.com/heifetz/main.app.65cf65ee96a255525453.css" rel="stylesheet"/><script defer="" crossOrigin="anonymous" src="https://unpkg.zhimg.com/@cfe/sentry-script@latest/dist/init.js" data-sentry-config="{&quot;dsn&quot;:&quot;https://65e244586890460588f00f2987137aa8@crash2.zhihu.com/193&quot;,&quot;sampleRate&quot;:0.1,&quot;release&quot;:&quot;848-2324b460&quot;,&quot;ignoreErrorNames&quot;:[&quot;NetworkError&quot;,&quot;SecurityError&quot;],&quot;ignoreErrors&quot;:[&quot;origin message&quot;,&quot;Network request failed&quot;,&quot;Loading chunk&quot;,&quot;这个系统不支持该功能。&quot;,&quot;Can&#x27;t find variable: webkit&quot;,&quot;Can&#x27;t find variable: $&quot;,&quot;内存不足&quot;,&quot;out of memory&quot;,&quot;DOM Exception 18&quot;,&quot;zfeedback sdk 初始化失败！&quot;,&quot;zfeedback sdk 加载失败！&quot;,&quot;The operation is insecure&quot;,&quot;[object Event]&quot;,&quot;[object FileError]&quot;,&quot;[object DOMError]&quot;,&quot;[object Object]&quot;,&quot;拒绝访问。&quot;,&quot;Maximum call stack size exceeded&quot;,&quot;UploadError&quot;,&quot;无法 fetch&quot;,&quot;draft-js&quot;,&quot;缺少 JavaScript 对象&quot;,&quot;componentWillEnter&quot;,&quot;componentWillLeave&quot;,&quot;componentWillAppear&quot;,&quot;getInlineStyleAt&quot;,&quot;getCharacterList&quot;],&quot;whitelistUrls&quot;:[&quot;static.zhihu.com&quot;]}"></script><script nonce="021b92cb-d90a-482e-a6a1-1cbeec6f244d">if (window.requestAnimationFrame) {    window.requestAnimationFrame(function() {      window.FIRST_ANIMATION_FRAME = Date.now();    });  }</script></head><body class="Entry-body"><div id="root"><div data-zop-usertoken="{}" data-reactroot=""><div class="LoadingBar"></div><div><header role="banner" class="Sticky AppHeader" data-za-module="TopNavBar"><div class="AppHeader-inner"><a href="//www.zhihu.com" aria-label="知乎"><svg viewBox="0 0 200 91" class="Icon ZhihuLogo ZhihuLogo--blue Icon--logo" style="height:30px;width:64px" width="64" height="30" aria-hidden="true"><title></title><g><path d="M53.29 80.035l7.32.002 2.41 8.24 13.128-8.24h15.477v-67.98H53.29v67.978zm7.79-60.598h22.756v53.22h-8.73l-8.718 5.473-1.587-5.46-3.72-.012v-53.22zM46.818 43.162h-16.35c.545-8.467.687-16.12.687-22.955h15.987s.615-7.05-2.68-6.97H16.807c1.09-4.1 2.46-8.332 4.1-12.708 0 0-7.523 0-10.085 6.74-1.06 2.78-4.128 13.48-9.592 24.41 1.84-.2 7.927-.37 11.512-6.94.66-1.84.785-2.08 1.605-4.54h9.02c0 3.28-.374 20.9-.526 22.95H6.51c-3.67 0-4.863 7.38-4.863 7.38H22.14C20.765 66.11 13.385 79.24 0 89.62c6.403 1.828 12.784-.29 15.937-3.094 0 0 7.182-6.53 11.12-21.64L43.92 85.18s2.473-8.402-.388-12.496c-2.37-2.788-8.768-10.33-11.496-13.064l-4.57 3.627c1.363-4.368 2.183-8.61 2.46-12.71H49.19s-.027-7.38-2.372-7.38zm128.752-.502c6.51-8.013 14.054-18.302 14.054-18.302s-5.827-4.625-8.556-1.27c-1.874 2.548-11.51 15.063-11.51 15.063l6.012 4.51zm-46.903-18.462c-2.814-2.577-8.096.667-8.096.667s12.35 17.2 12.85 17.953l6.08-4.29s-8.02-11.752-10.83-14.33zM199.99 46.5c-6.18 0-40.908.292-40.953.292v-31.56c1.503 0 3.882-.124 7.14-.376 12.773-.753 21.914-1.25 27.427-1.504 0 0 3.817-8.496-.185-10.45-.96-.37-7.24 1.43-7.24 1.43s-51.63 5.153-72.61 5.64c.5 2.756 2.38 5.336 4.93 6.11 4.16 1.087 7.09.53 15.36.277 7.76-.5 13.65-.76 17.66-.76v31.19h-41.71s.88 6.97 7.97 7.14h33.73v22.16c0 4.364-3.498 6.87-7.65 6.6-4.4.034-8.15-.36-13.027-.566.623 1.24 1.977 4.496 6.035 6.824 3.087 1.502 5.054 2.053 8.13 2.053 9.237 0 14.27-5.4 14.027-14.16V53.93h38.235c3.026 0 2.72-7.432 2.72-7.432z" fill-rule="evenodd"/></g></svg></a><nav role="navigation" class="AppHeader-nav"><a class="AppHeader-navItem" href="//www.zhihu.com/" data-za-not-track-link="true">首页</a><a class="AppHeader-navItem" href="//www.zhihu.com/explore" data-za-not-track-link="true">发现</a><a href="//www.zhihu.com/topic" class="AppHeader-navItem" data-za-not-track-link="true">话题</a></nav><div class="SearchBar" role="search" data-za-module="PresetWordItem"><div class="SearchBar-toolWrapper"><form class="SearchBar-tool"><div><div class="Popover"><div class="SearchBar-input Input-wrapper Input-wrapper--grey"><input type="text" maxLength="100" value="" autoComplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-activedescendant="null--1" id="null-toggle" aria-haspopup="true" aria-owns="null-content" class="Input" placeholder=""/><div class="Input-after"><button aria-label="搜索" type="button" class="Button SearchBar-searchIcon Button--primary"><span style="display:inline-flex;align-items:center">​<svg class="Zi Zi--Search" fill="currentColor" viewBox="0 0 24 24" width="18" height="18"><path d="M17.068 15.58a8.377 8.377 0 0 0 1.774-5.159 8.421 8.421 0 1 0-8.42 8.421 8.38 8.38 0 0 0 5.158-1.774l3.879 3.88c.957.573 2.131-.464 1.488-1.49l-3.879-3.878zm-6.647 1.157a6.323 6.323 0 0 1-6.316-6.316 6.323 6.323 0 0 1 6.316-6.316 6.323 6.323 0 0 1 6.316 6.316 6.323 6.323 0 0 1-6.316 6.316z" fill-rule="evenodd"></path></svg></span></button></div></div></div></div></form></div></div><div class="AppHeader-userInfo"><div class="AppHeader-profile"><div><button type="button" class="Button AppHeader-login Button--blue">登录</button><button type="button" class="Button Button--primary Button--blue">加入知乎</button></div></div></div></div></header></div><main role="main" class="App-main"><div class="QuestionPage" itemscope="" itemType="http://schema.org/Question"><meta itemProp="name" content="你为什么支持死刑？"/><meta itemProp="url" content="https://www.zhihu.com/question/25084350"/><meta itemProp="keywords" content="法律,死刑,刑法,法学"/><meta itemProp="answerCount" content="12470"/><meta itemProp="commentCount" content="323"/><meta itemProp="dateCreated" content="2014-09-02T08:33:21.000Z"/><meta itemProp="dateModified" content="2018-11-30T09:48:19.000Z"/><meta itemProp="zhihu:visitsCount"/><meta itemProp="zhihu:followerCount" content="44528"/><script type="application/ld+json">
@@ -10331,6 +13514,34 @@ func TestDouBanPageHtml(t *testing.T) {
 
 	printAll(reflect.ValueOf(movie).Elem())
 
+	fmt.Println("")
+	//movie
+	u, _ = url.Parse("https://movie.douban.com/subject/2279835/")
+	douBanId, _ = strconv.Atoi(strings.Split(u.Path, "/")[2])
+	node, err = html.Parse(ioutil.NopCloser(bytes.NewBuffer([]byte(html66))))
+	if err != nil {
+		return
+	}
+
+	movie3 := &AsukaDouBan{
+		DouBanID: int64(douBanId),
+	}
+
+	if strings.HasPrefix(u.String(), "https://movie.douban.com") {
+		movie3.Cate = "电影"
+	}
+	if strings.HasPrefix(u.String(), "https://book.douban.com") {
+		movie3.Cate = "图书"
+	}
+
+	DouBanPageHtml(node, movie3)
+
+	if movie3.DateStr == "" {
+		DouBanPageHtmlSecondly(node, movie3)
+	}
+
+	printAll(reflect.ValueOf(movie3).Elem())
+
 }
 
 var isSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchString
@@ -10352,6 +13563,19 @@ func TestDouBan_EntryUrl(t *testing.T) {
 	log.Println(isSubject(str))
 	str = "https://book.douban.com/subjet/27614904/"
 	log.Println(isSubject(str))
+}
+
+func TestTime(t *testing.T) {
+
+	//(豆瓣) 18 May, 2004
+	//(21 juin 2006)
+	//s := "2009年11月"
+
+	fmt.Println(regexp.MustCompile(`[1-2][0-9]{3}`).FindStringSubmatch("2009年11月"))
+
+	//if len(s) > 3 {
+	//fmt.Println(strconv.ParseInt(s[:4], 0, 64))
+	//}
 }
 
 func printAll(v reflect.Value) {
