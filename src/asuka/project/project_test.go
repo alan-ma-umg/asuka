@@ -10256,6 +10256,7 @@ func TestZhiHu_PageHtml(t *testing.T) {
 }
 
 func TestDouBanPageHtml(t *testing.T) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//movie
 	u, _ := url.Parse("https://movie.douban.com/subject/26394152/?from=showing")
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer([]byte(html22))))

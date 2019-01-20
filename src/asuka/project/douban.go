@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ type AsukaDouBan struct {
 	Votes     int64
 	Img       string   `xorm:"varchar(1024)"`
 	Area      []string `xorm:"json"`
-	Cate      string //图书/电影
+	Cate      string   //图书/电影
 	Genre     []string `xorm:"json"`
 	Summary   string   `xorm:"varchar(10240)"`
 	Author    []string `xorm:"json"`
@@ -94,7 +95,7 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Referer", my.lastRequestUrl)
 	}
 
-	spider.Client.Timeout = 15 * time.Second
+	spider.Client.Timeout = 20 * time.Second
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -123,6 +124,12 @@ func stateInString(c byte) bool {
 }
 
 func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r, model.Url, model.Title)
+		}
+	}()
+
 	if n.Type == html.ElementNode {
 
 		//title
@@ -147,62 +154,109 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 						log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 					} else {
 						if v, ok := model.Data["author"]; ok {
-							for _, v := range v.([]interface{}) {
-								model.Author = append(model.Author, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+							if v, ok := v.([]interface{}); ok {
+								for _, v := range v {
+									model.Author = append(model.Author, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 
 						if v, ok := model.Data["director"]; ok {
-							for _, v := range v.([]interface{}) {
-								model.Director = append(model.Director, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+							if v, ok := v.([]interface{}); ok {
+								for _, v := range v {
+									model.Director = append(model.Director, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 
 						if v, ok := model.Data["actor"]; ok {
-							for _, v := range v.([]interface{}) {
-								model.Actor = append(model.Actor, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+							if v, ok := v.([]interface{}); ok {
+								for _, v := range v {
+									model.Actor = append(model.Actor, strings.TrimSpace(v.(map[string]interface{})["name"].(string)))
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 
 						if v, ok := model.Data["genre"]; ok {
-							for _, v := range v.([]interface{}) {
-								model.Genre = append(model.Genre, strings.TrimSpace(v.(string)))
+							if v, ok := v.([]interface{}); ok {
+								for _, v := range v {
+									model.Genre = append(model.Genre, strings.TrimSpace(v.(string)))
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 						if v, ok := model.Data["name"]; ok {
-							model.Name = strings.TrimSpace(v.(string))
+							if v, ok := v.(string); ok {
+								model.Name = strings.TrimSpace(v)
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
+							}
 						}
 						if v, ok := model.Data["image"]; ok {
-							model.Img = strings.TrimSpace(v.(string))
+							if v, ok := v.(string); ok {
+								model.Img = strings.TrimSpace(v)
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
+							}
 						}
 
 						if v, ok := model.Data["description"]; ok {
-							model.Summary = strings.TrimSpace(v.(string))
+							if v, ok := v.(string); ok {
+								model.Summary = strings.TrimSpace(v)
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
+							}
 						}
 
-						if rating, ok := model.Data["aggregateRating"]; ok {
-							if votes, err := strconv.Atoi(rating.(map[string]interface{})["ratingCount"].(string)); err == nil {
-								model.Votes = int64(votes)
+						if v, ok := model.Data["aggregateRating"]; ok {
+							if v, ok := v.(map[string]interface{}); ok && reflect.TypeOf(v["ratingCount"]).Kind() == reflect.String {
+								if votes, err := strconv.Atoi(v["ratingCount"].(string)); err == nil {
+									model.Votes = int64(votes)
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
-							if f, err := strconv.ParseFloat(rating.(map[string]interface{})["ratingValue"].(string), 64); err == nil {
-								model.Rating = f
+
+							if v, ok := v.(map[string]interface{}); ok && reflect.TypeOf(v["ratingValue"]).Kind() == reflect.String {
+								if f, err := strconv.ParseFloat(v["ratingValue"].(string), 64); err == nil {
+									model.Rating = f
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 
 						if v, ok := model.Data["datePublished"]; ok {
-							model.DateStr = strings.TrimSpace(v.(string))
-							if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-								model.Date = t.Unix()
-							} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-								model.Date = t.Unix()
-							} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-								model.Date = t.Unix()
+							if v, ok := v.(string); ok {
+								model.DateStr = strings.TrimSpace(v)
+								if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
+									model.Date = t.Unix()
+								} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
+									model.Date = t.Unix()
+								} else if t, err := time.Parse("2006", model.DateStr); err == nil {
+									model.Date = t.Unix()
+								} else {
+									log.Println(err, model.Url, model.Title, model.DateStr)
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 
 						if v, ok := model.Data["isbn"]; ok {
-							if i, err := strconv.ParseInt(v.(string), 0, 64); err == nil {
-								model.ISBN = int64(i)
+							if v, ok := v.(string); ok {
+								if i, err := strconv.ParseInt(v, 0, 64); err == nil {
+									model.ISBN = int64(i)
+								}
+							} else {
+								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
 							}
 						}
 					}
@@ -241,7 +295,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 			}
 		}
 
-		//alias
+		//date
 		if model.DateStr == "" && n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "出版年:" && n.NextSibling != nil && n.NextSibling.Data != "" {
 			model.DateStr = strings.TrimSpace(n.NextSibling.Data)
 			if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
@@ -299,53 +353,6 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 				}
 			}
 		}
-
-		//if n.Data == "strong" {
-		//	for _, attr := range n.Attr {
-		//		if attr.Key == "class" {
-		//			//watch
-		//			if *watch == "" && len(n.Attr) == 2 {
-		//				*watch = n.Attr[1].Val
-		//
-		//				//view
-		//			} else if *view == "" && len(n.Attr) == 2 {
-		//				*view = n.Attr[1].Val
-		//			}
-		//		}
-		//	}
-		//}
-
-		////watch && view
-		//if n.Data == "strong" {
-		//	for _, attr := range n.Attr {
-		//		if attr.Key == "class" {
-		//			//watch
-		//			if *watch == "" && len(n.Attr) == 2 {
-		//				*watch = n.Attr[1].Val
-		//
-		//				//view
-		//			} else if *view == "" && len(n.Attr) == 2 {
-		//				*view = n.Attr[1].Val
-		//			}
-		//		}
-		//	}
-		//}
-		//
-		////tag
-		//if n.Data == "span" {
-		//	for _, attr := range n.Attr {
-		//		if attr.Key == "class" {
-		//			if attr.Val == "Tag-content" {
-		//				newTag := ""
-		//				for tagN := n.FirstChild; tagN != nil; tagN = tagN.FirstChild {
-		//					newTag = tagN.Data
-		//				}
-		//				*tag = append(*tag, strings.TrimSpace(newTag))
-		//			}
-		//		}
-		//	}
-		//
-		//}
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
