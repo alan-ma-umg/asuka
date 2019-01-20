@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +46,8 @@ type AsukaDouBan struct {
 	UpdatedAt int `xorm:"updated"`
 	CreatedAt int `xorm:"created"`
 }
+
+var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchString
 
 type DouBan struct {
 	lastRequestUrl string
@@ -387,10 +390,14 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		model.Cate = "图书"
 	}
 
-	DouBanPageHtml(node, model)
-	if model.Title == "" {
-		return
+	//only douBan subject url
+	if isDouBanSubject(strings.ToLower(spider.CurrentRequest.URL.String())) {
+		DouBanPageHtml(node, model)
+		if model.Title == "" {
+			return
+		}
 	}
+
 	_, err = database.Mysql().Insert(model)
 	if err != nil {
 		log.Println(spider.CurrentRequest.URL.String(), err)
@@ -403,7 +410,11 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 		return
 	}
 
-	if strings.HasSuffix(strings.ToLower(l.String()), "buylinks") {
+	if strings.HasPrefix(strings.ToLower(l.String()), "https://book.douban.com/subject") && !isDouBanSubject(strings.ToLower(l.String())) {
+		return
+	}
+
+	if strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/subject") && !isDouBanSubject(strings.ToLower(l.String())) {
 		return
 	}
 

@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -10330,6 +10331,27 @@ func TestDouBanPageHtml(t *testing.T) {
 
 	printAll(reflect.ValueOf(movie).Elem())
 
+}
+
+var isSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchString
+
+func TestDouBan_EntryUrl(t *testing.T) {
+	str := "https://book.douba.com/subject/27614904/"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904/"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904/123"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904/hot/2313"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904/hot"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subject/27614904/12312"
+	log.Println(isSubject(str))
+	str = "https://book.douban.com/subjet/27614904/"
+	log.Println(isSubject(str))
 }
 
 func printAll(v reflect.Value) {
