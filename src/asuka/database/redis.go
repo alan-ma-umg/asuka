@@ -13,13 +13,13 @@ var redisInstance *redis.Client
 func init() {
 	//save
 	go func() {
-		t := time.NewTicker(time.Second * 10)
+		t := time.NewTicker(time.Minute)
 		for {
 			<-t.C
 			//todo remove
 			count, _ := Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
-			if count > 100000 {
-				Redis().LTrim(helper.Env().Redis.URLQueueKey, 0, 10000)
+			if count > 500000 {
+				Redis().LTrim(helper.Env().Redis.URLQueueKey, 0, 200000)
 			}
 		}
 	}()
