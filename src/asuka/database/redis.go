@@ -18,8 +18,8 @@ func init() {
 			<-t.C
 			//todo remove
 			count, _ := Redis().LLen(helper.Env().Redis.URLQueueKey).Result()
-			if count > 500000 {
-				Redis().LTrim(helper.Env().Redis.URLQueueKey, 0, 200000)
+			if count > 5000000 {
+				Redis().LTrim(helper.Env().Redis.URLQueueKey, 0, 2000000)
 			}
 		}
 	}()
