@@ -440,25 +440,41 @@
             <tr>
                 <th style="width: 1px"></th>
                 <th>Server</th>
+                <th>Status</th>
+                <th style="min-width:145px">Failure Recent/all</th>
+                <th style="width:1px">Dispatch</th>
                 <th>Ping / Lost</th>
+                <th>Load 5s/60s</th>
                 <th style="min-width:70px">Time</th>
                 <th>Pass / Sleep</th>
                 <th>Conn</th>
                 <th>HTTP I/O</th>
                 <th>TCP I/O</th>
-                <th>Load 5s/60s</th>
-                <th style="width:1px">Dispatch</th>
-                <th style="min-width:145px">Failure Recent/all</th>
-                <th>Status</th>
             </tr>
             <tr style="background:#dadada">
                 <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
+                </td>
+                <td class="center">{{"{{statusAvg}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
                     /
                     <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%
                     </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
                 </td>
                 <td class="center">{{"{{basic.avg_time_avg}}"}}</td>
                 <td class="center">
@@ -477,22 +493,6 @@
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
                 </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
-                </td>
-                <td class="center">{{"{{statusAvg}}"}}</td>
             </tr>
             </thead>
             <tbody>
@@ -500,6 +500,26 @@
                 <td class="center">{{"{{server.index+1}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
+                </td>
+                <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
+                    class="center">
+                    {{"{{server.failure_level}}"}}
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">
+                    <span :style="{color: 'hsl('+server.failure_period_hsl+', 100%, 35%)'}">{{"{{server.failure_period}}"}}
+                        %</span>
+                    </div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">
+                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
+                        %</span>
+                    </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:45px" class="right">
@@ -511,6 +531,13 @@
                     {{"{{server.ping_failure}}"}} %
                     </span>
                     </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px"
+                         class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px"
+                         class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
                 </td>
                 <td class="center">{{"{{server.avg_time}}"}}</td>
                 <td class="center">
@@ -528,33 +555,6 @@
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px"
-                         class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px"
-                         class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">
-                    <span :style="{color: 'hsl('+server.failure_period_hsl+', 100%, 35%)'}">{{"{{server.failure_period}}"}}
-                        %</span>
-                    </div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">
-                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
-                        %</span>
-                    </div>
-                </td>
-                <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
-                    class="center">
-                    {{"{{server.failure_level}}"}}
                 </td>
             </tr>
             </tbody>
