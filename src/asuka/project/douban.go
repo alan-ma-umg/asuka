@@ -78,7 +78,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 20e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
 
 	if spider.FailureLevel > 1 {
 		DouBanResetSpider(spider)
@@ -400,7 +400,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 						log.Println(err, model.Url, model.Title, model.DateStr)
 					}
 				} else {
-					log.Println(err, model.Url, model.Title, model.DateStr)
+					//log.Println(err, model.Url, model.Title, model.DateStr)
 				}
 			}
 		}
