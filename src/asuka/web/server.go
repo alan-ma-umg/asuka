@@ -25,7 +25,7 @@ import (
 var upgrade = websocket.Upgrader{
 	EnableCompression: true,
 }
-var startTime = time.Now()
+var StartTime = time.Now()
 var webSocketConnections = 0
 var dispatcherObj *dispatcher.Dispatcher
 
@@ -87,7 +87,7 @@ func Server(d *dispatcher.Dispatcher, address string) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, runtime.GOOS)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, runtime.GOOS)
 }
 func IO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -163,7 +163,7 @@ func IO(w http.ResponseWriter, r *http.Request) {
 
 func queue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, list)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -206,9 +206,16 @@ func homeJson(sType string) []byte {
 		"type":    sType,
 		"servers": []map[string]interface{}{},
 	}
+
+	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
+
 	for index, s := range dispatcherObj.GetSpiders() {
 		avgTime := s.GetAvgTime()
-		failureRate60Value := helper.SpiderFailureRate(s.Transport.AccessCount(60))
+
+		//accessCountAll, failureCountAll := spider.Transport.AccessCount()
+		//failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
+
+		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
 		failureRateAllValue := .0
 		if s.Transport.GetAccessCount() > 0 {
 			failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
@@ -228,8 +235,10 @@ func homeJson(sType string) []byte {
 		loads[86400*2] += s.Transport.LoadRate(172800)
 
 		server["loads"] = loads
-		server["failure_60"] = strconv.FormatFloat(failureRate60Value, 'f', 2, 64)
-		server["failure_60_hsl"] = strconv.Itoa(int(100 - failureRate60Value))
+
+		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
+		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
+
 		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
 		server["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue))
 		server["failure_level"] = s.FailureLevel
@@ -355,5 +364,5 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 
-	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(startTime).Truncate(time.Second).String()
+	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(StartTime).Truncate(time.Second).String()
 }

@@ -63,6 +63,7 @@ func TestTransport(t *testing.T) {
 		t1.LoadRate(900)
 		t1.LoadRate(1800)
 		t1.LoadRate(200000)
+		helper.SpiderFailureRate(t1.AccessCount(30 * 60))
 	}
 	fmt.Println(time.Since(s))
 	fmt.Println("Load: ", t1.LoadRate(30*60+10))
@@ -91,8 +92,15 @@ func TestTransport(t *testing.T) {
 	fmt.Println("Load: ", t1.LoadRate(CountQueueSecondCap+2))
 	fmt.Println("Load: ", t1.LoadRate(3600))
 
+	fmt.Println(helper.SpiderFailureRate(t1.AccessCount(30 * 60)))
 	log.Println(len(t1.accessCountSecondSlice))
 	log.Println(len(t1.accessCountMinuteSlice))
 	log.Println(t1.AccessCount(CountQueueSecondCap + 1))
+
+	startTime := time.Now()
+
+	time.Sleep(1e9)
+
+	fmt.Println(int(time.Since(startTime).Seconds()))
 
 }

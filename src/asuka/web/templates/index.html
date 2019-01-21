@@ -380,10 +380,10 @@
                 </tr>
                 <tr>
                     <td>
-                        Failure 60s
+                        Failure Recent
                     </td>
                     <td>
-                        <strong>{{"{{failure60Avg}}"}}%</strong>
+                        <strong>{{"{{failurePeriodAvg}}"}}%</strong>
                     </td>
                     <td>
                         Failure All
@@ -448,7 +448,7 @@
                 <th>TCP I/O</th>
                 <th>Load 5s/60s</th>
                 <th style="width:1px">Dispatch</th>
-                <th style="min-width:145px">Failure 60s/all</th>
+                <th style="min-width:145px">Failure Recent/all</th>
                 <th>Status</th>
             </tr>
             <tr style="background:#dadada">
@@ -488,7 +488,7 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
                 </td>
                 <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{failure60Avg}}"}}%</div>
+                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
                 </td>
@@ -543,7 +543,7 @@
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">
-                    <span :style="{color: 'hsl('+server.failure_60_hsl+', 100%, 35%)'}">{{"{{server.failure_60}}"}}
+                    <span :style="{color: 'hsl('+server.failure_period_hsl+', 100%, 35%)'}">{{"{{server.failure_period}}"}}
                         %</span>
                     </div>
                     /
@@ -586,8 +586,8 @@
             failureSum: function () {
                 return total(this.home.servers, "failure_count");
             },
-            failure60Avg: function () {
-                return (total(this.home.servers, "failure_60") / this.home.servers.length).toFixed(2)
+            failurePeriodAvg: function () {
+                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
             },
             failureAllAvg: function () {
                 return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)

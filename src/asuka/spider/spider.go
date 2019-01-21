@@ -22,7 +22,6 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptrace"
 	"net/http/httputil"
-	"net/textproto"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -31,34 +30,10 @@ import (
 	"time"
 )
 
-//
-//func init() {
-//	//Emergency error handling
-//	go func() {
-//		t := time.NewTicker(time.Second)
-//		for {
-//			<-t.C
-//			failCount := 0
-//			//fixme bug !
-//			for _, spider := range spiderList {
-//				if spider.FailureLevel != 0 && len(spider.Transport.RecentFewTimesResultEmergency) >= RecentSeveralTimesResultCap {
-//					failCount++
-//				}
-//			}
-//			if float64(failCount)/float64(len(spiderList)) >= 0.50 {
-//				for _, spider := range spiderList {
-//					spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
-//					spider.Transport.RecentFewTimesResultEmergency = make([]bool, 0, RecentSeveralTimesResultCap)
-//					spider.FailureLevel = EmergencyFailureLevel
-//					spider.ResetSleep()
-//					spider.AddSleep(time.Hour * 3)
-//				}
-//			}
-//		}
-//	}()
-//}
+var StartTime = time.Now()
 
-const EmergencyFailureLevel = 150
+const PeriodOfFailureSecond = 86400 / 2
+
 const RecentFetchCount = 100
 const RecentSeveralTimesResultCap = 7
 
@@ -164,14 +139,14 @@ func (spider *Spider) Throttle() {
 				failCount++
 			}
 		}
-		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 && spider.FailureLevel != EmergencyFailureLevel {
+		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 {
 			spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
-			accessCountAll := spider.Transport.GetAccessCount()
-			failureCountAll := spider.Transport.GetFailureCount()
+
+			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(StartTime).Seconds()), PeriodOfFailureSecond))
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 			if accessCountAll > 40 && failureRateAll > 95 {
 				spider.FailureLevel = 100
-				spider.AddSleep(time.Hour * 3)
+				spider.AddSleep(time.Hour * 5)
 			} else if accessCountAll > 40 && failureRateAll > 85 {
 				spider.FailureLevel = 80
 				spider.AddSleep(time.Hour)
@@ -273,7 +248,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 		//A few times result of http request
 		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
-		spider.Transport.RecentFewTimesResultEmergency = append(spider.Transport.RecentFewTimesResultEmergency, spider.FailureLevel == 0)
 
 		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
 		if spider.TimeList.Len() > spider.TimeLenLimit {
@@ -636,9 +610,9 @@ func (spider *Spider) registerHttpTrace() {
 		// returned before the final non-1xx response. Got1xxResponse is called
 		// for "100 Continue" responses, even if Got100Continue is also defined.
 		// If it returns an error, the client request is aborted with that error value.
-		Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
-			return nil
-		}, // Go 1.11
+		//Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
+		//	return nil
+		//}, // Go 1.11
 
 		// DNSStart is called when a DNS lookup begins.
 		DNSStart: func(httptrace.DNSStartInfo) {
@@ -683,9 +657,9 @@ func (spider *Spider) registerHttpTrace() {
 		// WroteHeaderField is called after the Transport has written
 		// each request header. At the time of this call the values
 		// might be buffered and not yet written to the network.
-		WroteHeaderField: func(key string, value []string) {
-
-		}, // Go 1.11
+		//WroteHeaderField: func(key string, value []string) {
+		//
+		//}, // Go 1.11
 
 		// WroteHeaders is called after the Transport has written
 		// all request headers.

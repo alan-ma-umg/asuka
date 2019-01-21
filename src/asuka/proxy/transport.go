@@ -58,7 +58,6 @@ type Transport struct {
 	PingFailureRate float64
 
 	RecentFewTimesResult          []bool
-	RecentFewTimesResultEmergency []bool
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
