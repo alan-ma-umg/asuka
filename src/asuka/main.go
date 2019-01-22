@@ -5,9 +5,12 @@ import (
 	"asuka/helper"
 	"asuka/project"
 	"asuka/web"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -27,7 +30,46 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	asuka()
+	type D struct {
+		A string
+		B []string
+		C int
+	}
+
+	data := &D{
+		A: "Title",
+		B: []string{"a", "b"},
+		C: 100,
+	}
+
+	payload := &D{}
+
+	encBuf := &bytes.Buffer{}
+	enc := gob.NewEncoder(encBuf)
+	err := enc.Encode(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	database.Redis().Set("gob", encBuf.String(), time.Hour)
+	fmt.Println(encBuf.Len())
+	encGob, _ := database.Redis().Get("gob").Result()
+
+	decBuf := &bytes.Buffer{}
+	decBuf.WriteString(encGob)
+
+	dec := gob.NewDecoder(decBuf)
+
+	err = dec.Decode(payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(payload)
+
+	reflect.ValueOf(data).Elem().FieldByName("C").SetInt(7)
+
+	fmt.Println(data)
+
+	//asuka()
 }
 
 func asuka() {

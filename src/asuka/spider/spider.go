@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"compress/flate"
 	"compress/gzip"
-	"container/list"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -66,7 +65,7 @@ type Spider struct {
 	ResponseStr  string
 	ResponseByte []byte
 
-	TimeList     *list.List
+	TimeSlice    []time.Duration
 	TimeLenLimit int
 
 	FailureLevel int
@@ -83,7 +82,7 @@ type Spider struct {
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeList: list.New(), TimeLenLimit: 10}
+	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10}
 	spider.updateClient()
 	spider.registerHttpTrace()
 	spiderList = append(spiderList, spider)
@@ -257,10 +256,12 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		//A few times result of http request
 		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
 
-		spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
-		if spider.TimeList.Len() > spider.TimeLenLimit {
-			spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
-		}
+		spider.TimeSlice = append(spider.TimeSlice[helper.MaxInt(len(spider.TimeSlice)-spider.TimeLenLimit, 0):], time.Since(spider.RequestStartTime))
+
+		//spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
+		//if spider.TimeList.Len() > spider.TimeLenLimit {
+		//	spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
+		//}
 
 		//recent fetch
 		RecentFetchLastIndex++
@@ -515,22 +516,14 @@ func (spider *Spider) responseErrorHandler(err error) string {
 }
 
 func (spider *Spider) GetAvgTime() (t time.Duration) {
-	count := 0
-	cursor := spider.TimeList.Back()
-	for {
-		if cursor == nil {
-			break
-		}
-
-		count++
-		t += cursor.Value.(time.Duration)
-		cursor = cursor.Prev()
+	for _, tt := range spider.TimeSlice {
+		t += tt
 	}
 
-	if count == 0 {
+	if len(spider.TimeSlice) == 0 {
 		return
 	}
-	t /= time.Duration(count)
+	t /= time.Duration(len(spider.TimeSlice))
 	return
 }
 

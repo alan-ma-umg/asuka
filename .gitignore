@@ -4,6 +4,7 @@ pkg
 bin
 temp
 *.db
+*.gob
 nohup.out
 
 #config file

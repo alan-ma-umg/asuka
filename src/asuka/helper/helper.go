@@ -361,3 +361,7 @@ func PrintMemUsage() {
 	fmt.Printf("\tSys = %v MiB", ByteCountBinary(m.Sys))
 	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
+
+//func AddGod(data interface{}){
+
+//}

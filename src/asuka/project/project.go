@@ -57,6 +57,12 @@ type Dispatcher struct {
 func New(project Project) *Dispatcher {
 	d := &Dispatcher{Project: project}
 	d.Queue = queue.NewQueue(d.GetProjectName())
+
+	// kill signal handing
+	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+
+	})
+
 	return d
 }
 
