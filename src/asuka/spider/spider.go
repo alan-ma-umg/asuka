@@ -87,6 +87,14 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 	spider.updateClient()
 	spider.registerHttpTrace()
 	spiderList = append(spiderList, spider)
+
+	// kill signal handing
+	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+		if spider.CurrentRequest != nil && spider.CurrentRequest.URL != nil {
+			spider.Queue.Enqueue(spider.CurrentRequest.URL.String()) //check status & make improvement
+			fmt.Println("enqueue " + spider.CurrentRequest.URL.String())
+		}
+	})
 	return spider
 }
 

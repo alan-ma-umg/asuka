@@ -3,6 +3,7 @@ package queue
 import (
 	"asuka/database"
 	"asuka/helper"
+	"fmt"
 	"github.com/willf/bloom"
 	"log"
 	"os"
@@ -21,11 +22,17 @@ type Queue struct {
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
 
+	// kill signal handing
+	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+		q.BlSave()
+		fmt.Println(q.name + " bls saved")
+	})
+
 	go func(q *Queue) {
-		t := time.NewTicker(time.Minute * 3)
+		t := time.NewTicker(time.Minute * 6)
 		for {
 			<-t.C
-			q.blSave()
+			q.BlSave()
 		}
 	}(q)
 	return
@@ -76,7 +83,7 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	return my.bls[index]
 }
 
-func (my *Queue) blSave() {
+func (my *Queue) BlSave() {
 	for i, bl := range my.bls {
 		f, err := os.Create(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 		if err != nil {

@@ -2,6 +2,7 @@ package database
 
 import (
 	"asuka/helper"
+	"fmt"
 	"github.com/willf/bloom"
 	"os"
 	"sync"
@@ -19,19 +20,25 @@ func Bl() *bloom.BloomFilter {
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()
 
+		// kill signal handing
+		helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+			blSave()
+			fmt.Println("bl saved")
+		})
+
 		//save
 		go func() {
-			t := time.NewTicker(time.Minute * 2)
+			t := time.NewTicker(time.Minute * 5)
 			for {
 				<-t.C
-				save()
+				blSave()
 			}
 		}()
 	})
 	return bloomFilterInstance
 }
 
-func save() {
+func blSave() {
 	f, _ := os.Create(helper.Env().BloomFilterPath + "enqueue.db")
 	Bl().WriteTo(f)
 	f.Close()

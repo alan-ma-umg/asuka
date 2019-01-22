@@ -1,12 +1,14 @@
 package main
 
 import (
+	"asuka/database"
 	"asuka/helper"
 	"asuka/project"
 	"asuka/web"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -20,32 +22,33 @@ func init() {
 
 func main() {
 	mainStart := time.Now()
-	//pSt := profile.Start(profile.MemProfile)
+	helper.ExitHandle()
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
-		//pSt.Stop()
 	}()
 
-	//todo for test
-	//for i := 0; i < 10; i++ {
-	//	os.Remove(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
-	//}
-	//database.Mysql().Exec("truncate asuka_dou_ban")      //todo for test
-	//database.Bl().ClearAll()                             //todo for test
-	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
+	asuka()
+}
 
-	//c := &dispatcher.Dispatcher{}
-	//c.Run([]project.Project{&project.Test{}}, queue.NewQueue())
-	//fmt.Println("Monitor: http://127.0.0.1:666")
-
-	//project.Dispatcher{}
-
+func asuka() {
 	p := project.New(&project.Test{})
 	p.Run()
 
+	//cleanUp(p) //todo !!!!!!!!!
+
 	z := project.New(&project.ZhiHu{})
 	z.Run()
-
 	fmt.Println("Monitor: http://127.0.0.1:666")
-	web.Server([]*project.Dispatcher{p, z}, ":666") // http://127.0.0.1:666
+	projects := []*project.Dispatcher{p, z}
+
+	web.Server(projects, ":666") // http://127.0.0.1:666
+}
+
+func cleanUp(p *project.Dispatcher) {
+	for i := 0; i < 10; i++ {
+		os.Remove(helper.Env().BloomFilterPath + p.GetProjectName() + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+	}
+	//database.Mysql().Exec("truncate asuka_dou_ban")
+	database.Bl().ClearAll()
+	database.Redis().Del(p.GetQueueKey())
 }

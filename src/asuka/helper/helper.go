@@ -15,11 +15,13 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -43,6 +45,22 @@ func Env() *EnvConfig {
 	})
 
 	return envConfig
+}
+
+var ExitHandleFuncSlice []func()
+
+// kill signal handing
+func ExitHandle() {
+	c := make(chan os.Signal, 3)
+	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
+	go func() {
+		for range c {
+			for _, f := range ExitHandleFuncSlice {
+				f()
+			}
+			os.Exit(0)
+		}
+	}()
 }
 
 // Contains tells whether a contains x.
