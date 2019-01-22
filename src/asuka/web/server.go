@@ -95,7 +95,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		GOOS: runtime.GOOS,
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +123,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -305,7 +305,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -414,10 +414,10 @@ func indexJson() []byte {
 		projectMap["server_run"] = serverRun
 		projectMap["server_enable"] = serverEnable
 
-		projectMap["sleep"] = sleepDuration.Truncate(time.Millisecond).String()
+		projectMap["sleep"] = (sleepDuration / time.Duration(len(p.GetSpiders()))).Truncate(time.Millisecond).String()
 		projectMap["waiting"] = "0s"
 		if waiting != 0 {
-			projectMap["waiting"] = waiting.Truncate(time.Millisecond).String()
+			projectMap["waiting"] = (waiting / time.Duration(len(p.GetSpiders()))).Truncate(time.Millisecond).String()
 		}
 		projectMap["failure_period"] = failureRatePeriodValue / float64(len(p.GetSpiders()))
 		projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue/float64(len(p.GetSpiders()))))
