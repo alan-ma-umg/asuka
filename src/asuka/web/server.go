@@ -2,8 +2,8 @@ package web
 
 import (
 	"asuka/database"
-	"asuka/dispatcher"
 	"asuka/helper"
+	"asuka/project"
 	"asuka/spider"
 	"compress/gzip"
 	"encoding/json"
@@ -27,7 +27,7 @@ var upgrade = websocket.Upgrader{
 }
 var StartTime = time.Now()
 var webSocketConnections = 0
-var dispatcherObj *dispatcher.Dispatcher
+var dispatchers []*project.Dispatcher
 
 type gzipResponseWriter struct {
 	io.Writer
@@ -72,9 +72,10 @@ func commonHandle(h http.Handler) http.Handler {
 	})
 }
 
-func Server(d *dispatcher.Dispatcher, address string) {
-	dispatcherObj = d //todo
-	http.HandleFunc("/queue", commonHandleFunc(queue))
+func Server(d []*project.Dispatcher, address string) {
+	dispatchers = d
+
+	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/socket.io", IO)
 	http.HandleFunc("/", commonHandleFunc(index))
 	http.HandleFunc("/forever/", forever)
@@ -87,7 +88,27 @@ func Server(d *dispatcher.Dispatcher, address string) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, runtime.GOOS)
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) < 2 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(path[1])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := struct {
+		GOOS        string
+		ProjectName string
+	}{
+		GOOS:        runtime.GOOS,
+		ProjectName: p.GetProjectName(),
+	}
+
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
 }
 func IO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
@@ -95,6 +116,19 @@ func IO(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
+
+	ps, ok := r.URL.Query()["project"]
+	if !ok || len(ps) != 1 {
+		c.Close()
+		return
+	}
+
+	p := getDispatcher(ps[0])
+	if p == nil {
+		c.Close()
+		return
+	}
+
 	webSocketConnections++
 
 	defer func() {
@@ -124,13 +158,17 @@ func IO(w http.ResponseWriter, r *http.Request) {
 			//	}
 			//	fmt.Println("reconnect")
 			case "stop":
-				for _, s := range dispatcherObj.GetSpiders() {
-					s.Stop = true
+				for _, d := range dispatchers {
+					for _, s := range d.GetSpiders() {
+						s.Stop = true
+					}
 				}
 				fmt.Println("spider stop")
 			case "start":
-				for _, s := range dispatcherObj.GetSpiders() {
-					s.Stop = false
+				for _, d := range dispatchers {
+					for _, s := range d.GetSpiders() {
+						s.Stop = false
+					}
 				}
 				fmt.Println("spider start")
 			case "home":
@@ -147,9 +185,9 @@ func IO(w http.ResponseWriter, r *http.Request) {
 
 		switch responseContent {
 		case "home":
-			err = c.WriteMessage(websocket.TextMessage, homeJson(responseContent))
+			err = c.WriteMessage(websocket.TextMessage, homeJson(p, responseContent))
 		case "recent":
-			jsonRes, n := recentJson(responseContent, recentFetchIndex)
+			jsonRes, n := recentJson(p, responseContent, recentFetchIndex)
 			recentFetchIndex = n
 			err = c.WriteMessage(websocket.TextMessage, jsonRes)
 		}
@@ -161,9 +199,39 @@ func IO(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getDispatcher(name string) *project.Dispatcher {
+	for _, d := range dispatchers {
+		if name == d.GetProjectName() {
+			return d
+		}
+	}
+
+	return nil
+}
+
 func queue(w http.ResponseWriter, r *http.Request) {
-	list, _ := database.Redis().LRange(helper.Env().Redis.URLQueueKey, 0, 1000).Result()
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, list)
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) < 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(path[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	list, _ := database.Redis().LRange(p.GetQueueKey(), 0, 1000).Result()
+	data := struct {
+		List        []string
+		ProjectName string
+	}{
+		List:        list,
+		ProjectName: p.GetProjectName(),
+	}
+
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +243,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
-func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
+func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]byte, int64) {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
@@ -193,14 +261,14 @@ func recentJson(sType string, recentFetchIndex int64) ([]byte, int64) {
 		}
 	}
 
-	responseJsonCommon(jsonMap, start)
+	responseJsonCommon(p, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
-func homeJson(sType string) []byte {
+func homeJson(p *project.Dispatcher, sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
@@ -209,7 +277,7 @@ func homeJson(sType string) []byte {
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
 
-	for index, s := range dispatcherObj.GetSpiders() {
+	for index, s := range p.GetSpiders() {
 		avgTime := s.GetAvgTime()
 
 		//accessCountAll, failureCountAll := spider.Transport.AccessCount()
@@ -266,7 +334,7 @@ func homeJson(sType string) []byte {
 	}
 
 	//basic
-	responseJsonCommon(jsonMap, start)
+	responseJsonCommon(p, jsonMap, start)
 
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
@@ -274,7 +342,7 @@ func homeJson(sType string) []byte {
 	}
 	return b
 }
-func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
+func responseJsonCommon(p *project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
 	defer func() {
 		jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
 	}()
@@ -294,7 +362,7 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	var NetIn uint64
 	var NetOut uint64
 	loads := make(map[int]float64, 9)
-	for _, s := range dispatcherObj.GetSpiders() {
+	for _, s := range p.GetSpiders() {
 		if s.FailureLevel == 0 {
 			failureLevelZeroCount++
 			if !s.RequestStartTime.IsZero() {
@@ -326,8 +394,8 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	runtime.ReadMemStats(&mem)
 
 	//redis
-	queueCount, _ := database.Redis().LLen(helper.Env().Redis.URLQueueKey).Result()      //about 1ms
-	redisMem, _ := database.Redis().MemoryUsage(helper.Env().Redis.URLQueueKey).Result() //about 1ms
+	queueCount, _ := database.Redis().LLen(p.GetQueueKey()).Result()      //about 1ms
+	redisMem, _ := database.Redis().MemoryUsage(p.GetQueueKey()).Result() //about 1ms
 
 	//basic
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = ""
@@ -336,9 +404,9 @@ func responseJsonCommon(jsonMap map[string]interface{}, start time.Time) {
 	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = ""
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = ""
 
-	spiderCount := len(dispatcherObj.GetSpiders())
+	spiderCount := len(p.GetSpiders())
 	if spiderCount > 0 {
-		for i, v := range dispatcherObj.GetSpiders()[0].Queue.BlsTestCount {
+		for i, v := range p.GetSpiders()[0].Queue.BlsTestCount {
 			jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] = v
 		}
 		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(spiderCount)).Truncate(time.Millisecond).String()

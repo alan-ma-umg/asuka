@@ -6,9 +6,9 @@
 </head>
 <body>
 <div>
-    <a href="/">Monitor</a>
+    <a href="/{{.ProjectName}}">Monitor</a>
     <br>
-    {{range $index, $element := .}}
+    {{range $index, $element := .List}}
         <a href="{{$element}}" target="_blank">{{$element}}</a><br>
     {{end}}
 </div>

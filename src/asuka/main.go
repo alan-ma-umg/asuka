@@ -1,10 +1,8 @@
 package main
 
 import (
-	"asuka/dispatcher"
 	"asuka/helper"
 	"asuka/project"
-	"asuka/queue"
 	"asuka/web"
 	"fmt"
 	"log"
@@ -36,8 +34,18 @@ func main() {
 	//database.Bl().ClearAll()                             //todo for test
 	//database.Redis().Del(helper.Env().Redis.URLQueueKey) //todo for test
 
-	c := &dispatcher.Dispatcher{}
-	c.Run(&project.DouBan{}, queue.NewQueue())
+	//c := &dispatcher.Dispatcher{}
+	//c.Run([]project.Project{&project.Test{}}, queue.NewQueue())
+	//fmt.Println("Monitor: http://127.0.0.1:666")
+
+	//project.Dispatcher{}
+
+	p := project.New(&project.Test{})
+	p.Run()
+
+	z := project.New(&project.ZhiHu{})
+	z.Run()
+
 	fmt.Println("Monitor: http://127.0.0.1:666")
-	web.Server(c, ":666") // http://127.0.0.1:666
+	web.Server([]*project.Dispatcher{p, z}, ":666") // http://127.0.0.1:666
 }

@@ -12,13 +12,14 @@ import (
 )
 
 type Queue struct {
+	name                   string
 	bls                    []*bloom.BloomFilter
 	BlsTestCount           map[int]int
 	enqueueForFailureMutex *sync.Mutex
 }
 
-func NewQueue() (q *Queue) {
-	q = &Queue{enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
+func NewQueue(name string) (q *Queue) {
+	q = &Queue{name: name, enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
 
 	go func(q *Queue) {
 		t := time.NewTicker(time.Minute * 3)
@@ -30,12 +31,16 @@ func NewQueue() (q *Queue) {
 	return
 }
 
+func (my *Queue) GetKey() string {
+	return my.name + "_" + helper.Env().Redis.URLQueueKey
+}
+
 func (my *Queue) Enqueue(rawUrl string) {
-	database.Redis().RPush(helper.Env().Redis.URLQueueKey, rawUrl)
+	database.Redis().RPush(my.GetKey(), rawUrl)
 }
 
 func (my *Queue) Dequeue() (string, error) {
-	return database.Redis().LPop(helper.Env().Redis.URLQueueKey).Result()
+	return database.Redis().LPop(my.GetKey()).Result()
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
@@ -62,7 +67,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	for i := len(my.bls); i <= index; i++ {
 		bloomFilterInstance := bloom.NewWithEstimates(1000000, 0.01)
-		f, _ := os.Open(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
+		f, _ := os.Open(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()
 
@@ -73,7 +78,7 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 
 func (my *Queue) blSave() {
 	for i, bl := range my.bls {
-		f, err := os.Create(helper.Env().BloomFilterPath + "enqueue_retry_" + strconv.Itoa(i) + ".db")
+		f, err := os.Create(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 		if err != nil {
 			log.Println(err)
 			continue
