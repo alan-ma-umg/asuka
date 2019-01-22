@@ -35,7 +35,7 @@ var StartTime = time.Now()
 const PeriodOfFailureSecond = 86400 / 2
 
 const RecentFetchCount = 100
-const RecentSeveralTimesResultCap = 7
+const RecentSeveralTimesResultCap = 5
 
 var RecentFetchMutex = &sync.Mutex{}
 var RecentFetchLastIndex int64 = 0
