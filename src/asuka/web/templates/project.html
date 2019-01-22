@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asuka connecting..</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
+    {{if eq .GOOS "windows"}}
+    <script src="/static/vue.js"></script>{{/*For Development*/}}
+    {{else}}
+    <script src="/static/vue.min.js"></script>{{/*For Production*/}}
+    {{end}}
+</head>
+<body>
+<div style="max-width: 1500px;margin: 20px auto;"
+     id="vue-content">
+    <div class="head_wrap" v-if="basic.time">
+        <div class="head-item">
+            <div>
+                <h1><a href="/">{{"{{basic.mem_sys}}"}}</a></h1>
+                <small>System memory usage</small>
+            </div>
+
+            <br>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        Time
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.time}}"}}</strong>
+                    </td>
+                    <td>
+                        Uptime
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.uptime}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Servers
+                    </td>
+                    <td>
+                        <strong>{{"{{home.servers.length}}"}}</strong>
+                    </td>
+                    <td>
+                        Server offline
+                    </td>
+                    <td>
+                        <strong>
+                            {{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}
+                            %
+                        </strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="head-item">
+            <div>
+                <h1><a href="/queue/{{.ProjectName}}">{{"{{basic.queue|numberFormat}}"}}</a></h1>
+                <small>All url in redis</small>
+                <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
+            </div>
+            <br>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        socket / ws
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.connections|numberFormat}}"}}
+                            / {{"{{basic.ws_connections|numberFormat}}"}}</strong>
+                    </td>
+                    <td>
+                        Goroutine
+                    </td>
+                    <td>
+                        <strong>{{"{{basic.goroutine|numberFormat}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Retries</td>
+                    <td colspan="3">
+                        <strong>{{"{{retries}}"}}</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="head-item">
+            <div style="float:right">
+                <h1>{{"{{basic.net_out}}"}}</h1>
+                <small>TCP traffic out</small>
+            </div>
+            <div>
+                <h1>{{"{{basic.net_in}}"}}</h1>
+                <small>TCP traffic in</small>
+            </div>
+            <br>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        Request
+                    </td>
+                    <td>
+                        <strong>{{"{{accessSum|numberFormat}}"}}</strong>
+                    </td>
+                    <td>
+                        Failed
+                    </td>
+                    <td>
+                        <strong>{{"{{failureSum|numberFormat}}"}}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Failure Recent
+                    </td>
+                    <td>
+                        <strong>{{"{{failurePeriodAvg}}"}}%</strong>
+                    </td>
+                    <td>
+                        Failure All
+                    </td>
+                    <td>
+                        <strong>{{"{{failureAllAvg}}"}}%</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <canvas style="width: 100%;height:90px;" id="chart-legend-top"></canvas>
+
+    <div style="background: #fff;padding: 30px 20px;overflow-x: auto"
+         v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
+
+        {{/*recent*/}}
+        <table v-if='action == "recent" && fetchList.length' class="table-striped">
+            <thead>
+            <tr>
+                <th style="width: 1px"></th>
+                <th>Server</th>
+                <th>Add Time</th>
+                <th>Consume Time</th>
+                <th>Status</th>
+                <th>Size</th>
+                <th>Content Type</th>
+                <th>Error</th>
+                <th>Url</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in fetchList"
+                :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
+                <td class="center">{{"{{item.Index}}"}}</td>
+                <td class="center">{{"{{item.TransportName}}"}}</td>
+                <td class="center">{{"{{item.AddTime}}"}}</td>
+                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
+                <td class="center">{{"{{item.StatusCode}}"}}</td>
+                <td class="center">{{"{{item.ResponseSize}}"}}</td>
+                <td class="center">{{"{{item.ContentType}}"}}</td>
+                <td class="center">{{"{{item.ErrType}}"}}</td>
+                <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+
+        {{/*home*/}}
+        <table v-if='action == "home" && home.servers' class="table-striped">
+            <thead>
+            <tr>
+                <th style="width: 1px"></th>
+                <th>Server</th>
+                <th>Status</th>
+                <th style="min-width:145px">Failure Recent/all</th>
+                <th style="width:1px">Dispatch</th>
+                <th>Ping / Lost</th>
+                <th>Load 5s/60s</th>
+                <th style="min-width:70px">Time</th>
+                <th>Pass / Sleep</th>
+                <th>Conn</th>
+                <th>HTTP I/O</th>
+                <th>TCP I/O</th>
+            </tr>
+            <tr style="background:#dadada">
+                <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
+                </td>
+                <td class="center">{{"{{statusAvg}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%
+                    </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
+                </td>
+                <td class="center">{{"{{basic.avg_time_avg}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:80px" class="right">{{"{{basic.waiting_avg}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
+                </td>
+                <td class="center">{{"{{connectionSum}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
+                <td class="center">{{"{{server.index+1}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
+                </td>
+                <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
+                    class="center">
+                    {{"{{server.failure_level}}"}}
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">
+                    <span :style="{color: 'hsl('+server.failure_period_hsl+', 100%, 35%)'}">{{"{{server.failure_period}}"}}
+                        %</span>
+                    </div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">
+                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
+                        %</span>
+                    </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px" class="right">
+                        <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
+                    </div>
+                    /
+                    <div style="display:inline-block;width:45px" class="left">
+                    <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
+                    {{"{{server.ping_failure}}"}} %
+                    </span>
+                    </div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:45px"
+                         class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px"
+                         class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
+                </td>
+                <td class="center">{{"{{server.avg_time}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
+                </td>
+                <td class="center">{{"{{server.connections}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
+                </td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="ctrl-wrap">
+    <button id="ws-page-switch" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H / R</button>
+    <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
+    <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
+</div>
+<script src="/static/Chart.min.js"></script>
+<script>
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
+    vueContent = new Vue({
+        el: "#vue-content",
+        data: {
+            home: {}, recent: {},
+            basic: {},
+            fetchList: [],
+            action: "home",
+            chart1: null,
+        },
+        computed: {
+            accessSum: function () {
+                return total(this.home.servers, "access_count");
+            },
+            failureSum: function () {
+                return total(this.home.servers, "failure_count");
+            },
+            failurePeriodAvg: function () {
+                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
+            },
+            failureAllAvg: function () {
+                return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
+            },
+            statusAvg: function () {
+                return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
+            },
+            connectionSum: function () {
+                return total(this.home.servers, "connections")
+            },
+            retries: function () {
+                let str = "", k;
+                for (k in this.basic.queue_bls) {
+                    if (this.basic.queue_bls.hasOwnProperty(k)) {
+                        str += (k == -1 ? "F" : parseInt(k) + 1) + ": " + this.basic.queue_bls[k] + " / "
+                    }
+                }
+                return str ? str.substring(0, str.length - 2) : str
+            },
+            serverRunning: function () {
+                let count = 0;
+                for (item of this.home.servers) {
+                    if (item["failure_level"] === 0) {
+                        count++
+                    }
+                }
+                return count
+            }
+        },
+        filters: {
+            numberFormat: function (v) {
+                return new Intl.NumberFormat().format(v)
+            },
+            urlTruncate: function (str) {
+                if (str.length > 40) {
+                    return str.substring(0, 40) + "..(" + str.length + ")"
+                }
+                return str
+            }
+        },
+        mounted: function () {
+            handlerSocket();
+        }
+    });
+
+    vueContent.$watch('recent.fetched', function (newVal, oldVal) {
+        if (!newVal.length) {
+            return
+        }
+        for (item of newVal) {
+            this.fetchList.unshift(item);
+            if (this.fetchList.length > 200) {
+                this.fetchList.pop()
+            }
+        }
+    });
+
+    function total(data, field) {
+        let total = 0;
+        for (item of data) {
+            total += parseFloat(item[field], 10)
+        }
+        return total;
+    }
+
+    document.getElementById("send-value").onkeypress = function (evt) {
+        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+            sendMessage(document.getElementById("send-value").value);
+        }
+    };
+    document.getElementById("ws-page-switch").onclick = function () {
+        if (vueContent.$data.action === "home") {
+            sendMessage("recent");
+            vueContent.$data.action = "recent"
+        } else {
+            sendMessage("home");
+            vueContent.$data.action = "home"
+        }
+    };
+    document.getElementById("ws-open-close").onclick = function () {
+        manualOpen();
+        manualClose();
+    };
+
+    function sendMessage(msg) {
+        if (!ws) {
+            return;
+        }
+        if (ws.readyState !== 1) {
+            return;
+        }
+        ws.send(msg);
+    }
+
+    function reconnectSocket() {
+        clearTimeout(timer_d90g8df987g9dfg7df9gdfj);
+        if (manualFlag) {
+            return;
+        }
+        timer_d90g8df987g9dfg7df9gdfj = setTimeout(function () {
+            handlerSocket()
+        }, 2000)
+    }
+
+    function manualOpen() {
+        if (!ws) {
+            return;
+        }
+        if (ws.readyState !== 3) {
+            return;
+        }
+        manualFlag = false;
+        handlerSocket()
+    }
+
+    function manualClose() {
+        if (!ws) {
+            return
+        }
+        if (ws.readyState !== 1) {
+            return;
+        }
+        manualFlag = true;
+        ws.close();
+    }
+
+    function handlerSocket() {
+        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}});
+        ws.onmessage = function (evt) {
+            let data = JSON.parse(evt.data);
+            vueContent.$data[data.type] = data;
+            vueContent.$data.basic = data.basic;
+            document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
+            ws.send("");
+
+            //chart
+            if (vueContent.chart1) {
+                vueContent.chart1.data.datasets[0].data = [];
+                for (let s in data.basic.loads) {
+                    vueContent.chart1.data.datasets[0].data.push(data.basic.loads[s]);
+                }
+                vueContent.chart1.update();
+            } else {
+                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig())
+            }
+        };
+        ws.onopen = function () {
+            sendMessage(vueContent.$data.action);
+            sendMessage(document.getElementById("send-value").value);
+            document.body.className = "";
+            document.title = "Asuka connected";
+        };
+        ws.onerror = function () {
+            document.body.className = "ws-closed";
+            document.title = "Asuka Error !";
+            ws && ws.close();
+            reconnectSocket()
+        };
+        ws.onclose = function () {
+            document.body.className = "ws-closed";
+            document.title = "Asuka Closed !";
+            ws && ws.close();
+            reconnectSocket()
+        };
+        window.onbeforeunload = function () {
+            ws && ws.close()
+        };
+    }
+
+    function createConfig() {
+        return {
+            type: 'line',
+            data: {
+                labels: new Array(9),
+                datasets: [{label: '', data: [], borderColor: 'rgb(97, 100, 102)', borderWidth: 0.5, fill: false}]
+            },
+            options: {
+                layout: {padding: {left: 10, right: 10, top: 5, bottom: 10}},
+                elements: {point: {pointStyle: "crossRot"}, line: {tension: 0.2}},
+                responsive: false,
+                legend: {display: false},
+                scales: {
+                    xAxes: [{display: false,}],
+                    yAxes: [{
+                        display: true,
+                        gridLines: {display: false, drawBorder: false},
+                        ticks: {fontColor: "#dadada", fontSize: 12,}
+                    }]
+                },
+                title: {display: false,}
+            }
+        };
+    }
+</script>
+</body>
+</html>

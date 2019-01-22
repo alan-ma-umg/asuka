@@ -5,273 +5,13 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
     {{if eq .GOOS "windows"}}
     <script src="/static/vue.js"></script>{{/*For Development*/}}
     {{else}}
     <script src="/static/vue.min.js"></script>{{/*For Production*/}}
     {{end}}
 </head>
-<style>
-    /* cyrillic-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OX-hpOqc.woff2) format('woff2');
-        unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-    }
-
-    /* cyrillic */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OVuhpOqc.woff2) format('woff2');
-        unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-    }
-
-    /* greek-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OXuhpOqc.woff2) format('woff2');
-        unicode-range: U+1F00-1FFF;
-    }
-
-    /* greek */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OUehpOqc.woff2) format('woff2');
-        unicode-range: U+0370-03FF;
-    }
-
-    /* vietnamese */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OXehpOqc.woff2) format('woff2');
-        unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-    }
-
-    /* latin-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OXOhpOqc.woff2) format('woff2');
-        unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-    }
-
-    /* latin */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 300;
-        src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/mem5YaGs126MiZpBA-UN_r8OUuhp.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-    }
-
-    /* cyrillic-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFWJ0bbck.woff2) format('woff2');
-        unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-    }
-
-    /* cyrillic */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFUZ0bbck.woff2) format('woff2');
-        unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-    }
-
-    /* greek-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFWZ0bbck.woff2) format('woff2');
-        unicode-range: U+1F00-1FFF;
-    }
-
-    /* greek */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFVp0bbck.woff2) format('woff2');
-        unicode-range: U+0370-03FF;
-    }
-
-    /* vietnamese */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFWp0bbck.woff2) format('woff2');
-        unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-    }
-
-    /* latin-ext */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFW50bbck.woff2) format('woff2');
-        unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-    }
-
-    /* latin */
-    @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url(/static/mem8YaGs126MiZpBA-UFVZ0b.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-    }
-
-    * {
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-        -webkit-box-sizing: border-box;
-    }
-
-    body {
-        font-family: open sans, Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
-        color: rgb(97, 100, 102);
-        font-size: 12px;
-        background: rgb(247, 250, 252);
-    }
-
-    small {
-        font-size: 0.9em;
-    }
-
-    *:focus {
-        outline: none;
-    }
-
-    ::selection {
-        background: #cccccc;
-    }
-
-    a {
-        color: #00af4c;
-        text-decoration: none;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-        margin: 10px 0;
-        color: rgb(103, 106, 108);
-    }
-
-    h1 {
-        font-weight: 100;
-        font-size: 30px;
-        line-height: 36px;
-    }
-
-    input, button {
-        -webkit-appearance: none;
-        border-radius: 0;
-        border: 1px solid #ccc;
-        padding: 6px 14px;
-    }
-
-    li {
-        list-style: none;
-    }
-
-    .left {
-        text-align: left;
-    }
-
-    .center {
-        text-align: center;
-    }
-
-    .right {
-        text-align: right;
-    }
-
-    table {
-        border-spacing: 0;
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    th, td {
-        padding: 10px 10px;
-        border: 1px solid rgb(231, 234, 236);
-        border-left: none;
-        border-right: none;
-        white-space: nowrap;
-    }
-
-    table.table-striped th {
-        background: #eaeaea;
-    }
-
-    table.table-striped tr:nth-child(even) {
-        background: #f4f4f4;
-    }
-
-    tr:hover {
-        background: #d9f1db !important;
-    }
-
-    .inline-block {
-        display: inline-block;
-    }
-
-    .text-ellipsis {
-        width: inherit;
-        display: inline-block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .ctrl-wrap {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 1;
-    }
-
-    .warning {
-        background: rgb(255, 248, 235) !important;
-    }
-
-    .danger {
-        background: rgb(255, 240, 240) !important;
-    }
-
-    .head_wrap {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-    }
-
-    .head-item {
-        min-width: 300px;
-        padding: 0 20px 15px;
-        flex: 1;
-    }
-
-    .ws-closed {
-        background: #E6E6E6
-    }
-</style>
 <body>
 <div style="max-width: 1500px;margin: 20px auto;"
      id="vue-content">
@@ -281,7 +21,6 @@
                 <h1>{{"{{basic.mem_sys}}"}}</h1>
                 <small>System memory usage</small>
             </div>
-
             <br>
             <table>
                 <tbody>
@@ -304,14 +43,14 @@
                         Servers
                     </td>
                     <td>
-                        <strong>{{"{{home.servers.length}}"}}</strong>
+                        <strong>{{"{{basic.servers}}"}}</strong>
                     </td>
                     <td>
                         Server offline
                     </td>
                     <td>
                         <strong>
-                            {{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}
+                            {{"{{basic.servers?((basic.servers-basic.server_run)/basic.servers*100).toFixed(2):0}}"}}
                             %
                         </strong>
                     </td>
@@ -322,7 +61,7 @@
 
         <div class="head-item">
             <div>
-                <h1><a href="/queue/{{.ProjectName}}">{{"{{basic.queue|numberFormat}}"}}</a></h1>
+                <h1>{{"{{basic.queue|numberFormat}}"}}</h1>
                 <small>All url in redis</small>
                 <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
             </div>
@@ -400,163 +139,38 @@
 
     <canvas style="width: 100%;height:90px;" id="chart-legend-top"></canvas>
 
-    <div style="background: #fff;padding: 30px 20px;overflow-x: auto"
-         v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
-
-        {{/*recent*/}}
-        <table v-if='action == "recent" && fetchList.length' class="table-striped">
+    <div style="background: #fff;padding: 30px 20px;overflow-x: auto">
+        <table v-if='projects.length' class="table-striped">
             <thead>
             <tr>
                 <th style="width: 1px"></th>
-                <th>Server</th>
-                <th>Add Time</th>
-                <th>Consume Time</th>
-                <th>Status</th>
-                <th>Size</th>
-                <th>Content Type</th>
-                <th>Error</th>
-                <th>Url</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="item in fetchList"
-                :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
-                <td class="center">{{"{{item.Index}}"}}</td>
-                <td class="center">{{"{{item.TransportName}}"}}</td>
-                <td class="center">{{"{{item.AddTime}}"}}</td>
-                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
-                <td class="center">{{"{{item.StatusCode}}"}}</td>
-                <td class="center">{{"{{item.ResponseSize}}"}}</td>
-                <td class="center">{{"{{item.ContentType}}"}}</td>
-                <td class="center">{{"{{item.ErrType}}"}}</td>
-                <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
-            </tr>
-            </tbody>
-        </table>
-
-
-        {{/*home*/}}
-        <table v-if='action == "home" && home.servers' class="table-striped">
-            <thead>
-            <tr>
-                <th style="width: 1px"></th>
-                <th>Server</th>
-                <th>Status</th>
-                <th style="min-width:145px">Failure Recent/all</th>
-                <th style="width:1px">Dispatch</th>
-                <th>Ping / Lost</th>
-                <th>Load 5s/60s</th>
-                <th style="min-width:70px">Time</th>
-                <th>Pass / Sleep</th>
+                <th>Project</th>
+                <th>Failure recent</th>
+                <th>Failure all</th>
+                <th>Dispatch</th>
+                <th>Load</th>
+                <th>Pass/Sleep</th>
                 <th>Conn</th>
-                <th>HTTP I/O</th>
-                <th>TCP I/O</th>
-            </tr>
-            <tr style="background:#dadada">
-                <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
-                </td>
-                <td class="center">{{"{{statusAvg}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%
-                    </div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
-                </td>
-                <td class="center">{{"{{basic.avg_time_avg}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:80px" class="right">{{"{{basic.waiting_avg}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
-                </td>
-                <td class="center">{{"{{connectionSum}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
-                </td>
+                <th>HTTP In</th>
+                <th>HTTP Out</th>
+                <th>TCP In</th>
+                <th>TCP Out</th>
             </tr>
             </thead>
             <tbody>
-            <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
-                <td class="center">{{"{{server.index+1}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
-                </td>
-                <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
-                    class="center">
-                    {{"{{server.failure_level}}"}}
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">
-                    <span :style="{color: 'hsl('+server.failure_period_hsl+', 100%, 35%)'}">{{"{{server.failure_period}}"}}
-                        %</span>
-                    </div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">
-                    <span :style="{color: 'hsl('+server.failure_all_hsl+', 100%, 35%)'}">{{"{{server.failure_all}}"}}
-                        %</span>
-                    </div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.access_count}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">
-                        <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
-                    </div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">
-                    <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
-                    {{"{{server.ping_failure}}"}} %
-                    </span>
-                    </div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px"
-                         class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px"
-                         class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
-                </td>
-                <td class="center">{{"{{server.avg_time}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
-                </td>
-                <td class="center">{{"{{server.connections}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
-                </td>
+            <tr v-for="item,index in projects" v-on:click="goTo(item.name)" style="cursor: pointer">
+                <td class="center">{{"{{index+1}}"}}</td>
+                <td class="center">{{"{{item.name}}"}}</td>
+                <td class="center">{{"{{item.failure_period|numberFormat}}"}}</td>
+                <td class="center">{{"{{item.failure_all|numberFormat}}"}}</td>
+                <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
+                <td class="center">{{"{{item.loads['60']|numberFormat}}"}} / {{"{{item.loads['900']|numberFormat}}"}}</td>
+                <td class="center">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
+                <td class="center">{{"{{item.connections}}"}}</td>
+                <td class="center">{{"{{item.traffic_in}}"}}</td>
+                <td class="center">{{"{{item.traffic_out}}"}}</td>
+                <td class="center">{{"{{item.net_in}}"}}</td>
+                <td class="center">{{"{{item.net_out}}"}}</td>
             </tr>
             </tbody>
         </table>
@@ -574,30 +188,27 @@
     vueContent = new Vue({
         el: "#vue-content",
         data: {
-            home: {}, recent: {},
             basic: {},
-            fetchList: [],
-            action: "home",
+            projects: [],
             chart1: null,
+        },
+        methods: {
+            goTo: function (name) {
+                location.href = "/" + name
+            }
         },
         computed: {
             accessSum: function () {
-                return total(this.home.servers, "access_count");
+                return total(this.projects, "access_count");
             },
             failureSum: function () {
-                return total(this.home.servers, "failure_count");
+                return total(this.projects, "failure_count");
             },
             failurePeriodAvg: function () {
-                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
+                return (total(this.projects, "failure_period") / this.projects.length).toFixed(2)
             },
             failureAllAvg: function () {
-                return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
-            },
-            statusAvg: function () {
-                return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
-            },
-            connectionSum: function () {
-                return total(this.home.servers, "connections")
+                return (total(this.projects, "failure_all") / this.projects.length).toFixed(2)
             },
             retries: function () {
                 let str = "", k;
@@ -608,15 +219,6 @@
                 }
                 return str ? str.substring(0, str.length - 2) : str
             },
-            serverRunning: function () {
-                let count = 0;
-                for (item of this.home.servers) {
-                    if (item["failure_level"] === 0) {
-                        count++
-                    }
-                }
-                return count
-            }
         },
         filters: {
             numberFormat: function (v) {
@@ -634,17 +236,6 @@
         }
     });
 
-    vueContent.$watch('recent.fetched', function (newVal, oldVal) {
-        if (!newVal.length) {
-            return
-        }
-        for (item of newVal) {
-            this.fetchList.unshift(item);
-            if (this.fetchList.length > 200) {
-                this.fetchList.pop()
-            }
-        }
-    });
 
     function total(data, field) {
         let total = 0;
@@ -657,15 +248,6 @@
     document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
             sendMessage(document.getElementById("send-value").value);
-        }
-    };
-    document.getElementById("ws-page-switch").onclick = function () {
-        if (vueContent.$data.action === "home") {
-            sendMessage("recent");
-            vueContent.$data.action = "recent"
-        } else {
-            sendMessage("home");
-            vueContent.$data.action = "home"
         }
     };
     document.getElementById("ws-open-close").onclick = function () {
@@ -716,10 +298,10 @@
     }
 
     function handlerSocket() {
-        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/socket.io?project=" + {{.ProjectName}});
+        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io");
         ws.onmessage = function (evt) {
             let data = JSON.parse(evt.data);
-            vueContent.$data[data.type] = data;
+            vueContent.$data.projects = data.projects;
             vueContent.$data.basic = data.basic;
             document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
             ws.send("");

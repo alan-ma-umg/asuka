@@ -60,9 +60,9 @@ func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 
 func commonHandle(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if w.Header().Get("Content-Type") == "" {
-			w.Header().Set("Content-Type", "application/javascript")
-		}
+		//if w.Header().Get("Content-Type") == "" {
+		//w.Header().Set("Content-Type", "application/javascript")
+		//}
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Server", "Asuka")
 		gz := gzip.NewWriter(w)
@@ -76,8 +76,9 @@ func Server(d []*project.Dispatcher, address string) {
 	dispatchers = d
 
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
-	http.HandleFunc("/socket.io", IO)
-	http.HandleFunc("/", commonHandleFunc(index))
+	http.HandleFunc("/project.io", projectIO)
+	http.HandleFunc("/index.io", indexIO)
+	http.HandleFunc("/", commonHandleFunc(home))
 	http.HandleFunc("/forever/", forever)
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
@@ -88,6 +89,20 @@ func Server(d []*project.Dispatcher, address string) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	data := struct {
+		GOOS string
+	}{
+		GOOS: runtime.GOOS,
+	}
+
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" {
+		index(w, r)
+		return
+	}
 	path := strings.Split(r.URL.Path, "/")
 	if len(path) < 2 {
 		http.NotFound(w, r)
@@ -108,9 +123,68 @@ func index(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
 }
-func IO(w http.ResponseWriter, r *http.Request) {
+
+func indexIO(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+
+	webSocketConnections++
+
+	defer func() {
+		webSocketConnections--
+		c.Close()
+	}()
+
+	refreshRateMin := 0.2
+	refreshRate := refreshRateMin
+
+	for {
+		messageType, b, err := c.ReadMessage()
+		if err != nil {
+			break
+		}
+		if messageType == 1 {
+			switch strings.TrimSpace(string(b)) {
+			case "free":
+				debug.FreeOSMemory()
+				fmt.Println("debug.FreeOsMemory")
+			case "stop":
+				for _, d := range dispatchers {
+					for _, s := range d.GetSpiders() {
+						s.Stop = true
+					}
+				}
+				fmt.Println("spider stop")
+			case "start":
+				for _, d := range dispatchers {
+					for _, s := range d.GetSpiders() {
+						s.Stop = false
+					}
+				}
+				fmt.Println("spider start")
+			default:
+				refreshRateTemp, err := strconv.ParseFloat(string(b), 64)
+				if err == nil {
+					refreshRate = math.Max(refreshRateTemp, refreshRateMin)
+				}
+			}
+		}
+
+		err = c.WriteMessage(websocket.TextMessage, indexJson())
+		if err != nil {
+			//log.Println("write:", err)
+			break
+		}
+		time.Sleep(time.Duration(refreshRate * 1e9))
+	}
+
+}
+func projectIO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -261,13 +335,115 @@ func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]
 		}
 	}
 
-	responseJsonCommon(p, jsonMap, start)
+	responseJsonCommon([]*project.Dispatcher{p}, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
+
+func indexJson() []byte {
+	start := time.Now()
+	var jsonMap = map[string]interface{}{
+		"projects": []map[string]interface{}{},
+	}
+
+	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
+
+	for _, p := range dispatchers {
+		projectMap := map[string]interface{}{}
+
+		loads := make(map[int]float64, 9)
+
+		failureRatePeriodValue := 0.0
+		failureRateAllValue := .0
+		var sleepDuration time.Duration
+		var waiting time.Duration
+		var TrafficIn uint64
+		var TrafficOut uint64
+		var NetIn uint64
+		var NetOut uint64
+		var connections int
+		var accessCount int
+		var failureCount int
+		var serverCount int
+		var serverRun int
+		var serverEnable int
+		for _, s := range p.GetSpiders() {
+
+			failureRatePeriodValue += helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
+			if s.Transport.GetAccessCount() > 0 {
+				failureRateAllValue += float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
+			}
+
+			loads[5] += s.Transport.LoadRate(5)
+			loads[60] += s.Transport.LoadRate(60)
+			loads[60*15] += s.Transport.LoadRate(900)
+			loads[60*30] += s.Transport.LoadRate(1800)
+			loads[3600] += s.Transport.LoadRate(3600)
+			loads[3600*5] += s.Transport.LoadRate(3600 * 5)
+			loads[36000] += s.Transport.LoadRate(36000)
+			loads[86400] += s.Transport.LoadRate(86400)
+			loads[86400*2] += s.Transport.LoadRate(172800)
+
+			sleepDuration += s.GetSleep()
+
+			if !s.RequestStartTime.IsZero() {
+				waiting += time.Since(s.RequestStartTime)
+			}
+			serverCount++
+			if s.Transport.S.Enable {
+				serverEnable++
+			}
+
+			if s.FailureLevel == 0 {
+				serverRun++
+			}
+
+			TrafficIn += s.Transport.TrafficIn
+			TrafficOut += s.Transport.TrafficOut
+			NetIn += s.Transport.S.TrafficIn
+			NetOut += s.Transport.S.TrafficOut
+			connections += s.Transport.S.Connections
+			accessCount += s.Transport.GetAccessCount()
+			failureCount += s.Transport.GetFailureCount()
+		}
+
+		projectMap["servers"] = serverCount
+		projectMap["server_run"] = serverRun
+		projectMap["server_enable"] = serverEnable
+
+		projectMap["sleep"] = sleepDuration.Truncate(time.Millisecond).String()
+		projectMap["waiting"] = "0s"
+		if waiting != 0 {
+			projectMap["waiting"] = waiting.Truncate(time.Millisecond).String()
+		}
+		projectMap["failure_period"] = failureRatePeriodValue / float64(len(p.GetSpiders()))
+		projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue/float64(len(p.GetSpiders()))))
+		projectMap["failure_all"] = strconv.FormatFloat(failureRateAllValue/float64(len(p.GetSpiders())), 'f', 2, 64)
+		projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue/float64(len(p.GetSpiders()))))
+		projectMap["traffic_in"] = helper.ByteCountBinary(TrafficIn)
+		projectMap["traffic_out"] = helper.ByteCountBinary(TrafficOut)
+		projectMap["net_in"] = helper.ByteCountBinary(NetIn)
+		projectMap["net_out"] = helper.ByteCountBinary(NetOut)
+		projectMap["loads"] = loads
+		projectMap["connections"] = connections
+		projectMap["access_count"] = accessCount
+		projectMap["failure_count"] = failureCount
+		projectMap["name"] = p.GetProjectName()
+
+		jsonMap["projects"] = append(jsonMap["projects"].([]map[string]interface{}), projectMap)
+	}
+
+	responseJsonCommon(dispatchers, jsonMap, start)
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return b
+}
+
 func homeJson(p *project.Dispatcher, sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
@@ -279,9 +455,6 @@ func homeJson(p *project.Dispatcher, sType string) []byte {
 
 	for index, s := range p.GetSpiders() {
 		avgTime := s.GetAvgTime()
-
-		//accessCountAll, failureCountAll := spider.Transport.AccessCount()
-		//failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 
 		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
 		failureRateAllValue := .0
@@ -334,7 +507,7 @@ func homeJson(p *project.Dispatcher, sType string) []byte {
 	}
 
 	//basic
-	responseJsonCommon(p, jsonMap, start)
+	responseJsonCommon([]*project.Dispatcher{p}, jsonMap, start)
 
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
@@ -342,7 +515,7 @@ func homeJson(p *project.Dispatcher, sType string) []byte {
 	}
 	return b
 }
-func responseJsonCommon(p *project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
+func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
 	defer func() {
 		jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
 	}()
@@ -361,41 +534,58 @@ func responseJsonCommon(p *project.Dispatcher, jsonMap map[string]interface{}, s
 	var TrafficOut uint64
 	var NetIn uint64
 	var NetOut uint64
+	var queueCount int64
+	var redisMem int64
+	var serverCount int
+	var serverEnable int
+
 	loads := make(map[int]float64, 9)
-	for _, s := range p.GetSpiders() {
-		if s.FailureLevel == 0 {
-			failureLevelZeroCount++
-			if !s.RequestStartTime.IsZero() {
-				waitingAvg += time.Since(s.RequestStartTime)
+	for _, p := range ps {
+		for _, s := range p.GetSpiders() {
+			if s.FailureLevel == 0 {
+				failureLevelZeroCount++
+				if !s.RequestStartTime.IsZero() {
+					waitingAvg += time.Since(s.RequestStartTime)
+				}
+				avgTimeAvg += s.GetAvgTime()
 			}
-			avgTimeAvg += s.GetAvgTime()
+
+			loads[5] += s.Transport.LoadRate(5)
+			loads[60] += s.Transport.LoadRate(60)
+			loads[60*15] += s.Transport.LoadRate(900)
+			loads[60*30] += s.Transport.LoadRate(1800)
+			loads[3600] += s.Transport.LoadRate(3600)
+			loads[3600*5] += s.Transport.LoadRate(3600 * 5)
+			loads[36000] += s.Transport.LoadRate(36000)
+			loads[86400] += s.Transport.LoadRate(86400)
+			loads[86400*2] += s.Transport.LoadRate(172800)
+
+			serverCount++
+			if s.Transport.S.Enable {
+				serverEnable++
+			}
+			sleepAvg += s.GetSleep()
+			pingFailureAvg += s.Transport.PingFailureRate
+			pingAvg += s.Transport.Ping
+			TrafficIn += s.Transport.TrafficIn
+			TrafficOut += s.Transport.TrafficOut
+			NetIn += s.Transport.S.TrafficIn
+			NetOut += s.Transport.S.TrafficOut
+
+			for i, v := range s.Queue.BlsTestCount {
+				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] += v
+			}
 		}
 
-		loads[5] += s.Transport.LoadRate(5)
-		loads[60] += s.Transport.LoadRate(60)
-		loads[60*15] += s.Transport.LoadRate(900)
-		loads[60*30] += s.Transport.LoadRate(1800)
-		loads[3600] += s.Transport.LoadRate(3600)
-		loads[3600*5] += s.Transport.LoadRate(3600 * 5)
-		loads[36000] += s.Transport.LoadRate(36000)
-		loads[86400] += s.Transport.LoadRate(86400)
-		loads[86400*2] += s.Transport.LoadRate(172800)
+		//redis
+		mem, _ := database.Redis().MemoryUsage(p.GetQueueKey()).Result() //about 1ms
+		redisMem += mem
+		num, _ := database.Redis().LLen(p.GetQueueKey()).Result() //about 1ms
+		queueCount += num
 
-		sleepAvg += s.GetSleep()
-		pingFailureAvg += s.Transport.PingFailureRate
-		pingAvg += s.Transport.Ping
-		TrafficIn += s.Transport.TrafficIn
-		TrafficOut += s.Transport.TrafficOut
-		NetIn += s.Transport.S.TrafficIn
-		NetOut += s.Transport.S.TrafficOut
 	}
-
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
-
-	//redis
-	queueCount, _ := database.Redis().LLen(p.GetQueueKey()).Result()      //about 1ms
-	redisMem, _ := database.Redis().MemoryUsage(p.GetQueueKey()).Result() //about 1ms
 
 	//basic
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = ""
@@ -404,22 +594,20 @@ func responseJsonCommon(p *project.Dispatcher, jsonMap map[string]interface{}, s
 	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = ""
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = ""
 
-	spiderCount := len(p.GetSpiders())
-	if spiderCount > 0 {
-		for i, v := range p.GetSpiders()[0].Queue.BlsTestCount {
-			jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] = v
-		}
-		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(spiderCount)).Truncate(time.Millisecond).String()
-		jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(spiderCount)).Truncate(time.Millisecond).String()
-		jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(spiderCount), 'f', 2, 64)
-
+	if serverCount > 0 {
+		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
+		jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
+		jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(serverCount), 'f', 2, 64)
 		jsonMap["basic"].(map[string]interface{})["loads"] = loads
 	}
 	if failureLevelZeroCount > 0 {
 		jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
 		jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
 	}
-	jsonMap["basic"].(map[string]interface{})["queue"] = strconv.Itoa(int(queueCount))
+	jsonMap["basic"].(map[string]interface{})["servers"] = serverCount
+	jsonMap["basic"].(map[string]interface{})["server_run"] = failureLevelZeroCount
+	jsonMap["basic"].(map[string]interface{})["server_enable"] = serverEnable
+	jsonMap["basic"].(map[string]interface{})["queue"] = queueCount
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
