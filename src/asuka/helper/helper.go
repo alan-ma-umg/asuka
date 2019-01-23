@@ -44,6 +44,7 @@ func Env() *EnvConfig {
 			log.Fatal(err)
 		}
 
+		//strings.TrimSpace for each type of string
 		for _, s := range envConfig.SsServers {
 			s := reflect.ValueOf(s).Elem()
 			for i := 0; i < s.NumField(); i++ {
