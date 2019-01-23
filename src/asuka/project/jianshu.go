@@ -191,7 +191,7 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl 
 		return
 	}
 
-	return l.String()
+	return l.Scheme + "://" + l.Host + l.Path
 }
 
 func (my *JianShu) ResponseAfter(spider *spider.Spider) {

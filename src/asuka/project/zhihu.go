@@ -192,7 +192,7 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 		return
 	}
 
-	return l.String()
+	return l.Scheme + "://" + l.Host + l.Path
 }
 
 func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
