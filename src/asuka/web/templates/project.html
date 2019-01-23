@@ -13,7 +13,7 @@
     {{end}}
 </head>
 <body>
-<div style="max-width: 1500px;margin: 20px auto;"
+<div style="max-width: 1500px;margin: 20px auto;display: none"
      id="vue-content">
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
@@ -373,6 +373,7 @@
             }
         },
         mounted: function () {
+            document.getElementById('vue-content').style.display = "block";
             handlerSocket();
         }
     });

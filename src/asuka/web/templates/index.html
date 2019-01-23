@@ -13,7 +13,7 @@
     {{end}}
 </head>
 <body>
-<div style="max-width: 1500px;margin: 20px auto;"
+<div style="max-width: 1500px;margin: 20px auto;display: none"
      id="vue-content">
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
@@ -164,7 +164,8 @@
                 <td class="center">{{"{{item.failure_period|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.failure_all|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
-                <td class="center">{{"{{item.loads['60']|numberFormat}}"}} / {{"{{item.loads['900']|numberFormat}}"}}</td>
+                <td class="center">{{"{{item.loads['60']|numberFormat}}"}}
+                    / {{"{{item.loads['900']|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
                 <td class="center">{{"{{item.connections}}"}}</td>
                 <td class="center">{{"{{item.traffic_in}}"}}</td>
@@ -178,7 +179,6 @@
 </div>
 
 <div class="ctrl-wrap">
-    <button id="ws-page-switch" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H / R</button>
     <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
     <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
 </div>
@@ -232,6 +232,7 @@
             }
         },
         mounted: function () {
+            document.getElementById('vue-content').style.display = "block";
             handlerSocket();
         }
     });
