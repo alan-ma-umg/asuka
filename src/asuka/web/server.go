@@ -78,7 +78,7 @@ func Server(d []*project.Dispatcher, address string) {
 	go func() {
 		for _, d := range dispatchers {
 			for _, sp := range d.GetSpiders() {
-				if StartTime.Second() > sp.StartTime.Second() {
+				if StartTime.Unix() > sp.StartTime.Unix() {
 					StartTime = sp.StartTime
 				}
 			}
