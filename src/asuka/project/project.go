@@ -8,7 +8,6 @@ import (
 	"asuka/spider"
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -69,7 +68,7 @@ func New(project Project) *Dispatcher {
 			enc := gob.NewEncoder(encBuf)
 			err := enc.Encode(sp)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 			database.Redis().HSet("gob_"+d.GetProjectName(), sp.Transport.S.ServerAddr, encBuf.String())
 		}
