@@ -31,7 +31,6 @@ func main() {
 }
 
 func asuka() {
-
 	projects := []*project.Dispatcher{
 		project.New(&project.Test{}),
 		project.New(&project.ZhiHu{}),

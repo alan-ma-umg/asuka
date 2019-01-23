@@ -71,23 +71,27 @@ func New(project Project) *Dispatcher {
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 
-		//spider, write to redis
-		database.Redis().Del(d.GetGOBKey())
+		encStrSlice := make(map[string]interface{})
 		for _, sp := range d.GetSpiders() {
+			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
+				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
+				fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
+			}
+
+			//gob
 			gob.Register(d.Project) //do register once
 			encBuf := &bytes.Buffer{}
 			enc := gob.NewEncoder(encBuf)
 			err := enc.Encode(sp)
 			if err != nil {
 				log.Println(err)
+				continue
 			}
-			database.Redis().HSet(d.GetGOBKey(), sp.Transport.S.ServerAddr, encBuf.String())
-
-			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
-				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
-				fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
-			}
+			encStrSlice[sp.Transport.S.ServerAddr] = encBuf.String()
 		}
+		//spider, write to redis
+		database.Redis().Del(d.GetGOBKey())
+		database.Redis().HMSet(d.GetGOBKey(), encStrSlice)
 
 		//queue, write to file
 		d.queue.BlSave()

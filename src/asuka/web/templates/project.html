@@ -346,7 +346,7 @@
                 let str = "", k;
                 for (k in this.basic.queue_bls) {
                     if (this.basic.queue_bls.hasOwnProperty(k)) {
-                        str += (k == -1 ? "F" : parseInt(k) + 1) + ": " + this.basic.queue_bls[k] + " / "
+                        str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
                     }
                 }
                 return str ? str.substring(0, str.length - 2) : str
