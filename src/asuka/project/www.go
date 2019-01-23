@@ -56,7 +56,7 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Accept", "text/html")
 	}
 
-	spider.Client.Timeout = 4 * time.Second
+	spider.Client().Timeout = 4 * time.Second
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -141,7 +141,7 @@ func (my *Www) ResponseAfter(spider *spider.Spider) {
 
 	//free the memory
 	if len(spider.RequestsMap) > 10 {
-		spider.Client.Jar, _ = cookiejar.New(nil)
+		spider.Client().Jar, _ = cookiejar.New(nil)
 		spider.RequestsMap = map[string]*http.Request{}
 	}
 }

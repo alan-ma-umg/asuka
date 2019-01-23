@@ -55,7 +55,7 @@ type RecentFetch struct {
 
 type Spider struct {
 	Transport *proxy.Transport
-	Client    *http.Client
+	client    *http.Client
 	Queue     *queue.Queue
 
 	RequestsMap     map[string]*http.Request
@@ -102,9 +102,13 @@ func (spider *Spider) UpdateTransport() {
 	spider.updateClient()
 }
 
+func (spider *Spider) Client() *http.Client {
+	return spider.client
+}
+
 func (spider *Spider) updateClient() {
 	j, _ := cookiejar.New(nil)
-	spider.Client = &http.Client{Transport: spider.Transport.GetHttpTransport(), Jar: j, Timeout: time.Second * 30}
+	spider.client = &http.Client{Transport: spider.Transport.GetHttpTransport(), Jar: j, Timeout: time.Second * 30}
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
@@ -291,7 +295,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		spider.Transport.S.TrafficOut += uint64(len(dump))
 	}
 
-	resp, err = spider.Client.Do(spider.CurrentRequest)
+	resp, err = spider.client.Do(spider.CurrentRequest)
 	if err != nil {
 		recentFetch.ErrType = spider.requestErrorHandler(err)
 		return resp, err

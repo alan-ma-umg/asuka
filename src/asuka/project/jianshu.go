@@ -75,7 +75,7 @@ func (my *JianShu) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest.Header.Set("Referer", my.lastRequestUrl)
 	}
 
-	spider.Client.Timeout = 10 * time.Second
+	spider.Client().Timeout = 10 * time.Second
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
