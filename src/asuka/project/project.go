@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -51,11 +52,16 @@ type Project interface {
 	ResponseAfter(spider *spider.Spider)
 }
 
+const RecentFetchCount = 50
+
 type Dispatcher struct {
 	Project
-	queue   *queue.Queue
-	Spiders []*spider.Spider
-	Stop    bool
+	queue                *queue.Queue
+	Spiders              []*spider.Spider
+	Stop                 bool
+	RecentFetchMutex     sync.Mutex
+	RecentFetchLastIndex int64
+	RecentFetchList      []*spider.Summary
 }
 
 func New(project Project) *Dispatcher {
@@ -199,7 +205,7 @@ func (my *Dispatcher) Run() {
 	}
 }
 
-func Crawl(project Project, spider *spider.Spider) {
+func Crawl(project *Dispatcher, spider *spider.Spider) {
 	if project != nil {
 		spider.RequestBefore = project.RequestBefore
 		spider.DownloadFilter = project.DownloadFilter
@@ -232,7 +238,16 @@ func Crawl(project Project, spider *spider.Spider) {
 
 	spider.Transport.LoopCount++
 
-	_, err = spider.Fetch(u)
+	_, summary, err := spider.Fetch(u)
+
+	//recent fetch
+	project.RecentFetchMutex.Lock()
+	project.RecentFetchLastIndex++
+	summary.Index = project.RecentFetchLastIndex
+	summary.ConsumeTime = time.Since(spider.RequestStartTime).Truncate(time.Millisecond).String()
+	project.RecentFetchList = append(project.RecentFetchList[helper.MaxInt(len(project.RecentFetchList)-RecentFetchCount, 0):], summary)
+	project.RecentFetchMutex.Unlock()
+
 	if err != nil {
 		return
 	}

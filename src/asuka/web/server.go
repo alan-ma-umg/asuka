@@ -315,16 +315,16 @@ func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
-		"fetched": []*spider.RecentFetch{},
+		"fetched": []*spider.Summary{},
 	}
 
 	var lastIndex int64
-	for _, l := range spider.RecentFetchList {
+	for _, l := range p.RecentFetchList {
 		if l == nil { //Change frequently, prevent nil pointer
 			continue
 		}
 		if l.Index > recentFetchIndex {
-			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.RecentFetch), l)
+			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.Summary), l)
 			lastIndex = helper.MaxInt64(lastIndex, l.Index)
 		}
 	}

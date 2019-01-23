@@ -25,21 +25,14 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
 const PeriodOfFailureSecond = 86400 / 2
 
-const RecentFetchCount = 100
 const RecentSeveralTimesResultCap = 5
 
-var RecentFetchMutex = &sync.Mutex{}
-var RecentFetchLastIndex int64 = 0
-var RecentFetchList []*RecentFetch
-var spiderList []*Spider
-
-type RecentFetch struct {
+type Summary struct {
 	Index         int64
 	TransportName string
 	StatusCode    int // http response status code
@@ -83,7 +76,6 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now()}
 	spider.updateClient()
 	spider.registerHttpTrace()
-	spiderList = append(spiderList, spider)
 	return spider
 }
 
@@ -224,7 +216,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	return spider
 }
 
-func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
+func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, err error) {
 	spider.SetRequest(u, nil) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
@@ -237,7 +229,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	//time
 	spider.RequestStartTime = time.Now()
 
-	recentFetch := &RecentFetch{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
+	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
 
 	spider.Transport.AddAccess(spider.currentRequest.URL.String())
 
@@ -246,7 +238,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 			spider.Transport.AddFailure(spider.currentRequest.URL.String())
 		}
 
-		if spider.FailureLevel == 0 && recentFetch.StatusCode != 0 && recentFetch.StatusCode != 200 {
+		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
 			spider.FailureLevel = 10
 			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		}
@@ -261,18 +253,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		//	spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
 		//}
 
-		//recent fetch
-		RecentFetchLastIndex++
-		recentFetch.Index = RecentFetchLastIndex
-		recentFetch.ConsumeTime = time.Since(spider.RequestStartTime).Truncate(time.Millisecond).String()
-		RecentFetchList = append(RecentFetchList, recentFetch)
-
-		RecentFetchMutex.Lock()
-		if len(RecentFetchList) > RecentFetchCount {
-			RecentFetchList = RecentFetchList[len(RecentFetchList)-RecentFetchCount:]
-		}
-		RecentFetchMutex.Unlock()
-
 		//recover
 		if r := recover(); r != nil {
 			spider.Transport.AddFailure(spider.currentRequest.URL.String())
@@ -282,7 +262,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	//traffic
 	dump, err := httputil.DumpRequestOut(spider.currentRequest, true)
-	recentFetch.ErrType = spider.requestErrorHandler(err)
+	summary.ErrType = spider.requestErrorHandler(err)
 	spider.Transport.TrafficOut += uint64(len(dump))
 	//for localhost
 	if spider.Transport.S.Type == "" {
@@ -291,12 +271,12 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	resp, err = spider.client.Do(spider.currentRequest)
 	if err != nil {
-		recentFetch.ErrType = spider.requestErrorHandler(err)
-		return resp, err
+		summary.ErrType = spider.requestErrorHandler(err)
+		return resp, summary, err
 	}
 	defer resp.Body.Close()
-	recentFetch.StatusCode = resp.StatusCode
-	recentFetch.ContentType = resp.Header.Get("Content-type")
+	summary.StatusCode = resp.StatusCode
+	summary.ContentType = resp.Header.Get("Content-type")
 
 	if spider.DownloadFilter != nil {
 		filter, err := spider.DownloadFilter(spider, resp)
@@ -304,7 +284,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		if err != nil || !filter {
 			//traffic  response header only
 			dump, _ = httputil.DumpResponse(resp, false)
-			recentFetch.ResponseSize = helper.ByteCountBinary(uint64(len(dump)))
+			summary.ResponseSize = helper.ByteCountBinary(uint64(len(dump)))
 			spider.Transport.TrafficIn += uint64(len(dump))
 			//for localhost
 			if spider.Transport.S.Type == "" {
@@ -312,26 +292,26 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 			}
 
 			if err != nil {
-				recentFetch.ErrType = "project.Filtered"
-				return nil, errors.New(recentFetch.ErrType)
+				summary.ErrType = "project.Filtered"
+				return nil, summary, errors.New(summary.ErrType)
 			}
 
 			if !filter {
-				return nil, nil
+				return nil, summary, nil
 			}
 		}
 	}
 
 	resByte, err := ioutil.ReadAll(resp.Body)
-	recentFetch.ErrType = spider.responseErrorHandler(err)
+	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
-		return resp, err
+		return resp, summary, err
 	}
 
 	//traffic
 	dump, err = httputil.DumpResponse(resp, false)
-	recentFetch.ErrType = spider.responseErrorHandler(err)
-	recentFetch.ResponseSize = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
+	summary.ErrType = spider.responseErrorHandler(err)
+	summary.ResponseSize = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
 	spider.Transport.TrafficIn += uint64(len(dump) + len(resByte))
 	//for localhost
 	if spider.Transport.S.Type == "" {
@@ -343,13 +323,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	defer reader.Close()
 	if strings.ToLower(resp.Header.Get("Content-Encoding")) == "gzip" {
 		reader, err = gzip.NewReader(reader)
-		recentFetch.ErrType = spider.responseErrorHandler(err)
+		summary.ErrType = spider.responseErrorHandler(err)
 	}
 
 	res, err := ioutil.ReadAll(reader)
-	recentFetch.ErrType = spider.responseErrorHandler(err)
+	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
-		return resp, err
+		return resp, summary, err
 	}
 
 	//http status
@@ -359,7 +339,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	spider.ResponseStr = string(res[:])
 	spider.ResponseByte = res
-	return resp, err
+	return resp, summary, err
 }
 
 func (spider *Spider) requestErrorHandler(err error) string {
