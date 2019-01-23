@@ -145,6 +145,7 @@
             <tr>
                 <th style="width: 1px"></th>
                 <th>Project</th>
+                <th>Offline</th>
                 <th>Failure recent/all</th>
                 <th>Dispatch</th>
                 <th>Load 60s/15m</th>
@@ -159,8 +160,9 @@
                 :class="{ stop: item.stop}">
                 <td class="center">{{"{{index+1}}"}}</td>
                 <td class="center"><a :href="item.name">{{"{{item.name}}"}}</a></td>
-                <td class="center">{{"{{item.failure_period|numberFormat}}"}}
-                    / {{"{{item.failure_all|numberFormat}}"}}</td>
+                <td class="center">{{"{{((item.servers-item.server_run)/item.servers*100).toFixed(2)}}"}}%</td>
+                <td class="center">{{"{{item.failure_period|numberFormat}}"}}%
+                    / {{"{{item.failure_all|numberFormat}}"}}%</td>
                 <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
                 <td class="center">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>

@@ -120,6 +120,10 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 	for _, t := range my.InitTransport() {
 		s := spider.New(t, my.queue)
 
+		enable := s.Transport.S.Enable
+		interval := s.Transport.S.Interval
+		clientAddr := s.Transport.S.ClientAddr
+
 		//recover from
 		if recoverSpider, ok := gobEnc[s.Transport.S.ServerAddr]; ok {
 			decBuf := &bytes.Buffer{}
@@ -131,6 +135,10 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 			}
 			//s.ResetSleep()
 		}
+
+		s.Transport.S.Enable = enable
+		s.Transport.S.Interval = interval
+		s.Transport.S.ClientAddr = clientAddr
 
 		my.Spiders = append(my.Spiders, s)
 	}

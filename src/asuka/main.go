@@ -31,18 +31,19 @@ func main() {
 }
 
 func asuka() {
-	p := project.New(&project.Test{})
 
-	//cleanUp(p) //todo !!!!!!!!!
+	projects := []*project.Dispatcher{
+		project.New(&project.Test{}),
+		project.New(&project.ZhiHu{}),
+		project.New(&project.JianShu{}),
+	}
 
-	p.Run()
+	for _, p := range projects {
+		p.Run()
+		//cleanUp(p) //todo !!!!!!!!!
+	}
 
-	z := project.New(&project.ZhiHu{})
-	//cleanUp(z) //todo !!!!!!!!!
-
-	z.Run()
 	fmt.Println("Monitor: http://127.0.0.1:666")
-	projects := []*project.Dispatcher{p, z}
 
 	web.Server(projects, ":666") // http://127.0.0.1:666
 }

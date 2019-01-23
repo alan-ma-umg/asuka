@@ -55,7 +55,7 @@ func (my *JianShu) Throttle(spider *spider.Spider) {
 		spider.AddSleep(60e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 30e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 60e9))
 
 	if spider.FailureLevel > 1 {
 		jianShuResetSpider(spider)
