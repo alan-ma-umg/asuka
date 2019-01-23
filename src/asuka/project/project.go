@@ -53,13 +53,13 @@ type Project interface {
 
 type Dispatcher struct {
 	Project
-	Queue   *queue.Queue
+	queue   *queue.Queue
 	Spiders []*spider.Spider
 }
 
 func New(project Project) *Dispatcher {
 	d := &Dispatcher{Project: project}
-	d.Queue = queue.NewQueue(d.GetProjectName())
+	d.queue = queue.NewQueue(d.GetProjectName())
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
@@ -83,7 +83,7 @@ func New(project Project) *Dispatcher {
 		}
 
 		//queue, write to file
-		d.Queue.BlSave()
+		d.queue.BlSave()
 
 		fmt.Println("Spiders status saved")
 	})
@@ -96,7 +96,7 @@ func (my *Dispatcher) GetGOBKey() string {
 }
 
 func (my *Dispatcher) GetQueueKey() string {
-	return my.Queue.GetKey()
+	return my.queue.GetKey()
 }
 
 func (my *Dispatcher) GetProjectName() string {
@@ -107,11 +107,11 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 	return my.Spiders
 }
 
-func (my *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
+func (my *Dispatcher) InitSpider() []*spider.Spider {
 	gobEnc, _ := database.Redis().HGetAll(my.GetGOBKey()).Result()
 
 	for _, t := range my.InitTransport() {
-		s := spider.New(t, queue)
+		s := spider.New(t, my.queue)
 
 		//recover from
 		if recoverSpider, ok := gobEnc[s.Transport.S.ServerAddr]; ok {
@@ -160,11 +160,11 @@ func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
 func (my *Dispatcher) Run() {
 	for _, l := range my.EntryUrl() {
 		if !database.BlTestString(l) {
-			my.Queue.Enqueue(l)
+			my.queue.Enqueue(l)
 		}
 	}
 
-	for _, s := range my.InitSpider(my.Queue) {
+	for _, s := range my.InitSpider() {
 		go func(spider *spider.Spider) {
 			for {
 				Crawl(my, spider)

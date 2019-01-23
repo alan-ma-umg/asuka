@@ -53,6 +53,6 @@ func cleanUp(p *project.Dispatcher) {
 	}
 	//database.Mysql().Exec("truncate asuka_dou_ban")
 	database.Bl().ClearAll()
-	database.Redis().Del("gob_" + p.GetProjectName())
+	database.Redis().Del(p.GetGOBKey())
 	database.Redis().Del(p.GetQueueKey())
 }

@@ -581,8 +581,10 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 			TrafficOut += s.Transport.TrafficOut
 			NetIn += s.Transport.S.TrafficIn
 			NetOut += s.Transport.S.TrafficOut
+		}
 
-			for i, v := range s.Queue.BlsTestCount {
+		if len(p.GetSpiders()) > 0 {
+			for i, v := range p.GetSpiders()[0].Queue.BlsTestCount {
 				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] += v
 			}
 		}

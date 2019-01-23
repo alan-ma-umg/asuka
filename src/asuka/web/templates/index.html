@@ -160,7 +160,7 @@
             <tbody>
             <tr v-for="item,index in projects" v-on:click="goTo(item.name)" style="cursor: pointer">
                 <td class="center">{{"{{index+1}}"}}</td>
-                <td class="center">{{"{{item.name}}"}}</td>
+                <td class="center"><a :href="item.name">{{"{{item.name}}"}}</a></td>
                 <td class="center">{{"{{item.failure_period|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.failure_all|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
