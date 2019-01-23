@@ -160,10 +160,16 @@ func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
 		transports = append(transports, dt)
 	}
 
+	var repeat []string
 	for _, ssAddr := range proxy.SSLocalHandler() {
 		if !ssAddr.Enable {
 			continue
 		}
+
+		if helper.Contains(repeat, ssAddr.ServerAddr) {
+			log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+		}
+		repeat = append(repeat, ssAddr.ServerAddr)
 
 		<-ssAddr.OpenChan
 		t, err := proxy.NewTransport(ssAddr)

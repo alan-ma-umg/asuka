@@ -57,7 +57,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 			}
 			ssAddr = append(ssAddr, ss)
 
-			go func(server helper.SsServer, ss *SsAddr) {
+			go func(server *helper.SsServer, ss *SsAddr) {
 				bi := &BackendInfo{
 					Address: server.Server + ":" + server.ServerPort,
 					Type:    "ssr",

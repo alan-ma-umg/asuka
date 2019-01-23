@@ -4,7 +4,7 @@ type EnvConfig struct {
 	TemplatePath    string
 	BloomFilterPath string
 	LocalTransport  LocalTransport //using http.DefaultTransport
-	SsServers       []SsServer
+	SsServers       []*SsServer
 	Redis           Redis
 	MysqlDSN        string
 }

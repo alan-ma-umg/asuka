@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -41,6 +42,16 @@ func Env() *EnvConfig {
 		err = decoder.Decode(&envConfig)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		for _, s := range envConfig.SsServers {
+			s := reflect.ValueOf(s).Elem()
+			for i := 0; i < s.NumField(); i++ {
+				f := s.Field(i)
+				if f.Kind() == reflect.String && f.CanSet() {
+					f.SetString(strings.TrimSpace(f.Interface().(string)))
+				}
+			}
 		}
 	})
 
