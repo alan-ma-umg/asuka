@@ -240,7 +240,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="server in home.servers" :class="{warning:server.failure_level}">
+            <tr v-for="server in home.servers" :class="{warning:server.failure_level,stop: server.stop}">
                 <td class="center">{{"{{server.index+1}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
@@ -309,7 +309,7 @@
 <div class="ctrl-wrap">
     <button id="ws-page-switch" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H / R</button>
     <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
-    <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
+    <input type="text" id="send-value" placeholder="Command" value="" style="max-width: 160px">
 </div>
 <script src="/static/Chart.min.js"></script>
 <script>
@@ -481,7 +481,6 @@
         };
         ws.onopen = function () {
             sendMessage(vueContent.$data.action);
-            sendMessage(document.getElementById("send-value").value);
             document.body.className = "";
             document.title = "Asuka connected";
         };

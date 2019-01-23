@@ -145,33 +145,29 @@
             <tr>
                 <th style="width: 1px"></th>
                 <th>Project</th>
-                <th>Failure recent</th>
-                <th>Failure all</th>
+                <th>Failure recent/all</th>
                 <th>Dispatch</th>
-                <th>Load</th>
+                <th>Load 60s/15m</th>
                 <th>Pass/Sleep</th>
                 <th>Conn</th>
-                <th>HTTP In</th>
-                <th>HTTP Out</th>
-                <th>TCP In</th>
-                <th>TCP Out</th>
+                <th>HTTP I/O</th>
+                <th>TCP I/O</th>
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item,index in projects" v-on:click="goTo(item.name)" style="cursor: pointer">
+            <tr v-for="item,index in projects" v-on:click="goTo(item.name)" style="cursor: pointer"
+                :class="{ stop: item.stop}">
                 <td class="center">{{"{{index+1}}"}}</td>
                 <td class="center"><a :href="item.name">{{"{{item.name}}"}}</a></td>
-                <td class="center">{{"{{item.failure_period|numberFormat}}"}}</td>
-                <td class="center">{{"{{item.failure_all|numberFormat}}"}}</td>
+                <td class="center">{{"{{item.failure_period|numberFormat}}"}}
+                    / {{"{{item.failure_all|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
                 <td class="center">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
                 <td class="center">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
                 <td class="center">{{"{{item.connections}}"}}</td>
-                <td class="center">{{"{{item.traffic_in}}"}}</td>
-                <td class="center">{{"{{item.traffic_out}}"}}</td>
-                <td class="center">{{"{{item.net_in}}"}}</td>
-                <td class="center">{{"{{item.net_out}}"}}</td>
+                <td class="center">{{"{{item.traffic_in}}"}} / {{"{{item.traffic_out}}"}}</td>
+                <td class="center">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
             </tr>
             </tbody>
         </table>
@@ -180,7 +176,7 @@
 
 <div class="ctrl-wrap">
     <button id="ws-open-close" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On / Off</button>
-    <input type="text" id="send-value" placeholder="Command" value="1.0" style="max-width: 160px">
+    <input type="text" id="send-value" placeholder="Command" value="" style="max-width: 160px">
 </div>
 <script src="/static/Chart.min.js"></script>
 <script>
@@ -319,8 +315,7 @@
             }
         };
         ws.onopen = function () {
-            sendMessage(vueContent.$data.action);
-            sendMessage(document.getElementById("send-value").value);
+            sendMessage("");
             document.body.className = "";
             document.title = "Asuka connected";
         };

@@ -12,7 +12,6 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"math"
 	"math/rand"
 	"net/http"
 	"runtime"
@@ -150,9 +149,6 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	refreshRateMin := 0.2
-	refreshRate := refreshRateMin
-
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
@@ -177,11 +173,6 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				fmt.Println("spider start")
-			default:
-				refreshRateTemp, err := strconv.ParseFloat(string(b), 64)
-				if err == nil {
-					refreshRate = math.Max(refreshRateTemp, refreshRateMin)
-				}
 			}
 		}
 
@@ -190,7 +181,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			//log.Println("write:", err)
 			break
 		}
-		time.Sleep(time.Duration(refreshRate * 1e9))
+		time.Sleep(time.Second)
 	}
 
 }
@@ -220,8 +211,6 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	refreshRateMin := 0.2
-	refreshRate := refreshRateMin
 	responseContent := "home"
 	var recentFetchIndex int64 = 0
 
@@ -259,17 +248,12 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				responseContent = strings.TrimSpace(string(b))
 			case "recent":
 				responseContent = strings.TrimSpace(string(b))
-			default:
-				refreshRateTemp, err := strconv.ParseFloat(string(b), 64)
-				if err == nil {
-					refreshRate = math.Max(refreshRateTemp, refreshRateMin)
-				}
 			}
 		}
 
 		switch responseContent {
 		case "home":
-			err = c.WriteMessage(websocket.TextMessage, homeJson(p, responseContent))
+			err = c.WriteMessage(websocket.TextMessage, projectJson(p, responseContent))
 		case "recent":
 			jsonRes, n := recentJson(p, responseContent, recentFetchIndex)
 			recentFetchIndex = n
@@ -279,7 +263,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			//log.Println("write:", err)
 			break
 		}
-		time.Sleep(time.Duration(refreshRate * 1e9))
+		time.Sleep(time.Second)
 	}
 }
 
@@ -420,6 +404,7 @@ func indexJson() []byte {
 			failureCount += s.Transport.GetFailureCount()
 		}
 
+		projectMap["stop"] = p.Stop
 		projectMap["servers"] = serverCount
 		projectMap["server_run"] = serverRun
 		projectMap["server_enable"] = serverEnable
@@ -454,7 +439,7 @@ func indexJson() []byte {
 	return b
 }
 
-func homeJson(p *project.Dispatcher, sType string) []byte {
+func projectJson(p *project.Dispatcher, sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
@@ -485,11 +470,11 @@ func homeJson(p *project.Dispatcher, sType string) []byte {
 		loads[86400] += s.Transport.LoadRate(86400)
 		loads[86400*2] += s.Transport.LoadRate(172800)
 
+		server["enable"] = s.Transport.S.Enable
+		server["stop"] = s.Stop
 		server["loads"] = loads
-
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
-
 		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
 		server["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue))
 		server["failure_level"] = s.FailureLevel

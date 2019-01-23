@@ -55,6 +55,7 @@ type Dispatcher struct {
 	Project
 	queue   *queue.Queue
 	Spiders []*spider.Spider
+	Stop    bool
 }
 
 func New(project Project) *Dispatcher {
@@ -122,6 +123,7 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 			if err != nil {
 				log.Println(err)
 			}
+			//s.ResetSleep()
 		}
 
 		my.Spiders = append(my.Spiders, s)
@@ -167,6 +169,12 @@ func (my *Dispatcher) Run() {
 	for _, s := range my.InitSpider() {
 		go func(spider *spider.Spider) {
 			for {
+				for {
+					if !my.Stop {
+						break
+					}
+					time.Sleep(3e9)
+				}
 				Crawl(my, spider)
 			}
 		}(s)
