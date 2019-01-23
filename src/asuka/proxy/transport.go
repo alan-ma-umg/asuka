@@ -36,7 +36,7 @@ var transportList []*Transport
 
 type Transport struct {
 	S *SsAddr
-	T http.RoundTripper
+	t http.RoundTripper
 
 	countSliceMutex         sync.RWMutex
 	countSliceCursor        int
@@ -57,11 +57,11 @@ type Transport struct {
 	Ping            time.Duration
 	PingFailureRate float64
 
-	RecentFewTimesResult          []bool
+	RecentFewTimesResult []bool
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
-	instance := &Transport{S: ssAddr, T: createHttpTransport(ssAddr), LoopCount: 0}
+	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr), LoopCount: 0}
 	transportList = append(transportList, instance)
 	return instance, nil
 }
@@ -232,11 +232,13 @@ func (transport *Transport) recordFailureSecondCount() {
 
 func (transport *Transport) Reconnect() {
 	if transport.S.ServerAddr != "" {
-		transport.S.Listener.Close()
-		transport.S.CloseChan <- true
-		transport.S.ClientAddr = ""
-		transport.T.(*http.Transport).CloseIdleConnections()
+		transport.S.Close()
+		transport.t.(*http.Transport).CloseIdleConnections()
 		<-transport.S.OpenChan
 	}
-	transport.T = createHttpTransport(transport.S)
+	transport.t = createHttpTransport(transport.S)
+}
+
+func (transport *Transport) GetHttpTransport() *http.Transport {
+	return transport.t.(*http.Transport)
 }

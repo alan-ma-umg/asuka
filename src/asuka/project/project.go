@@ -51,7 +51,7 @@ type Project interface {
 type Dispatcher struct {
 	Project
 	Queue   *queue.Queue
-	spiders []*spider.Spider
+	Spiders []*spider.Spider
 }
 
 func New(project Project) *Dispatcher {
@@ -75,15 +75,15 @@ func (my *Dispatcher) GetProjectName() string {
 }
 
 func (my *Dispatcher) GetSpiders() []*spider.Spider {
-	return my.spiders
+	return my.Spiders
 }
 
 func (my *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
 	for _, t := range my.InitTransport() {
 		s := spider.New(t, queue)
-		my.spiders = append(my.spiders, s)
+		my.Spiders = append(my.Spiders, s)
 	}
-	return my.spiders
+	return my.Spiders
 }
 
 func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {

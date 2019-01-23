@@ -23,9 +23,19 @@ type SsAddr struct {
 	TrafficIn   uint64
 	TrafficOut  uint64
 	Connections int
-	Listener    net.Listener
+	listener    net.Listener
 	CloseChan   chan bool
 	OpenChan    chan bool
+}
+
+func (my *SsAddr) setListener(l net.Listener) {
+	my.listener = l
+}
+
+func (my *SsAddr) Close() {
+	my.listener.Close()
+	my.CloseChan <- true
+	my.ClientAddr = ""
 }
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
@@ -133,7 +143,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 	defer l.Close()
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
-	SocksInfo.Listener = l
+	SocksInfo.setListener(l)
 	SocksInfo.OpenChan <- true
 
 	for {

@@ -104,7 +104,7 @@ func (spider *Spider) UpdateTransport() {
 
 func (spider *Spider) updateClient() {
 	j, _ := cookiejar.New(nil)
-	spider.Client = &http.Client{Transport: spider.Transport.T, Jar: j, Timeout: time.Second * 30}
+	spider.Client = &http.Client{Transport: spider.Transport.GetHttpTransport(), Jar: j, Timeout: time.Second * 30}
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
