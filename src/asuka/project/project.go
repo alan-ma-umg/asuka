@@ -6,6 +6,9 @@ import (
 	"asuka/proxy"
 	"asuka/queue"
 	"asuka/spider"
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -60,7 +63,16 @@ func New(project Project) *Dispatcher {
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-
+		for _, sp := range d.GetSpiders() {
+			gob.Register(d.Project) //do register once
+			encBuf := &bytes.Buffer{}
+			enc := gob.NewEncoder(encBuf)
+			err := enc.Encode(sp)
+			if err != nil {
+				fmt.Println(err)
+			}
+			database.Redis().HSet("gob_"+d.GetProjectName(), sp.Transport.S.ServerAddr, encBuf.String())
+		}
 	})
 
 	return d
@@ -79,8 +91,22 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 }
 
 func (my *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
+	gobEnc, _ := database.Redis().HGetAll("gob_" + my.GetProjectName()).Result()
+
 	for _, t := range my.InitTransport() {
 		s := spider.New(t, queue)
+
+		//recover from
+		if recoverSpider, ok := gobEnc[s.Transport.S.ServerAddr]; ok {
+			decBuf := &bytes.Buffer{}
+			decBuf.WriteString(recoverSpider)
+			dec := gob.NewDecoder(decBuf)
+			err := dec.Decode(s)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
 		my.Spiders = append(my.Spiders, s)
 	}
 	return my.Spiders

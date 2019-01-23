@@ -24,7 +24,7 @@ func init() {
 		for {
 			<-s.C
 			for _, t := range transportList {
-				t.countSliceCursor++
+				t.CountSliceCursor++
 				t.recordAccessSecondCount()
 				t.recordFailureSecondCount()
 			}
@@ -39,13 +39,13 @@ type Transport struct {
 	t http.RoundTripper
 
 	countSliceMutex         sync.RWMutex
-	countSliceCursor        int
-	accessCountSecondSlice  []uint32
-	failureCountSecondSlice []uint32
-	accessCountMinuteSlice  []uint32
-	failureCountMinuteSlice []uint32
+	CountSliceCursor        int
+	AccessCountSecondSlice  []uint32
+	FailureCountSecondSlice []uint32
+	AccessCountMinuteSlice  []uint32
+	FailureCountMinuteSlice []uint32
 
-	accessCountHistory  int
+	AccessCountHistory  int
 	FailureCountHistory int
 
 	LoopCount int
@@ -98,7 +98,7 @@ func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 
 // AddAccess 每次调用请求时增加一次记录, 无论是否成功
 func (transport *Transport) AddAccess(link string) {
-	transport.accessCountHistory++
+	transport.AccessCountHistory++
 }
 
 // AddFailure 每次调用请求并失败时增加一次失败记录
@@ -107,7 +107,7 @@ func (transport *Transport) AddFailure(link string) {
 }
 
 func (transport *Transport) GetAccessCount() int {
-	return transport.accessCountHistory
+	return transport.AccessCountHistory
 }
 
 func (transport *Transport) GetFailureCount() int {
@@ -131,7 +131,7 @@ func (transport *Transport) LoadRate(second int) (rate float64) {
 
 	updateCountQueueCap(second)
 
-	sliceLen := len(transport.accessCountSecondSlice)
+	sliceLen := len(transport.AccessCountSecondSlice)
 	if sliceLen == 0 || second == 0 {
 		return
 	}
@@ -140,16 +140,16 @@ func (transport *Transport) LoadRate(second int) (rate float64) {
 
 	//SecondInterval
 	if times <= CountQueueSecondCap {
-		return float64(transport.accessCountSecondSlice[sliceLen-1]-transport.accessCountSecondSlice[helper.MaxInt(sliceLen-times-1, 0)]) / float64(times)
+		return float64(transport.AccessCountSecondSlice[sliceLen-1]-transport.AccessCountSecondSlice[helper.MaxInt(sliceLen-times-1, 0)]) / float64(times)
 	}
 
-	minuteSliceLen := len(transport.accessCountMinuteSlice)
-	minSecond := helper.MinInt(second, minuteSliceLen*MinuteInterval+transport.countSliceCursor%(MinuteInterval))
+	minuteSliceLen := len(transport.AccessCountMinuteSlice)
+	minSecond := helper.MinInt(second, minuteSliceLen*MinuteInterval+transport.CountSliceCursor%(MinuteInterval))
 	realTimeSecond := minSecond%(MinuteInterval) + MinuteInterval
-	rate += float64(transport.accessCountSecondSlice[sliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(sliceLen-realTimeSecond-1, 0)])
+	rate += float64(transport.AccessCountSecondSlice[sliceLen-1] - transport.AccessCountSecondSlice[helper.MaxInt(sliceLen-realTimeSecond-1, 0)])
 	minSecond -= realTimeSecond
 	if minSecond > 0 {
-		rate += float64(transport.accessCountMinuteSlice[minuteSliceLen-1] - transport.accessCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
+		rate += float64(transport.AccessCountMinuteSlice[minuteSliceLen-1] - transport.AccessCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
 	}
 	return rate / float64(times)
 }
@@ -164,8 +164,8 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 
 	updateCountQueueCap(second)
 
-	accessSliceLen := len(transport.accessCountSecondSlice)
-	failureSliceLen := len(transport.failureCountSecondSlice)
+	accessSliceLen := len(transport.AccessCountSecondSlice)
+	failureSliceLen := len(transport.FailureCountSecondSlice)
 
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	if times == 0 {
@@ -174,28 +174,28 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 
 	if times <= CountQueueSecondCap {
 		if accessSliceLen != 0 {
-			accessTimes = int(transport.accessCountSecondSlice[accessSliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(accessSliceLen-times-1, 0)])
+			accessTimes = int(transport.AccessCountSecondSlice[accessSliceLen-1] - transport.AccessCountSecondSlice[helper.MaxInt(accessSliceLen-times-1, 0)])
 		}
 
 		if failureSliceLen != 0 {
-			failureTimes = int(transport.failureCountSecondSlice[failureSliceLen-1] - transport.failureCountSecondSlice[helper.MaxInt(failureSliceLen-times-1, 0)])
+			failureTimes = int(transport.FailureCountSecondSlice[failureSliceLen-1] - transport.FailureCountSecondSlice[helper.MaxInt(failureSliceLen-times-1, 0)])
 		}
 		return
 	}
 
-	minuteSliceLen := len(transport.accessCountMinuteSlice) //len(transport.failureCountMinuteSlice)/
-	minSecond := helper.MinInt(second, minuteSliceLen*MinuteInterval+transport.countSliceCursor%(MinuteInterval))
+	minuteSliceLen := len(transport.AccessCountMinuteSlice) //len(transport.FailureCountMinuteSlice)/
+	minSecond := helper.MinInt(second, minuteSliceLen*MinuteInterval+transport.CountSliceCursor%(MinuteInterval))
 	realTimeSecond := minSecond%(MinuteInterval) + MinuteInterval
 	minSecond -= realTimeSecond
 
-	accessTimes += int(transport.accessCountSecondSlice[accessSliceLen-1] - transport.accessCountSecondSlice[helper.MaxInt(accessSliceLen-realTimeSecond-1, 0)])
+	accessTimes += int(transport.AccessCountSecondSlice[accessSliceLen-1] - transport.AccessCountSecondSlice[helper.MaxInt(accessSliceLen-realTimeSecond-1, 0)])
 	if minSecond > 0 {
-		accessTimes += int(transport.accessCountMinuteSlice[minuteSliceLen-1] - transport.accessCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
+		accessTimes += int(transport.AccessCountMinuteSlice[minuteSliceLen-1] - transport.AccessCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
 	}
 
-	failureTimes += int(transport.failureCountSecondSlice[accessSliceLen-1] - transport.failureCountSecondSlice[helper.MaxInt(accessSliceLen-realTimeSecond-1, 0)])
+	failureTimes += int(transport.FailureCountSecondSlice[accessSliceLen-1] - transport.FailureCountSecondSlice[helper.MaxInt(accessSliceLen-realTimeSecond-1, 0)])
 	if minSecond > 0 {
-		failureTimes += int(transport.failureCountMinuteSlice[minuteSliceLen-1] - transport.failureCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
+		failureTimes += int(transport.FailureCountMinuteSlice[minuteSliceLen-1] - transport.FailureCountMinuteSlice[minuteSliceLen-minSecond/(MinuteInterval)-1])
 	}
 
 	return
@@ -208,10 +208,10 @@ func (transport *Transport) recordAccessSecondCount() {
 	}()
 	transport.countSliceMutex.Lock()
 	//slice fifo
-	transport.accessCountSecondSlice = append(transport.accessCountSecondSlice[helper.MaxInt(len(transport.accessCountSecondSlice)-CountQueueSecondCap, 0):], uint32(transport.GetAccessCount()))
+	transport.AccessCountSecondSlice = append(transport.AccessCountSecondSlice[helper.MaxInt(len(transport.AccessCountSecondSlice)-CountQueueSecondCap, 0):], uint32(transport.GetAccessCount()))
 
-	if transport.countSliceCursor%MinuteInterval == 0 {
-		transport.accessCountMinuteSlice = append(transport.accessCountMinuteSlice[helper.MaxInt(len(transport.accessCountMinuteSlice)-CountQueueMinuteCap, 0):], transport.accessCountSecondSlice[len(transport.accessCountSecondSlice)-MinuteInterval])
+	if transport.CountSliceCursor%MinuteInterval == 0 {
+		transport.AccessCountMinuteSlice = append(transport.AccessCountMinuteSlice[helper.MaxInt(len(transport.AccessCountMinuteSlice)-CountQueueMinuteCap, 0):], transport.AccessCountSecondSlice[len(transport.AccessCountSecondSlice)-MinuteInterval])
 	}
 }
 
@@ -223,10 +223,10 @@ func (transport *Transport) recordFailureSecondCount() {
 	transport.countSliceMutex.Lock()
 
 	//slice fifo
-	transport.failureCountSecondSlice = append(transport.failureCountSecondSlice[helper.MaxInt(len(transport.failureCountSecondSlice)-CountQueueSecondCap, 0):], uint32(transport.GetFailureCount()))
+	transport.FailureCountSecondSlice = append(transport.FailureCountSecondSlice[helper.MaxInt(len(transport.FailureCountSecondSlice)-CountQueueSecondCap, 0):], uint32(transport.GetFailureCount()))
 
-	if transport.countSliceCursor%MinuteInterval == 0 {
-		transport.failureCountMinuteSlice = append(transport.failureCountMinuteSlice[helper.MaxInt(len(transport.failureCountMinuteSlice)-CountQueueMinuteCap, 0):], transport.failureCountSecondSlice[len(transport.failureCountSecondSlice)-MinuteInterval])
+	if transport.CountSliceCursor%MinuteInterval == 0 {
+		transport.FailureCountMinuteSlice = append(transport.FailureCountMinuteSlice[helper.MaxInt(len(transport.FailureCountMinuteSlice)-CountQueueMinuteCap, 0):], transport.FailureCountSecondSlice[len(transport.FailureCountSecondSlice)-MinuteInterval])
 	}
 }
 

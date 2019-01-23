@@ -29,8 +29,6 @@ import (
 	"time"
 )
 
-var StartTime = time.Now()
-
 const PeriodOfFailureSecond = 86400 / 2
 
 const RecentFetchCount = 100
@@ -70,9 +68,10 @@ type Spider struct {
 
 	FailureLevel int
 
+	StartTime        time.Time
 	RequestStartTime time.Time
 	Stop             bool
-	sleepDuration    time.Duration
+	SleepDuration    time.Duration
 
 	RequestBefore   func(spider *Spider)
 	DownloadFilter  func(spider *Spider, response *http.Response) (bool, error)
@@ -82,7 +81,7 @@ type Spider struct {
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10}
+	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now()}
 	spider.updateClient()
 	spider.registerHttpTrace()
 	spiderList = append(spiderList, spider)
@@ -91,7 +90,7 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 		if spider.CurrentRequest != nil && spider.CurrentRequest.URL != nil {
 			spider.Queue.Enqueue(spider.CurrentRequest.URL.String()) //check status & make improvement
-			fmt.Println("enqueue " + spider.CurrentRequest.URL.String())
+			//fmt.Println("enqueue " + spider.CurrentRequest.URL.String())
 		}
 	})
 	return spider
@@ -112,15 +111,15 @@ func (spider *Spider) updateClient() {
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
-	spider.sleepDuration += duration
+	spider.SleepDuration += duration
 }
 
 func (spider *Spider) GetSleep() time.Duration {
-	return spider.sleepDuration
+	return spider.SleepDuration
 }
 
 func (spider *Spider) ResetSleep() {
-	spider.sleepDuration = 0
+	spider.SleepDuration = 0
 }
 
 func (spider *Spider) Throttle() {
@@ -153,7 +152,7 @@ func (spider *Spider) Throttle() {
 		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 {
 			spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
 
-			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(StartTime).Seconds()), PeriodOfFailureSecond))
+			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(spider.StartTime).Seconds()), PeriodOfFailureSecond))
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 			if accessCountAll > 40 && failureRateAll > 95 {
 				spider.FailureLevel = 100

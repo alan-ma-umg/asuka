@@ -75,6 +75,16 @@ func commonHandle(h http.Handler) http.Handler {
 func Server(d []*project.Dispatcher, address string) {
 	dispatchers = d
 
+	//init start time
+	go func() {
+		for _, d := range dispatchers {
+			for _, sp := range d.GetSpiders() {
+				StartTime = sp.StartTime
+				return
+			}
+		}
+	}()
+
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
@@ -95,7 +105,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		GOOS: runtime.GOOS,
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +133,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -305,7 +315,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
