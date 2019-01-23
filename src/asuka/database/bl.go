@@ -2,6 +2,7 @@ package database
 
 import (
 	"asuka/helper"
+	"fmt"
 	"github.com/willf/bloom"
 	"os"
 	"sync"
@@ -22,7 +23,7 @@ func Bl() *bloom.BloomFilter {
 		// kill signal handing
 		helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 			blSave()
-			//fmt.Println("bl saved")
+			fmt.Println("bl saved")
 		})
 
 		//save

@@ -56,9 +56,8 @@ type Spider struct {
 	client    *http.Client
 	Queue     *queue.Queue
 
-	RequestsMap     map[string]*http.Request
-	currentRequest  *http.Request
-	CurrentResponse *http.Response
+	RequestsMap    map[string]*http.Request
+	currentRequest *http.Request
 
 	ResponseStr  string
 	ResponseByte []byte
@@ -85,14 +84,6 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 	spider.updateClient()
 	spider.registerHttpTrace()
 	spiderList = append(spiderList, spider)
-
-	// kill signal handing
-	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-		if spider.currentRequest != nil && spider.currentRequest.URL != nil {
-			spider.Queue.Enqueue(spider.currentRequest.URL.String()) //check status & make improvement
-			//fmt.Println("enqueue " + spider.currentRequest.URL.String())
-		}
-	})
 	return spider
 }
 

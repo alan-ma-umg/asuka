@@ -21,11 +21,6 @@ type Queue struct {
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
 
-	// kill signal handing
-	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-		q.BlSave()
-	})
-
 	go func(q *Queue) {
 		t := time.NewTicker(time.Minute * 6)
 		for {

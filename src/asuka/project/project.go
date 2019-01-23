@@ -8,6 +8,7 @@ import (
 	"asuka/spider"
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -62,6 +63,9 @@ func New(project Project) *Dispatcher {
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+
+		//spider, write to redis
+		database.Redis().Del(d.GetGOBKey())
 		for _, sp := range d.GetSpiders() {
 			gob.Register(d.Project) //do register once
 			encBuf := &bytes.Buffer{}
@@ -70,11 +74,25 @@ func New(project Project) *Dispatcher {
 			if err != nil {
 				log.Println(err)
 			}
-			database.Redis().HSet("gob_"+d.GetProjectName(), sp.Transport.S.ServerAddr, encBuf.String())
+			database.Redis().HSet(d.GetGOBKey(), sp.Transport.S.ServerAddr, encBuf.String())
+
+			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
+				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
+				fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
+			}
 		}
+
+		//queue, write to file
+		d.Queue.BlSave()
+
+		fmt.Println("Spiders status saved")
 	})
 
 	return d
+}
+
+func (my *Dispatcher) GetGOBKey() string {
+	return my.GetProjectName() + "_gob"
 }
 
 func (my *Dispatcher) GetQueueKey() string {
@@ -90,7 +108,7 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 }
 
 func (my *Dispatcher) InitSpider(queue *queue.Queue) []*spider.Spider {
-	gobEnc, _ := database.Redis().HGetAll("gob_" + my.GetProjectName()).Result()
+	gobEnc, _ := database.Redis().HGetAll(my.GetGOBKey()).Result()
 
 	for _, t := range my.InitTransport() {
 		s := spider.New(t, queue)
