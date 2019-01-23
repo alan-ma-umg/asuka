@@ -177,7 +177,7 @@ func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
 	return
 }
 
-func (my *Dispatcher) Run() {
+func (my *Dispatcher) Run() *Dispatcher {
 	for _, l := range my.EntryUrl() {
 		if !database.BlTestString(l) {
 			my.queue.Enqueue(l)
@@ -215,6 +215,8 @@ func (my *Dispatcher) Run() {
 			}
 		}(s)
 	}
+
+	return my
 }
 
 func Crawl(project *Dispatcher, spider *spider.Spider) {
