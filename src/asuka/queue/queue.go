@@ -3,7 +3,6 @@ package queue
 import (
 	"asuka/database"
 	"asuka/helper"
-	"fmt"
 	"github.com/willf/bloom"
 	"log"
 	"os"
@@ -25,7 +24,6 @@ func NewQueue(name string) (q *Queue) {
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 		q.BlSave()
-		fmt.Println(q.name + " bls saved")
 	})
 
 	go func(q *Queue) {

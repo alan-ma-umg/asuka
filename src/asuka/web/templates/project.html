@@ -17,11 +17,14 @@
      id="vue-content">
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
-            <div>
-                <h1><a href="/">{{"{{basic.mem_sys}}"}}</a></h1>
+            <div style="float:right">
+                <h1>{{"{{basic.mem_sys}}"}}</h1>
                 <small>System memory usage</small>
             </div>
-
+            <div>
+                <h1><a href="/">{{.ProjectName}}</a></h1>
+                <small>Project</small>
+            </div>
             <br>
             <table>
                 <tbody>

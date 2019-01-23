@@ -67,13 +67,13 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 
 func (my *ZhiHu) RequestBefore(spider *spider.Spider) {
 	//accept
-	if spider.CurrentRequest != nil {
-		spider.CurrentRequest.Header.Set("Accept", "text/html")
+	if spider.CurrentRequest() != nil {
+		spider.CurrentRequest().Header.Set("Accept", "text/html")
 	}
 
 	//Referer
-	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" && my.lastRequestUrl != "" {
-		spider.CurrentRequest.Header.Set("Referer", my.lastRequestUrl)
+	if spider.CurrentRequest() != nil && spider.CurrentRequest().Referer() == "" && my.lastRequestUrl != "" {
+		spider.CurrentRequest().Header.Set("Referer", my.lastRequestUrl)
 	}
 
 	spider.Client().Timeout = 10 * time.Second
@@ -146,7 +146,7 @@ func PageHtml(n *html.Node, title, watch, view *string, tag *[]string) {
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
-	my.lastRequestUrl = spider.CurrentRequest.URL.String()
+	my.lastRequestUrl = spider.CurrentRequest().URL.String()
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
 	if err != nil {
 		return
@@ -162,10 +162,10 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 
 	//2019/01/14 16:41:03 zhihu.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
 	_, err = database.Mysql().Insert(&AsukaZhiHu{
-		Url:      spider.CurrentRequest.URL.String(),
-		Referer:  spider.CurrentRequest.Referer(),                                                  //todo only test
-		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest.Header.Get("cookie")), 2000, ""), //todo only test
-		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest.URL.String()))),
+		Url:      spider.CurrentRequest().URL.String(),
+		Referer:  spider.CurrentRequest().Referer(),                                                  //todo only test
+		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest().Header.Get("cookie")), 2000, ""), //todo only test
+		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest().URL.String()))),
 		Title:    title,
 		Tag:      tag,
 		Data: map[string]interface{}{
@@ -176,7 +176,7 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 		},
 	})
 	if err != nil {
-		log.Println(spider.CurrentRequest.URL.String(), err)
+		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }
 

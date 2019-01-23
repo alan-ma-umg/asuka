@@ -36,8 +36,8 @@ func (my *Test) Throttle(spider *spider.Spider) {
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
 	//Referer
-	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" {
-		spider.CurrentRequest.Header.Set("Referer", my.EntryUrl()[0])
+	if spider.CurrentRequest() != nil && spider.CurrentRequest().Referer() == "" {
+		spider.CurrentRequest().Header.Set("Referer", my.EntryUrl()[0])
 	}
 
 	spider.Client().Timeout = time.Second * 10

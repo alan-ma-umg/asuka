@@ -52,8 +52,8 @@ func (my *Www) Throttle(spider *spider.Spider) {
 }
 
 func (my *Www) RequestBefore(spider *spider.Spider) {
-	if spider.CurrentRequest != nil {
-		spider.CurrentRequest.Header.Set("Accept", "text/html")
+	if spider.CurrentRequest() != nil {
+		spider.CurrentRequest().Header.Set("Accept", "text/html")
 	}
 
 	spider.Client().Timeout = 4 * time.Second
@@ -100,7 +100,7 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 	_, err = database.Mysql().Insert(&AsukaWww{
-		Url: spider.CurrentRequest.URL.String(),
+		Url: spider.CurrentRequest().URL.String(),
 		Data: map[string]interface{}{
 			"title":  title,
 			"server": spider.Transport.S.ServerAddr,
@@ -108,7 +108,7 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 		},
 	})
 	if err != nil {
-		log.Println(spider.CurrentRequest.URL.String(), err)
+		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }
 

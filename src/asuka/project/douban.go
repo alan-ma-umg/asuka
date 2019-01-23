@@ -89,13 +89,13 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 
 func (my *DouBan) RequestBefore(spider *spider.Spider) {
 	//accept
-	if spider.CurrentRequest != nil {
-		spider.CurrentRequest.Header.Set("Accept", "text/html")
+	if spider.CurrentRequest() != nil {
+		spider.CurrentRequest().Header.Set("Accept", "text/html")
 	}
 
 	//Referer
-	if spider.CurrentRequest != nil && spider.CurrentRequest.Referer() == "" && my.lastRequestUrl != "" {
-		spider.CurrentRequest.Header.Set("Referer", my.lastRequestUrl)
+	if spider.CurrentRequest() != nil && spider.CurrentRequest().Referer() == "" && my.lastRequestUrl != "" {
+		spider.CurrentRequest().Header.Set("Referer", my.lastRequestUrl)
 	}
 
 	spider.Client().Timeout = 20 * time.Second
@@ -462,7 +462,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
-	my.lastRequestUrl = spider.CurrentRequest.URL.String()
+	my.lastRequestUrl = spider.CurrentRequest().URL.String()
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
 	if err != nil {
 		return
@@ -470,23 +470,23 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 
 	model := &AsukaDouBan{
 		//DouBanID: int64(douBanId),
-		Url:      spider.CurrentRequest.URL.String(),
-		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest.URL.String()))),
+		Url:      spider.CurrentRequest().URL.String(),
+		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest().URL.String()))),
 	}
 
-	if paths := strings.Split(spider.CurrentRequest.URL.Path, "/"); len(paths) > 2 {
+	if paths := strings.Split(spider.CurrentRequest().URL.Path, "/"); len(paths) > 2 {
 		model.DouBanId, _ = strconv.ParseInt(paths[2], 0, 64)
 	}
 
-	if strings.HasPrefix(spider.CurrentRequest.URL.String(), "https://movie.douban.com") {
+	if strings.HasPrefix(spider.CurrentRequest().URL.String(), "https://movie.douban.com") {
 		model.Cate = "电影"
 	}
-	if strings.HasPrefix(spider.CurrentRequest.URL.String(), "https://book.douban.com") {
+	if strings.HasPrefix(spider.CurrentRequest().URL.String(), "https://book.douban.com") {
 		model.Cate = "图书"
 	}
 
 	//only douBan subject url
-	if isDouBanSubject(strings.ToLower(spider.CurrentRequest.URL.String())) {
+	if isDouBanSubject(strings.ToLower(spider.CurrentRequest().URL.String())) {
 		DouBanPageHtml(node, model)
 		if model.Title == "" {
 			return
@@ -498,7 +498,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 
 	_, err = database.Mysql().Insert(model)
 	if err != nil {
-		log.Println(spider.CurrentRequest.URL.String(), err)
+		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }
 

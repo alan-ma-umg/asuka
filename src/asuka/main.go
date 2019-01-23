@@ -32,11 +32,14 @@ func main() {
 
 func asuka() {
 	p := project.New(&project.Test{})
-	p.Run()
 
 	//cleanUp(p) //todo !!!!!!!!!
 
+	p.Run()
+
 	z := project.New(&project.ZhiHu{})
+	//cleanUp(z) //todo !!!!!!!!!
+
 	z.Run()
 	fmt.Println("Monitor: http://127.0.0.1:666")
 	projects := []*project.Dispatcher{p, z}
@@ -50,5 +53,6 @@ func cleanUp(p *project.Dispatcher) {
 	}
 	//database.Mysql().Exec("truncate asuka_dou_ban")
 	database.Bl().ClearAll()
+	database.Redis().Del("gob_" + p.GetProjectName())
 	database.Redis().Del(p.GetQueueKey())
 }

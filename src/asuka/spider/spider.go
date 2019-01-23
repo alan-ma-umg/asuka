@@ -57,7 +57,7 @@ type Spider struct {
 	Queue     *queue.Queue
 
 	RequestsMap     map[string]*http.Request
-	CurrentRequest  *http.Request
+	currentRequest  *http.Request
 	CurrentResponse *http.Response
 
 	ResponseStr  string
@@ -88,9 +88,9 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-		if spider.CurrentRequest != nil && spider.CurrentRequest.URL != nil {
-			spider.Queue.Enqueue(spider.CurrentRequest.URL.String()) //check status & make improvement
-			//fmt.Println("enqueue " + spider.CurrentRequest.URL.String())
+		if spider.currentRequest != nil && spider.currentRequest.URL != nil {
+			spider.Queue.Enqueue(spider.currentRequest.URL.String()) //check status & make improvement
+			//fmt.Println("enqueue " + spider.currentRequest.URL.String())
 		}
 	})
 	return spider
@@ -99,6 +99,10 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 func (spider *Spider) UpdateTransport() {
 	spider.Transport.Reconnect()
 	spider.updateClient()
+}
+
+func (spider *Spider) CurrentRequest() *http.Request {
+	return spider.currentRequest
 }
 
 func (spider *Spider) Client() *http.Client {
@@ -197,7 +201,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	r, ok := spider.RequestsMap[tld]
 	if ok {
 		r.URL = url
-		spider.CurrentRequest = r
+		spider.currentRequest = r
 	} else {
 		r, err = http.NewRequest("GET", url.String(), nil)
 		if err != nil {
@@ -209,28 +213,28 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 			r.Header.Set("Accept-Encoding", "gzip")
 		}
 
-		spider.CurrentRequest = r
+		spider.currentRequest = r
 		spider.RequestsMap[tld] = r
 	}
 
-	//spider.CurrentRequest.Close = true // prevents re-use of TCP connections between requests to the same hosts
+	//spider.currentRequest.Close = true // prevents re-use of TCP connections between requests to the same hosts
 
 	if header != nil {
 		for k := range *header {
-			spider.CurrentRequest.Header.Set(k, header.Get(k))
+			spider.currentRequest.Header.Set(k, header.Get(k))
 		}
 	}
 
-	if spider.CurrentRequest.UserAgent() == "" {
-		spider.CurrentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
+	if spider.currentRequest.UserAgent() == "" {
+		spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 	}
 
-	spider.CurrentRequest = spider.CurrentRequest.WithContext(httptrace.WithClientTrace(spider.CurrentRequest.Context(), spider.httpTrace))
+	spider.currentRequest = spider.currentRequest.WithContext(httptrace.WithClientTrace(spider.currentRequest.Context(), spider.httpTrace))
 	return spider
 }
 
 func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
-	spider.SetRequest(u, nil) //setting spider.CurrentRequest
+	spider.SetRequest(u, nil) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
 		spider.RequestBefore(spider)
@@ -242,18 +246,18 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 	//time
 	spider.RequestStartTime = time.Now()
 
-	recentFetch := &RecentFetch{RawUrl: spider.CurrentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
+	recentFetch := &RecentFetch{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
 
-	spider.Transport.AddAccess(spider.CurrentRequest.URL.String())
+	spider.Transport.AddAccess(spider.currentRequest.URL.String())
 
 	defer func() {
 		if err != nil {
-			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
+			spider.Transport.AddFailure(spider.currentRequest.URL.String())
 		}
 
 		if spider.FailureLevel == 0 && recentFetch.StatusCode != 0 && recentFetch.StatusCode != 200 {
 			spider.FailureLevel = 10
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		}
 
 		//A few times result of http request
@@ -280,13 +284,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 		//recover
 		if r := recover(); r != nil {
-			spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
+			spider.Transport.AddFailure(spider.currentRequest.URL.String())
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
 		}
 	}()
 
 	//traffic
-	dump, err := httputil.DumpRequestOut(spider.CurrentRequest, true)
+	dump, err := httputil.DumpRequestOut(spider.currentRequest, true)
 	recentFetch.ErrType = spider.requestErrorHandler(err)
 	spider.Transport.TrafficOut += uint64(len(dump))
 	//for localhost
@@ -294,7 +298,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 		spider.Transport.S.TrafficOut += uint64(len(dump))
 	}
 
-	resp, err = spider.client.Do(spider.CurrentRequest)
+	resp, err = spider.client.Do(spider.currentRequest)
 	if err != nil {
 		recentFetch.ErrType = spider.requestErrorHandler(err)
 		return resp, err
@@ -359,7 +363,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, err error) {
 
 	//http status
 	if resp.StatusCode != 200 && err == nil {
-		spider.Transport.AddFailure(spider.CurrentRequest.URL.String())
+		spider.Transport.AddFailure(spider.currentRequest.URL.String())
 	}
 
 	spider.ResponseStr = string(res[:])
@@ -384,31 +388,31 @@ func (spider *Spider) requestErrorHandler(err error) string {
 	case *x509.HostnameError:
 		return "x509.HostnameError"
 	case *net.DNSConfigError:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		return "x509.DNSConfigError"
 	case *net.DNSError:
 		return "net.DNSError"
 	case *net.OpError:
-		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Request *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
 		if err.(net.Error).Timeout() {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 4)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 4)
 			return "net.Timeout"
 		}
 		if io.EOF == err {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "io.EOF"
 		}
 		if io.ErrUnexpectedEOF == err {
 			return "io.ErrUnexpectedEOF"
 		}
 		if strings.Contains(err.Error(), "transport connection broken") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 			return "connection broken"
 		}
 		if strings.Contains(err.Error(), "unexpected EOF") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "unexpected EOF"
 		}
 		if strings.Contains(err.Error(), "x509: certificate") {
@@ -418,19 +422,19 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "no such host"
 		}
 		if strings.Contains(err.Error(), ": EOF") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "other EOF"
 		}
 		if strings.Contains(err.Error(), "connection reset by peer") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "reset by peer"
 		}
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		// Get ..... :read ...
-		//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	case *url.Error:
-		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "url.Error"
 	default:
 		if strings.HasPrefix(err.Error(), "invalid URL") {
@@ -440,9 +444,9 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "no Host"
 		}
 
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		spider.FailureLevel = 10
-		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Request Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	}
 }
@@ -458,62 +462,62 @@ func (spider *Spider) responseErrorHandler(err error) string {
 
 	switch err.(type) {
 	case *net.OpError:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
-		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 4)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 4)
 		if err.(net.Error).Timeout() {
 			return "net.Timeout"
 		}
-		log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Response net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.Error"
 	case *url.Error:
-		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "url.Error"
 	case tls.RecordHeaderError:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
-		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "tls.RecordHeaderError"
 	case flate.CorruptInputError:
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
-		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "flate.CorruptInputError"
 	default:
 		if strings.HasPrefix(err.Error(), "malformed chunked encoding") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 2)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 			return "chunked encoding"
 		}
 		if strings.HasPrefix(err.Error(), "invalid URL") {
 			return "invalid URL"
 		}
 		if strings.HasPrefix(err.Error(), "http: unexpected EOF reading trailer") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "unexpected EOF reading trailer"
 		}
 		if strings.HasPrefix(err.Error(), "http:  reading trailer") {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "http.reading trailer"
 		}
 		if gzip.ErrHeader == err {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
 			return "gzip.ErrHeader"
 		}
 		if gzip.ErrChecksum == err {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 1)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
 			return "gzip.ErrChecksum"
 		}
 		if io.EOF == err {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "io.EOF"
 		}
 		if io.ErrUnexpectedEOF == err {
-			spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "io.ErrUnexpectedEOF"
 		}
 
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest.URL.String(), 3)
-		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.CurrentRequest.URL.String())
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
+		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	}
 }
@@ -548,7 +552,7 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 							continue
 						}
 						u.Fragment = "" //remove anchor
-						addUrl := spider.CurrentRequest.URL.ResolveReference(u)
+						addUrl := spider.currentRequest.URL.ResolveReference(u)
 						addUrl.Fragment = "" //remove anchor
 						if addUrl.Scheme != "http" && addUrl.Scheme != "https" {
 							continue
@@ -625,7 +629,7 @@ func (spider *Spider) registerHttpTrace() {
 
 		// DNSDone is called when a DNS lookup ends.
 		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
-			//log.Println(spider.CurrentRequest.URL.String(), dnsInfo)
+			//log.Println(spider.currentRequest.URL.String(), dnsInfo)
 		},
 
 		// ConnectStart is called when a new connection's Dial begins.
