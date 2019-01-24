@@ -58,6 +58,7 @@ func (my *Www) EntryUrl() []string {
 
 // frequency
 func (my *Www) Throttle(spider *spider.Spider) {
+	spider.RecentSeveralTimesResultCap = 20
 	if spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(60e9)
 	}

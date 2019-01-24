@@ -30,8 +30,6 @@ import (
 
 const PeriodOfFailureSecond = 86400 / 2
 
-const RecentSeveralTimesResultCap = 5
-
 type Summary struct {
 	Index         int64
 	TransportName string
@@ -69,11 +67,12 @@ type Spider struct {
 	DownloadFilter  func(spider *Spider, response *http.Response) (bool, error)
 	ProjectThrottle func(spider *Spider)
 
-	httpTrace *httptrace.ClientTrace
+	httpTrace                   *httptrace.ClientTrace
+	RecentSeveralTimesResultCap int
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now()}
+	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
 	spider.updateClient()
 	spider.registerHttpTrace()
 	return spider
@@ -128,16 +127,16 @@ func (spider *Spider) Throttle() {
 	}
 
 	//Failure control
-	if len(spider.Transport.RecentFewTimesResult) >= RecentSeveralTimesResultCap {
-		spider.Transport.RecentFewTimesResult = spider.Transport.RecentFewTimesResult[len(spider.Transport.RecentFewTimesResult)-RecentSeveralTimesResultCap:]
+	if len(spider.Transport.RecentFewTimesResult) >= spider.RecentSeveralTimesResultCap {
+		spider.Transport.RecentFewTimesResult = spider.Transport.RecentFewTimesResult[len(spider.Transport.RecentFewTimesResult)-spider.RecentSeveralTimesResultCap:]
 		failCount := 0
 		for _, v := range spider.Transport.RecentFewTimesResult {
 			if !v {
 				failCount++
 			}
 		}
-		if float64(failCount)/float64(RecentSeveralTimesResultCap) >= 0.4 {
-			spider.Transport.RecentFewTimesResult = make([]bool, 0, RecentSeveralTimesResultCap)
+		if float64(failCount)/float64(spider.RecentSeveralTimesResultCap) >= 0.4 {
+			spider.Transport.RecentFewTimesResult = make([]bool, 0, spider.RecentSeveralTimesResultCap)
 
 			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(spider.StartTime).Seconds()), PeriodOfFailureSecond))
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
