@@ -170,7 +170,6 @@ input, button {
     -webkit-appearance: none;
     border-radius: 2px;
     border: 1px solid #ccc;
-
 }
 
 .btn-sm, .inp-sm {
@@ -182,8 +181,9 @@ input, button {
     padding: 6px 14px;
 }
 
-button{
+button {
     cursor: pointer;
+    border: none;
 }
 
 li {
@@ -253,6 +253,14 @@ tr:hover {
 
 .danger {
     background: rgb(255, 240, 240) !important;
+}
+
+.red {
+    background: rgb(255, 66, 34) !important;
+}
+
+.green {
+    background: #00af4c !important;
 }
 
 .stop {
