@@ -203,22 +203,22 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}(s)
 
 		//ping
-		go func(s *spider.Spider) {
-			ipAddr, _ := lookIp(s.Transport.S.ServerAddr)
-			for {
-				if ipAddr == nil {
-					time.Sleep(time.Minute)
-					ipAddr, _ = lookIp(s.Transport.S.ServerAddr)
-				} else {
-					times := 5
-					rtt, fail := helper.Ping(ipAddr, times)
-					s.Transport.Ping = (rtt + s.Transport.Ping) / 2
-					s.Transport.PingFailureRate = ((float64(fail) / float64(times)) + s.Transport.PingFailureRate) / 2
-				}
-
-				time.Sleep(5 * time.Second)
-			}
-		}(s)
+		//go func(s *spider.Spider) {
+		//	ipAddr, _ := lookIp(s.Transport.S.ServerAddr)
+		//	for {
+		//		if ipAddr == nil {
+		//			time.Sleep(time.Minute)
+		//			ipAddr, _ = lookIp(s.Transport.S.ServerAddr)
+		//		} else {
+		//			times := 5
+		//			rtt, fail := helper.Ping(ipAddr, times)
+		//			s.Transport.Ping = (rtt + s.Transport.Ping) / 2
+		//			s.Transport.PingFailureRate = ((float64(fail) / float64(times)) + s.Transport.PingFailureRate) / 2
+		//		}
+		//
+		//		time.Sleep(5 * time.Second)
+		//	}
+		//}(s)
 	}
 
 	return my
