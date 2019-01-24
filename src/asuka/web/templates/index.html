@@ -158,23 +158,24 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item,index in projects" v-on:click="goTo(item.name)" style="cursor: pointer"
+            <tr v-for="item,index in projects" style="cursor: pointer"
                 :class="{ stop: item.stop}">
-                <td class="center">{{"{{index+1}}"}}</td>
-                <td class="center"><a :href="item.name">{{"{{item.name}}"}}</a></td>
-                <td class="center">{{"{{((item.servers-item.server_run)/item.servers*100).toFixed(2)}}"}}%</td>
-                <td class="center">{{"{{item.failure_period|numberFormat}}"}}%
+                <td class="center" v-on:click="goTo(item.name)">{{"{{index+1}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)"><a :href="item.name">{{"{{item.name}}"}}</a></td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{((item.servers-item.server_run)/item.servers*100).toFixed(2)}}"}}%</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.failure_period|numberFormat}}"}}%
                     / {{"{{item.failure_all|numberFormat}}"}}%
                 </td>
-                <td class="center">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
-                <td class="center">{{"{{item.loads['60']|numberFormat}}"}}
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
-                <td class="center">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
-                <td class="center">{{"{{item.connections}}"}}</td>
-                <td class="center">{{"{{item.traffic_in}}"}} / {{"{{item.traffic_out}}"}}</td>
-                <td class="center">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.connections}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}} / {{"{{item.traffic_out}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
                 <td class="right">
-                    <button class="btn-sm" v-on:click.stop.prevent="switchProject(item.name)">{{"{{item.stop?'start':'stop'}}"}}</button>
+                    <button class="btn-sm"
+                            v-on:click.stop.prevent="switchProject(item.name)">{{"{{item.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>
             </tbody>
@@ -202,16 +203,8 @@
             goTo: function (name) {
                 location.href = "/" + name
             },
-            switchProject: function (projectName) {
-                axios.post('/switch', {
-                    projectName: projectName,
-                })
-                    .then(function (response) {
-                        console.log(response.data);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+            switchProject: function (name) {
+                axios.post('/switchProject', {name: name,});
             }
         },
         computed: {

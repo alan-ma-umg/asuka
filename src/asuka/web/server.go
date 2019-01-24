@@ -88,7 +88,8 @@ func Server(d []*project.Dispatcher, address string) {
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
-	http.HandleFunc("/switch", commonHandleFunc(switchProject))
+	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
+	http.HandleFunc("/switchServer", commonHandleFunc(switchServer))
 	http.HandleFunc("/forever/", forever)
 	http.HandleFunc("/", commonHandleFunc(home))
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -97,6 +98,45 @@ func Server(d []*project.Dispatcher, address string) {
 	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir(helper.Env().TemplatePath+"static")))))
 
 	log.Fatal(http.ListenAndServe(address, nil))
+}
+
+func switchServer(w http.ResponseWriter, r *http.Request) {
+	post := make(map[string]string)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&post)
+	if err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+
+	if _, ok := post["name"]; !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	if _, ok := post["project"]; !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	s := searchSpider(post["project"], post["name"])
+	if s == nil {
+		http.NotFound(w, r)
+		return
+	}
+	s.Stop = !s.Stop
+
+	jsonMap := map[string]interface{}{
+		"success": true,
+		"data":    post["name"],
+	}
+
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	w.Header().Set("Content-type", "application/json")
+	io.WriteString(w, string(b))
 }
 
 func switchProject(w http.ResponseWriter, r *http.Request) {
@@ -108,12 +148,12 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := post["projectName"]; !ok {
+	if _, ok := post["name"]; !ok {
 		http.NotFound(w, r)
 		return
 	}
 
-	p := getProjectByName(post["projectName"])
+	p := getProjectByName(post["name"])
 	if p == nil {
 		http.NotFound(w, r)
 		return
@@ -123,7 +163,7 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 
 	jsonMap := map[string]interface{}{
 		"success": true,
-		"data":    post["projectName"],
+		"data":    post["name"],
 	}
 
 	b, err := json.Marshal(jsonMap)
@@ -661,6 +701,20 @@ func getProjectByName(name string) *project.Dispatcher {
 	for _, e := range dispatchers {
 		if e.GetProjectName() == name {
 			return e
+		}
+	}
+	return nil
+}
+
+func searchSpider(projectName string, serverName string) *spider.Spider {
+	for _, e := range dispatchers {
+		if e.GetProjectName() == projectName {
+			for _, e := range e.GetSpiders() {
+				if e.Transport.S.Name == serverName {
+					return e
+				}
+			}
+			return nil
 		}
 	}
 	return nil
