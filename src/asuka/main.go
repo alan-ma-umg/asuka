@@ -33,9 +33,9 @@ func asuka() {
 
 	web.Server([]*project.Dispatcher{
 		//project.New(&project.DouBan{}).Run(),
-		project.New(&project.Test{}).Run(),
-		project.New(&project.ZhiHu{}).Run(),
-		project.New(&project.JianShu{}).Run(),
+		project.New(&project.Test{}).CleanUp().Run(),
+		project.New(&project.ZhiHu{}).CleanUp().Run(),
+		project.New(&project.JianShu{}).CleanUp().Run(),
 		project.New(&project.Www{}).CleanUp().Run(),
 
 		//project.New(&project.Test{}).CleanUp().Run(),
