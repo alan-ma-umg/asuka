@@ -123,7 +123,7 @@ func (spider *Spider) Throttle() {
 		spider.AddSleep(time.Second)
 	}
 	if spider.FailureLevel > 1 {
-		spider.AddSleep(time.Minute)
+		spider.AddSleep(time.Second * 30)
 	}
 
 	//Failure control
