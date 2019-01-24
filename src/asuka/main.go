@@ -34,8 +34,8 @@ func asuka() {
 	projects := []*project.Dispatcher{
 		project.New(&project.DouBan{}),
 		project.New(&project.Test{}),
-		project.New(&project.ZhiHu{}),
-		project.New(&project.JianShu{}),
+		//project.New(&project.ZhiHu{}),
+		//project.New(&project.JianShu{}),
 	}
 
 	for _, p := range projects {
