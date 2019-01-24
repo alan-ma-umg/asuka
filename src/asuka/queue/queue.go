@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type Queue struct {
@@ -20,14 +19,6 @@ type Queue struct {
 
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
-
-	go func(q *Queue) {
-		t := time.NewTicker(time.Minute * 6)
-		for {
-			<-t.C
-			q.BlSave()
-		}
-	}(q)
 	return
 }
 

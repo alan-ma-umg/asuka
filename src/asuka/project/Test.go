@@ -1,15 +1,19 @@
 package project
 
 import (
+	"asuka/database"
+	"asuka/helper"
 	"asuka/spider"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 )
 
 type Test struct {
+	queueUrlLen int64
 }
 
 func (my *Test) EntryUrl() []string {
@@ -19,20 +23,23 @@ func (my *Test) EntryUrl() []string {
 		links = append(links, "http://hk.flysay.com:888/")
 	}
 
+	go func() {
+		t := time.NewTicker(time.Second * 5)
+		for {
+			<-t.C
+			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+		}
+	}()
+
 	return links
 }
 
 // frequency
 func (my *Test) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 2e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
-	//Referer
-	if spider.CurrentRequest() != nil && spider.CurrentRequest().Referer() == "" {
-		spider.CurrentRequest().Header.Set("Referer", my.EntryUrl()[0])
-	}
-
 	spider.Client().Timeout = time.Second * 10
 }
 
@@ -49,11 +56,14 @@ func (my *Test) DownloadFilter(spider *spider.Spider, response *http.Response) (
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *Test) ResponseSuccess(spider *spider.Spider) {
-
 }
 
 // queue
 func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
+	if my.queueUrlLen > 20000 {
+		return ""
+	}
+
 	return l.String()
 }
 

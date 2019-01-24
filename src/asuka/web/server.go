@@ -181,7 +181,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		GOOS: runtime.GOOS,
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +209,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -376,7 +376,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.GetProjectName(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -565,7 +565,11 @@ func projectJson(p *project.Dispatcher, sType string) []byte {
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
 		server["name"] = s.Transport.S.Name
-		server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
+		if s.Transport.Ping == 0 {
+			server["ping"] = "-"
+		} else {
+			server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
+		}
 		server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
 		server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
 		server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)

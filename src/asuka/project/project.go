@@ -122,6 +122,9 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 }
 
 func (my *Dispatcher) InitSpider() []*spider.Spider {
+	defer func() {
+		database.Redis().Del(my.GetGOBKey())
+	}()
 	gobEnc, _ := database.Redis().HGetAll(my.GetGOBKey()).Result()
 
 	for _, t := range my.InitTransport() {
@@ -209,13 +212,13 @@ func (my *Dispatcher) Run() *Dispatcher {
 					time.Sleep(time.Minute)
 					ipAddr, _ = lookIp(s.Transport.S.ServerAddr)
 				} else {
-					times := 3
+					times := 5
 					rtt, fail := helper.Ping(ipAddr, times)
-					s.Transport.Ping = rtt
-					s.Transport.PingFailureRate = float64(fail) / float64(times)
+					s.Transport.Ping = (rtt + s.Transport.Ping) / 2
+					s.Transport.PingFailureRate = ((float64(fail) / float64(times)) + s.Transport.PingFailureRate) / 2
 				}
 
-				time.Sleep(7 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}(s)
 	}
@@ -294,13 +297,15 @@ func Crawl(project *Dispatcher, spider *spider.Spider) {
 			enqueueUrl = l.String()
 		}
 
-		if enqueueUrl != "" && database.BlTestAndAddString(enqueueUrl) {
+		if enqueueUrl == "" {
 			continue
 		}
 
-		if enqueueUrl != "" {
-			spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
+		if database.BlTestAndAddString(enqueueUrl) {
+			continue
 		}
+
+		spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
 	}
 }
 

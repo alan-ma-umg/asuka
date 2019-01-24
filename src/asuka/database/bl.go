@@ -6,7 +6,6 @@ import (
 	"github.com/willf/bloom"
 	"os"
 	"sync"
-	"time"
 )
 
 var bloomFilterOnce sync.Once
@@ -25,15 +24,6 @@ func Bl() *bloom.BloomFilter {
 			blSave()
 			fmt.Println("bl saved")
 		})
-
-		//save
-		go func() {
-			t := time.NewTicker(time.Minute * 5)
-			for {
-				<-t.C
-				blSave()
-			}
-		}()
 	})
 	return bloomFilterInstance
 }
