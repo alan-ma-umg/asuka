@@ -15,8 +15,6 @@ echo 'Rebuild Asuka!'
 go build asuka
 
 echo 'Now, Asuka is alive .'
-nohup ./asuka env.json &
-
-sleep 1
+nohup ./asuka env.json > asuka.out 2>&1 &
 
 htop
