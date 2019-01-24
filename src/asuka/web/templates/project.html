@@ -48,14 +48,14 @@
                         Servers
                     </td>
                     <td>
-                        <strong>{{"{{home.servers.length}}"}}</strong>
+                        <strong>{{"{{basic.server_enable}}"}}</strong>
                     </td>
                     <td>
                         Server offline
                     </td>
                     <td>
                         <strong>
-                            {{"{{home.servers.length?((home.servers.length-serverRunning)/home.servers.length*100).toFixed(2):0}}"}}
+                            {{"{{basic.server_enable?((basic.server_enable-basic.server_run)/basic.server_enable*100).toFixed(2):0}}"}}
                             %
                         </strong>
                     </td>
@@ -379,6 +379,9 @@
         },
         filters: {
             numberFormat: function (v) {
+                if (v === undefined) {
+                    return "0"
+                }
                 return new Intl.NumberFormat().format(v)
             },
             urlTruncate: function (str) {
@@ -409,7 +412,9 @@
     function total(data, field) {
         let total = 0;
         for (item of data) {
-            total += parseFloat(item[field], 10)
+            if (item[field] !== "undefined") {
+                total += parseFloat(item[field], 10)
+            }
         }
         return total;
     }

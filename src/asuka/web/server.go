@@ -464,12 +464,12 @@ func indexJson() []byte {
 				waiting += time.Since(s.RequestStartTime)
 			}
 			serverCount++
-			if s.Transport.S.Enable {
+			if !s.Stop {
 				serverEnable++
-			}
 
-			if s.FailureLevel == 0 {
-				serverRun++
+				if s.FailureLevel == 0 {
+					serverRun++
+				}
 			}
 
 			TrafficIn += s.Transport.TrafficIn
@@ -486,15 +486,22 @@ func indexJson() []byte {
 		projectMap["server_run"] = serverRun
 		projectMap["server_enable"] = serverEnable
 
-		projectMap["sleep"] = (sleepDuration / time.Duration(len(p.GetSpiders()))).Truncate(time.Millisecond).String()
 		projectMap["waiting"] = "0s"
-		if waiting != 0 {
-			projectMap["waiting"] = (waiting / time.Duration(len(p.GetSpiders()))).Truncate(time.Millisecond).String()
+		projectMap["sleep"] = "0s"
+		if serverEnable > 0 {
+			projectMap["sleep"] = (sleepDuration / time.Duration(serverEnable)).Truncate(time.Millisecond).String()
+			if waiting != 0 {
+				projectMap["waiting"] = (waiting / time.Duration(serverEnable)).Truncate(time.Millisecond).String()
+			}
 		}
-		projectMap["failure_period"] = failureRatePeriodValue / float64(len(p.GetSpiders()))
-		projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue/float64(len(p.GetSpiders()))))
-		projectMap["failure_all"] = strconv.FormatFloat(failureRateAllValue/float64(len(p.GetSpiders())), 'f', 2, 64)
-		projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue/float64(len(p.GetSpiders()))))
+
+		if serverCount > 0 {
+			projectMap["failure_period"] = failureRatePeriodValue / float64(serverCount)
+			projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue/float64(serverCount)))
+			projectMap["failure_all"] = strconv.FormatFloat(failureRateAllValue/float64(serverCount), 'f', 2, 64)
+			projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue/float64(serverCount)))
+		}
+
 		projectMap["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 		projectMap["traffic_out"] = helper.ByteCountBinary(TrafficOut)
 		projectMap["net_in"] = helper.ByteCountBinary(NetIn)
@@ -547,7 +554,7 @@ func projectJson(p *project.Dispatcher, sType string) []byte {
 		loads[86400] += s.Transport.LoadRate(86400)
 		loads[86400*2] += s.Transport.LoadRate(172800)
 
-		server["enable"] = s.Transport.S.Enable
+		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
 		server["loads"] = loads
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
@@ -614,7 +621,7 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 	loads := make(map[int]float64, 9)
 	for _, p := range ps {
 		for _, s := range p.GetSpiders() {
-			if s.FailureLevel == 0 {
+			if s.FailureLevel == 0 && !s.Stop {
 				failureLevelZeroCount++
 				if !s.RequestStartTime.IsZero() {
 					waitingAvg += time.Since(s.RequestStartTime)
@@ -633,7 +640,7 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 			loads[86400*2] += s.Transport.LoadRate(172800)
 
 			serverCount++
-			if s.Transport.S.Enable {
+			if !s.Stop {
 				serverEnable++
 			}
 			sleepAvg += s.GetSleep()
@@ -662,11 +669,11 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 	runtime.ReadMemStats(&mem)
 
 	//basic
-	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = ""
-	jsonMap["basic"].(map[string]interface{})["ping_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
+	jsonMap["basic"].(map[string]interface{})["ping_avg"] = "0s"
 	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
-	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = ""
-	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = ""
+	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = "0s"
+	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = "0s"
 
 	if serverCount > 0 {
 		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()

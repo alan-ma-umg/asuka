@@ -44,14 +44,14 @@
                         Servers
                     </td>
                     <td>
-                        <strong>{{"{{basic.servers}}"}}</strong>
+                        <strong>{{"{{basic.server_enable}}"}}</strong>
                     </td>
                     <td>
                         Server offline
                     </td>
                     <td>
                         <strong>
-                            {{"{{basic.servers?((basic.servers-basic.server_run)/basic.servers*100).toFixed(2):0}}"}}
+                            {{"{{basic.server_enable?((basic.server_enable-basic.server_run)/basic.server_enable*100).toFixed(2):0}}"}}
                             %
                         </strong>
                     </td>
@@ -162,16 +162,21 @@
                 :class="{ stop: item.stop}">
                 <td class="center" v-on:click="goTo(item.name)">{{"{{index+1}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)"><a :href="item.name">{{"{{item.name}}"}}</a></td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{((item.servers-item.server_run)/item.servers*100).toFixed(2)}}"}}%</td>
+                <td class="center"
+                    v-on:click="goTo(item.name)">{{"{{item.server_enable?((item.server_enable-item.server_run)/item.server_enable*100).toFixed(2):0}}"}}
+                    %
+                </td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.failure_period|numberFormat}}"}}%
                     / {{"{{item.failure_all|numberFormat}}"}}%
                 </td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.access_count}}"}} / {{"{{item.failure_count}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.access_count}}"}}
+                    / {{"{{item.failure_count}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.connections}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}} / {{"{{item.traffic_out}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
+                    / {{"{{item.traffic_out}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
                 <td class="right">
                     <button class="btn-sm" :class="{orange:!item.stop,green:item.stop}" style="color:#fff"
@@ -232,6 +237,9 @@
         },
         filters: {
             numberFormat: function (v) {
+                if (v === undefined) {
+                    return "0"
+                }
                 return new Intl.NumberFormat().format(v)
             },
             urlTruncate: function (str) {
@@ -251,7 +259,9 @@
     function total(data, field) {
         let total = 0;
         for (item of data) {
-            total += parseFloat(item[field], 10)
+            if (item[field] !== "undefined") {
+                total += parseFloat(item[field], 10)
+            }
         }
         return total;
     }
