@@ -39,7 +39,7 @@ func asuka() {
 	}
 
 	for _, p := range projects {
-		cleanUp(p) //todo !!!!!!!!!
+		//cleanUp(p) //todo !!!!!!!!!
 		p.Run()
 	}
 
