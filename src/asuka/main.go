@@ -37,10 +37,6 @@ func asuka() {
 		project.New(&project.ZhiHu{}).CleanUp().Run(),
 		project.New(&project.JianShu{}).CleanUp().Run(),
 		project.New(&project.Www{}).CleanUp().Run(),
-
-		//project.New(&project.Test{}).CleanUp().Run(),
-		//project.New(&project.ZhiHu{}).CleanUp().Run(),
-		//project.New(&project.JianShu{}).CleanUp().Run(),
 	}, ":666") // http://127.0.0.1:666
 }
 
