@@ -56,3 +56,5 @@ func cleanUp(p *project.Dispatcher) {
 	database.Redis().Del(p.GetGOBKey())
 	database.Redis().Del(p.GetQueueKey())
 }
+
+//2019/01/24 11:56:11 h2_bundle.go:8723: protocol error: received *http.http2GoAwayFrame before a SETTINGS frame
