@@ -128,6 +128,7 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 	for _, t := range my.InitTransport() {
 		s := spider.New(t, my.queue)
 
+		name := s.Transport.S.Name
 		enable := s.Transport.S.Enable
 		interval := s.Transport.S.Interval
 		clientAddr := s.Transport.S.ClientAddr
@@ -145,6 +146,7 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 		}
 
 		s.Stop = !enable
+		s.Transport.S.Name = name
 		s.Transport.S.Enable = enable
 		s.Transport.S.Interval = interval
 		s.Transport.S.ClientAddr = clientAddr
