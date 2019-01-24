@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var tldFilter = bloom.NewWithEstimates(10000000, 0.001)
+var tldFilter *bloom.BloomFilter
 var tldFilterMutex = &sync.Mutex{}
 
 type AsukaWww struct {
@@ -33,6 +33,7 @@ type Www struct {
 }
 
 func (my *Www) EntryUrl() []string {
+	tldFilter = bloom.NewWithEstimates(5000000, 0.01)
 	err := database.Mysql().CreateTables(&AsukaWww{})
 	if err != nil {
 		panic(err)

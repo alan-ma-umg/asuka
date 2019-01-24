@@ -15,7 +15,7 @@ var bloomFilterInstance *bloom.BloomFilter
 
 func Bl() *bloom.BloomFilter {
 	bloomFilterOnce.Do(func() {
-		bloomFilterInstance = bloom.NewWithEstimates(10000000, 0.001)
+		bloomFilterInstance = bloom.NewWithEstimates(20000000, 0.001)
 		f, _ := os.Open(helper.Env().BloomFilterPath + "enqueue.db")
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()

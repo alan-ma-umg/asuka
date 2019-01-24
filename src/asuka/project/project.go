@@ -13,13 +13,15 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
 
-type Project interface {
+type IProject interface {
 	// EntryUrl 万恶的起源
 	// Firstly
 	EntryUrl() []string
@@ -55,7 +57,7 @@ type Project interface {
 const RecentFetchCount = 50
 
 type Dispatcher struct {
-	Project
+	IProject
 	queue                *queue.Queue
 	Spiders              []*spider.Spider
 	Stop                 bool
@@ -64,8 +66,9 @@ type Dispatcher struct {
 	RecentFetchList      []*spider.Summary
 }
 
-func New(project Project) *Dispatcher {
-	d := &Dispatcher{Project: project}
+func New(project IProject) *Dispatcher {
+	d := &Dispatcher{IProject: project}
+
 	d.queue = queue.NewQueue(d.GetProjectName())
 
 	// kill signal handing
@@ -79,7 +82,7 @@ func New(project Project) *Dispatcher {
 			}
 
 			//gob
-			gob.Register(d.Project) //do register once
+			gob.Register(d.IProject) //do register once
 			encBuf := &bytes.Buffer{}
 			enc := gob.NewEncoder(encBuf)
 			err := enc.Encode(sp)
@@ -111,7 +114,7 @@ func (my *Dispatcher) GetQueueKey() string {
 }
 
 func (my *Dispatcher) GetProjectName() string {
-	return strings.Split(reflect.TypeOf(my.Project).String(), ".")[1]
+	return strings.Split(reflect.TypeOf(my.IProject).String(), ".")[1]
 }
 
 func (my *Dispatcher) GetSpiders() []*spider.Spider {
@@ -217,6 +220,18 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}(s)
 	}
 
+	return my
+}
+
+func (my *Dispatcher) CleanUp() *Dispatcher {
+	for i := 0; i < 10; i++ {
+		os.Remove(helper.Env().BloomFilterPath + my.GetProjectName() + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+	}
+
+	//database.Mysql().Exec("truncate asuka_dou_ban")
+	database.Bl().ClearAll()
+	database.Redis().Del(my.GetGOBKey())
+	database.Redis().Del(my.GetQueueKey())
 	return my
 }
 
