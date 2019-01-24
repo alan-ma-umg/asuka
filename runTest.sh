@@ -16,3 +16,5 @@ go build asuka
 
 echo 'Now, Asuka is alive .'
 nohup ./asuka env.json & >/dev/null 2>/dev/null
+
+htop
