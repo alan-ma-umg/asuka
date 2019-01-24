@@ -32,15 +32,16 @@ func main() {
 
 func asuka() {
 	projects := []*project.Dispatcher{
+		project.New(&project.DouBan{}).Run(),
 		project.New(&project.Test{}).Run(),
 		project.New(&project.ZhiHu{}).Run(),
 		project.New(&project.JianShu{}).Run(),
 	}
 
-	//for _, p := range projects {
-	//	p.Run()
-	//cleanUp(p) //todo !!!!!!!!!
-	//}
+	for _, p := range projects {
+		cleanUp(p) //todo !!!!!!!!!
+		p.Run()
+	}
 
 	fmt.Println("Monitor: http://127.0.0.1:666")
 

@@ -78,7 +78,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 30e9))
 
 	if spider.FailureLevel > 1 {
 		DouBanResetSpider(spider)
@@ -462,7 +462,12 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
+
 	my.lastRequestUrl = spider.CurrentRequest().URL.String()
+	if !strings.Contains(my.lastRequestUrl, "douban.com/subject/") {
+		return
+	}
+
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
 	if err != nil {
 		return
