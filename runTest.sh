@@ -17,6 +17,6 @@ go build asuka
 echo 'Now, Asuka is alive .'
 nohup ./asuka env.json &
 
-sleep(1)
+sleep 1
 
 htop
