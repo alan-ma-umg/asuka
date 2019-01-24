@@ -305,7 +305,7 @@
                 </td>
 
                 <td class="right">
-                    <button class="btn-sm" :class="{red:!server.stop,green:server.stop}" style="color:#f6f6f6"
+                    <button class="btn-sm" :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
                             v-on:click.stop.prevent="switchServer(server.name)">{{"{{server.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>
