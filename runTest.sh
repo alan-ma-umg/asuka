@@ -16,6 +16,3 @@ go build asuka
 
 nohup ./asuka env.json & >/dev/null 2>/dev/null
 echo 'Now, Asuka is alive .'
-
-sleep 1
-tail -f nohup.out
