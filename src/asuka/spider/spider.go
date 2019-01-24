@@ -248,11 +248,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 
 		spider.TimeSlice = append(spider.TimeSlice[helper.MaxInt(len(spider.TimeSlice)-spider.TimeLenLimit, 0):], time.Since(spider.RequestStartTime))
 
-		//spider.TimeList.PushBack(time.Since(spider.RequestStartTime))
-		//if spider.TimeList.Len() > spider.TimeLenLimit {
-		//	spider.TimeList.Remove(spider.TimeList.Front()) // FIFO
-		//}
-
 		//recover
 		if r := recover(); r != nil {
 			spider.Transport.AddFailure(spider.currentRequest.URL.String())

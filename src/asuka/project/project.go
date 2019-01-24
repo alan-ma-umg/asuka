@@ -140,6 +140,7 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 			//s.ResetSleep()
 		}
 
+		s.Stop = !enable
 		s.Transport.S.Enable = enable
 		s.Transport.S.Interval = interval
 		s.Transport.S.ClientAddr = clientAddr
@@ -150,22 +151,16 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 }
 
 func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
-	if helper.Env().LocalTransport.Enable {
-		//append default transport
-		dt, _ := proxy.NewTransport(&proxy.SsAddr{
-			Name:     helper.Env().LocalTransport.Name,
-			Enable:   helper.Env().LocalTransport.Enable,
-			Interval: helper.Env().LocalTransport.Interval,
-		})
-		transports = append(transports, dt)
-	}
+	//append default transport
+	dt, _ := proxy.NewTransport(&proxy.SsAddr{
+		Name:     helper.Env().LocalTransport.Name,
+		Enable:   helper.Env().LocalTransport.Enable,
+		Interval: helper.Env().LocalTransport.Interval,
+	})
+	transports = append(transports, dt)
 
 	var repeat []string
 	for _, ssAddr := range proxy.SSLocalHandler() {
-		if !ssAddr.Enable {
-			continue
-		}
-
 		if helper.Contains(repeat, ssAddr.ServerAddr) {
 			log.Println("DUPLICATE: " + ssAddr.ServerAddr)
 		}

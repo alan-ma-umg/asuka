@@ -40,10 +40,6 @@ func (my *SsAddr) Close() {
 
 func SSLocalHandler() (ssAddr []*SsAddr) {
 	for _, server := range helper.Env().SsServers {
-		if !server.Enable {
-			continue
-		}
-
 		if server.Obfs != "" || server.ObfsParam != "" || server.ProtocolParam != "" || server.Protocol != "" {
 
 			ss := &SsAddr{
