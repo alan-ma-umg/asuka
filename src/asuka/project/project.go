@@ -13,9 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -186,7 +184,7 @@ func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
 
 func (my *Dispatcher) Run() *Dispatcher {
 	for _, l := range my.EntryUrl() {
-		if !database.BlTestString(l) {
+		if !my.queue.BlTestString(l) {
 			my.queue.Enqueue(l)
 		}
 	}
@@ -227,12 +225,8 @@ func (my *Dispatcher) Run() *Dispatcher {
 }
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
-	for i := 0; i < 10; i++ {
-		os.Remove(helper.Env().BloomFilterPath + my.GetProjectName() + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
-	}
-
 	//database.Mysql().Exec("truncate asuka_dou_ban")
-	database.Bl().ClearAll()
+	my.queue.BlCleanUp()
 	database.Redis().Del(my.GetGOBKey())
 	database.Redis().Del(my.GetQueueKey())
 	return my
@@ -301,7 +295,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider) {
 			continue
 		}
 
-		if database.BlTestAndAddString(enqueueUrl) {
+		if spider.Queue.BlTestAndAddString(enqueueUrl) {
 			continue
 		}
 

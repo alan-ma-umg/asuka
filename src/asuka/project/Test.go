@@ -61,7 +61,7 @@ func (my *Test) ResponseSuccess(spider *spider.Spider) {
 // queue
 func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if my.queueUrlLen > 20000 {
-		return ""
+		return
 	}
 
 	return l.String()

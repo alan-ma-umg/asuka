@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -32,6 +33,7 @@ type AsukaJianShu struct {
 
 type JianShu struct {
 	lastRequestUrl string
+	queueUrlLen    int64
 }
 
 func (my *JianShu) EntryUrl() []string {
@@ -39,6 +41,15 @@ func (my *JianShu) EntryUrl() []string {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		t := time.NewTicker(time.Second * 5)
+		for {
+			<-t.C
+			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+		}
+	}()
+
 	return []string{
 		"https://www.jianshu.com/",
 		"https://www.jianshu.com/",
@@ -181,11 +192,9 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 
 // queue
 func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-
-	//tld, err := helper.TldDomain(l)
-	//if err != nil {
-	//	return false
-	//}
+	if my.queueUrlLen > 20000 {
+		return
+	}
 
 	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.jianshu.com/p/") {
 		return

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +31,7 @@ type AsukaWww struct {
 }
 
 type Www struct {
+	queueUrlLen int64
 }
 
 func (my *Www) EntryUrl() []string {
@@ -38,6 +40,15 @@ func (my *Www) EntryUrl() []string {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		t := time.NewTicker(time.Second * 5)
+		for {
+			<-t.C
+			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+		}
+	}()
+
 	return []string{
 		"https://www.douban.com/",
 		"https://www.zhihu.com/explore",
@@ -115,6 +126,9 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 
 // queue
 func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
+	if my.queueUrlLen > 20000 {
+		return
+	}
 
 	tld, err := helper.TldDomain(l)
 	if err != nil {

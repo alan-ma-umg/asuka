@@ -14,12 +14,47 @@ type Queue struct {
 	name                   string
 	bls                    []*bloom.BloomFilter
 	BlsTestCount           map[int]int
-	enqueueForFailureMutex *sync.Mutex
+	enqueueForFailureMutex sync.Mutex
+
+	bloomFilterMutex    sync.Mutex
+	bloomFilterInstance *bloom.BloomFilter
 }
 
 func NewQueue(name string) (q *Queue) {
-	q = &Queue{name: name, enqueueForFailureMutex: &sync.Mutex{}, BlsTestCount: make(map[int]int)}
+	q = &Queue{name: name, BlsTestCount: make(map[int]int)}
+	q.bloomFilterInstance = bloom.NewWithEstimates(10000000, 0.001)
+	f, _ := os.Open(q.GetBlKey())
+	q.bloomFilterInstance.ReadFrom(f)
+	f.Close()
 	return
+}
+
+func (my *Queue) BlCleanUp() {
+	for i := 0; i < helper.MaxInt(10, len(my.bls)); i++ {
+		os.Remove(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+	}
+
+	for _, e := range my.bls {
+		e.ClearAll()
+	}
+
+	my.bloomFilterInstance.ClearAll()
+}
+
+func (my *Queue) BlTestAndAddString(s string) bool {
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+	return my.bloomFilterInstance.TestAndAddString(s)
+}
+
+func (my *Queue) BlTestString(s string) bool {
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+	return my.bloomFilterInstance.TestString(s)
+}
+
+func (my *Queue) GetBlKey() string {
+	return my.GetKey() + "_bl.db"
 }
 
 func (my *Queue) GetKey() string {
@@ -68,6 +103,10 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 }
 
 func (my *Queue) BlSave() {
+	f, _ := os.Create(my.GetBlKey())
+	my.bloomFilterInstance.WriteTo(f)
+	f.Close()
+
 	for i, bl := range my.bls {
 		f, err := os.Create(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 		if err != nil {

@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -32,6 +33,7 @@ type AsukaZhiHu struct {
 
 type ZhiHu struct {
 	lastRequestUrl string
+	queueUrlLen    int64
 }
 
 func (my *ZhiHu) EntryUrl() []string {
@@ -39,6 +41,15 @@ func (my *ZhiHu) EntryUrl() []string {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		t := time.NewTicker(time.Second * 5)
+		for {
+			<-t.C
+			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+		}
+	}()
+
 	return []string{
 		"https://www.zhihu.com/explore",
 		"https://www.zhihu.com/explore",
@@ -182,11 +193,9 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 
 // queue
 func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-
-	//tld, err := helper.TldDomain(l)
-	//if err != nil {
-	//	return false
-	//}
+	if my.queueUrlLen > 20000 {
+		return
+	}
 
 	if !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/people") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/question") && !strings.HasPrefix(strings.ToLower(l.String()), "https://www.zhihu.com/collection") {
 		return
