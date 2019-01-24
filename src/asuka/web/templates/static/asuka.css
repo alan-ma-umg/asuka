@@ -168,9 +168,22 @@ h1 {
 
 input, button {
     -webkit-appearance: none;
-    border-radius: 0;
+    border-radius: 2px;
     border: 1px solid #ccc;
+
+}
+
+.btn-sm, .inp-sm {
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.btn-mb, .inp-mb {
     padding: 6px 14px;
+}
+
+button{
+    cursor: pointer;
 }
 
 li {

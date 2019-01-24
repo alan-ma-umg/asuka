@@ -88,14 +88,50 @@ func Server(d []*project.Dispatcher, address string) {
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
-	http.HandleFunc("/", commonHandleFunc(home))
+	http.HandleFunc("/switch", commonHandleFunc(switchProject))
 	http.HandleFunc("/forever/", forever)
+	http.HandleFunc("/", commonHandleFunc(home))
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
 	})
 	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir(helper.Env().TemplatePath+"static")))))
 
 	log.Fatal(http.ListenAndServe(address, nil))
+}
+
+func switchProject(w http.ResponseWriter, r *http.Request) {
+	post := make(map[string]string)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&post)
+	if err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+
+	if _, ok := post["projectName"]; !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getProjectByName(post["projectName"])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	p.Stop = !p.Stop
+
+	jsonMap := map[string]interface{}{
+		"success": true,
+		"data":    post["projectName"],
+	}
+
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	w.Header().Set("Content-type", "application/json")
+	io.WriteString(w, string(b))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -619,4 +655,13 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 
 	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(StartTime).Truncate(time.Second).String()
+}
+
+func getProjectByName(name string) *project.Dispatcher {
+	for _, e := range dispatchers {
+		if e.GetProjectName() == name {
+			return e
+		}
+	}
+	return nil
 }
