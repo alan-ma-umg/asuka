@@ -138,7 +138,7 @@
         </div>
     </div>
 
-    <canvas style="width: 100%;height:90px;" id="chart-legend-top"></canvas>
+    <canvas style="width: 100%;height:140px;" id="chart-legend-top"></canvas>
 
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto">
         <table v-if='projects.length' class="table-striped">
@@ -339,7 +339,7 @@
                 }
                 vueContent.chart1.update();
             } else {
-                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig())
+                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(Object.keys(data.basic.loads)))
             }
         };
         ws.onopen = function () {
@@ -364,24 +364,28 @@
         };
     }
 
-    function createConfig() {
+    function createConfig(labels) {
         return {
             type: 'line',
             data: {
-                labels: new Array(9),
+                labels: labels,
                 datasets: [{label: '', data: [], borderColor: 'rgb(97, 100, 102)', borderWidth: 0.5, fill: false}]
             },
             options: {
-                layout: {padding: {left: 10, right: 10, top: 5, bottom: 10}},
+                layout: {padding: {left: 10, right: 10, top: 5, bottom: 0}},
                 elements: {point: {pointStyle: "crossRot"}, line: {tension: 0.2}},
                 responsive: false,
                 legend: {display: false},
                 scales: {
-                    xAxes: [{display: false,}],
+                    xAxes: [{
+                        display: true,
+                        gridLines: {display: false, drawBorder: false},
+                        ticks: {fontColor: "#dadada", fontSize: 10,}
+                    }],
                     yAxes: [{
                         display: true,
                         gridLines: {display: false, drawBorder: false},
-                        ticks: {fontColor: "#dadada", fontSize: 12,}
+                        ticks: {fontColor: "#dadada", fontSize: 10,}
                     }]
                 },
                 title: {display: false,}
