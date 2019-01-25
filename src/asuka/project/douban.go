@@ -51,7 +51,20 @@ var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchSt
 
 type DouBan struct {
 	*Implement
-	lastRequestUrl string
+	lastRequestUrl  string
+	lastInsertId    int64
+	lastInsertError string
+}
+
+func (my *DouBan) Showing() (str string) {
+	str = "ID: " + strconv.Itoa(int(my.lastInsertId))
+	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
+		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertTillSuccessQueue))
+	}
+	if my.lastInsertError != "" {
+		str += " Error: " + my.lastInsertError
+	}
+	return
 }
 
 func (my *DouBan) EntryUrl() []string {
@@ -507,7 +520,9 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	}
 
 	_, err = database.Mysql().Insert(model)
+	my.lastInsertId = model.Id
 	if err != nil {
+		my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
 		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}

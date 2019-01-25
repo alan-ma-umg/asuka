@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -33,8 +34,21 @@ type AsukaZhiHu struct {
 
 type ZhiHu struct {
 	*Implement
-	lastRequestUrl string
-	queueUrlLen    int64
+	lastRequestUrl  string
+	queueUrlLen     int64
+	lastInsertId    int64
+	lastInsertError string
+}
+
+func (my *ZhiHu) Showing() (str string) {
+	str = "ID: " + strconv.Itoa(int(my.lastInsertId))
+	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
+		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertTillSuccessQueue))
+	}
+	if my.lastInsertError != "" {
+		str += " Error: " + my.lastInsertError
+	}
+	return
 }
 
 func (my *ZhiHu) EntryUrl() []string {
@@ -187,7 +201,9 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 		},
 	}
 	_, err = database.Mysql().Insert(model)
+	my.lastInsertId = model.Id
 	if err != nil {
+		my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
 		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
