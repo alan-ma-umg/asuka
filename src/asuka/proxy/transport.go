@@ -30,6 +30,46 @@ func init() {
 			}
 		}
 	}()
+
+	//ping
+	go func() {
+		for {
+			time.Sleep(10e9)
+			serverAddrMap := make(map[string][]*Transport)
+			for _, t := range transportList {
+				serverAddrMap[t.S.ServerAddr] = append(serverAddrMap[t.S.ServerAddr], t)
+			}
+
+			for host, transports := range serverAddrMap {
+				go func(host string, transports []*Transport) {
+					ipAddr, _ := lookIp(host)
+					if ipAddr == nil {
+						return
+					}
+					times := 3
+					rtt, fail := helper.Ping(ipAddr, times)
+					for _, t := range transports {
+						if t.Ping == 0 {
+							t.Ping = rtt
+							t.PingFailureRate = float64(fail) / float64(times)
+						} else {
+							t.Ping = (rtt + t.Ping) / 2
+							t.PingFailureRate = ((float64(fail) / float64(times)) + t.PingFailureRate) / 2
+						}
+					}
+				}(host, transports)
+			}
+			time.Sleep(time.Minute)
+		}
+	}()
+}
+
+func lookIp(addr string) (*net.IPAddr, error) {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+	return net.ResolveIPAddr("ip4:icmp", host)
 }
 
 var transportList []*Transport
