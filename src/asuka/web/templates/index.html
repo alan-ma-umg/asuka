@@ -174,7 +174,7 @@
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.connections}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.connections?item.connections:'-'}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>

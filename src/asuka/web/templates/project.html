@@ -218,7 +218,7 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
                 </td>
-                <td class="center">{{"{{connectionSum}}"}}</td>
+                <td class="center">{{"{{connectionSum?connectionSum:'-'}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
                     /
@@ -282,7 +282,7 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
                 </td>
-                <td class="center">{{"{{server.connections}}"}}</td>
+                <td class="center">{{"{{server.connections?server.connections:'-'}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
                     /

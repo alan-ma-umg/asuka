@@ -263,12 +263,8 @@ tr:hover {
     background: #00af4c !important;
 }
 
-.stop {
-    opacity: 0.4;
-    text-decoration-line: line-through;
-}
-
-.stop * {
+.stop *:not(:last-child) {
+    opacity: 0.44;
     text-decoration-line: line-through;
 }
 
