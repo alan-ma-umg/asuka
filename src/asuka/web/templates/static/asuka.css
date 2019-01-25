@@ -264,7 +264,7 @@ tr:hover {
 }
 
 .stop {
-    background: #eaeaea !important;
+    opacity: 0.4;
 }
 
 .head_wrap {
