@@ -32,6 +32,7 @@ type AsukaJianShu struct {
 }
 
 type JianShu struct {
+	*Implement
 	lastRequestUrl string
 	queueUrlLen    int64
 }
@@ -203,9 +204,6 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl 
 	}
 
 	return l.Scheme + "://" + l.Host + l.Path
-}
-
-func (my *JianShu) ResponseAfter(spider *spider.Spider) {
 }
 
 func jianShuResetSpider(spider *spider.Spider) {

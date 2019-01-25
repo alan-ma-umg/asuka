@@ -49,6 +49,20 @@ type IProject interface {
 	// ResponseAfter HTTP请求失败/成功之后
 	// At Last
 	ResponseAfter(spider *spider.Spider)
+
+	//Showing 在web监控上展示信息
+	Showing() string
+}
+
+type Implement struct {
+}
+
+func (my *Implement) Showing() string {
+	return ""
+}
+func (my *Implement) ResponseSuccess(spider *spider.Spider) {
+}
+func (my *Implement) ResponseAfter(spider *spider.Spider) {
 }
 
 const RecentFetchCount = 50

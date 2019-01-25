@@ -50,6 +50,7 @@ type AsukaDouBan struct {
 var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchString
 
 type DouBan struct {
+	*Implement
 	lastRequestUrl string
 }
 
@@ -527,10 +528,6 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 	}
 
 	return l.Scheme + "://" + l.Host + l.Path
-}
-
-func (my *DouBan) ResponseAfter(spider *spider.Spider) {
-
 }
 
 func DouBanResetSpider(spider *spider.Spider) {

@@ -31,6 +31,7 @@ type AsukaWww struct {
 }
 
 type Www struct {
+	*Implement
 	queueUrlLen int64
 }
 

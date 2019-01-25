@@ -13,6 +13,7 @@ import (
 )
 
 type Test2 struct {
+	*Implement
 	queueUrlLen int64
 }
 
@@ -53,11 +54,6 @@ func (my *Test2) DownloadFilter(spider *spider.Spider, response *http.Response) 
 	return true, nil
 }
 
-// ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
-// 一般用于采集数据的地方
-func (my *Test2) ResponseSuccess(spider *spider.Spider) {
-}
-
 // queue
 func (my *Test2) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if my.queueUrlLen > 20000 {
@@ -65,7 +61,4 @@ func (my *Test2) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 	}
 
 	return l.String()
-}
-
-func (my *Test2) ResponseAfter(spider *spider.Spider) {
 }

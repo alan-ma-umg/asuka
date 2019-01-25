@@ -32,6 +32,7 @@ type AsukaZhiHu struct {
 }
 
 type ZhiHu struct {
+	*Implement
 	lastRequestUrl string
 	queueUrlLen    int64
 }
@@ -203,10 +204,6 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 	}
 
 	return l.Scheme + "://" + l.Host + l.Path
-}
-
-func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
-
 }
 
 func zhiHuResetSpider(spider *spider.Spider) {

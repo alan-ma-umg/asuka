@@ -668,6 +668,7 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 		num, _ := database.Redis().LLen(p.GetQueueKey()).Result() //about 1ms
 		queueCount += num
 
+		jsonMap["basic"].(map[string]interface{})["showing"] = p.Showing()
 	}
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
