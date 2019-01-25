@@ -501,6 +501,10 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		}
 	}
 
+	if model.Title == "页面不存在" && model.Name == "" {
+		spider.Queue.EnqueueForFailure(spider.CurrentRequest().URL.String(), 3)
+	}
+
 	_, err = database.Mysql().Insert(model)
 	if err != nil {
 		database.MysqlDelayInsertTillSuccess(model)
