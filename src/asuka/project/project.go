@@ -58,7 +58,7 @@ type Implement struct {
 }
 
 func (my *Implement) Showing() string {
-	return time.Now().Format(time.RFC3339)
+	return "Have a nice day !"
 }
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {
 }

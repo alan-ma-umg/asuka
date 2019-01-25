@@ -706,6 +706,7 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 
+	jsonMap["basic"].(map[string]interface{})["date"] = time.Now().Format(time.RFC3339)
 	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(StartTime).Truncate(time.Second).String()
 }
 
