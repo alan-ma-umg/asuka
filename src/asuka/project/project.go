@@ -90,8 +90,8 @@ func New(project IProject) *Dispatcher {
 			encStrSlice[sp.Transport.S.ServerAddr] = encBuf.String()
 		}
 		//spider, write to redis
-		database.Redis().Del(d.GetGOBKey())
-		database.Redis().HMSet(d.GetGOBKey(), encStrSlice)
+		database.Redis().Del(d.getGOBKey())
+		database.Redis().HMSet(d.getGOBKey(), encStrSlice)
 
 		//queue, write to file
 		d.queue.BlSave()
@@ -102,7 +102,7 @@ func New(project IProject) *Dispatcher {
 	return d
 }
 
-func (my *Dispatcher) GetGOBKey() string {
+func (my *Dispatcher) getGOBKey() string {
 	return my.GetProjectName() + "_gob"
 }
 
@@ -118,13 +118,13 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 	return my.Spiders
 }
 
-func (my *Dispatcher) InitSpider() []*spider.Spider {
+func (my *Dispatcher) initSpider() []*spider.Spider {
 	defer func() {
-		database.Redis().Del(my.GetGOBKey())
+		database.Redis().Del(my.getGOBKey())
 	}()
-	gobEnc, _ := database.Redis().HGetAll(my.GetGOBKey()).Result()
+	gobEnc, _ := database.Redis().HGetAll(my.getGOBKey()).Result()
 
-	for _, t := range my.InitTransport() {
+	for _, t := range my.initTransport() {
 		s := spider.New(t, my.queue)
 
 		name := s.Transport.S.Name
@@ -155,7 +155,7 @@ func (my *Dispatcher) InitSpider() []*spider.Spider {
 	return my.Spiders
 }
 
-func (my *Dispatcher) InitTransport() (transports []*proxy.Transport) {
+func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	dt, _ := proxy.NewTransport(&proxy.SsAddr{
 		Name:     helper.Env().LocalTransport.Name,
@@ -190,7 +190,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}
 	}
 
-	for _, s := range my.InitSpider() {
+	for _, s := range my.initSpider() {
 		go func(spider *spider.Spider) {
 			for {
 				for {
@@ -210,7 +210,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")
 	my.queue.BlCleanUp()
-	database.Redis().Del(my.GetGOBKey())
+	database.Redis().Del(my.getGOBKey())
 	database.Redis().Del(my.GetQueueKey())
 	return my
 }
@@ -285,4 +285,3 @@ func Crawl(project *Dispatcher, spider *spider.Spider) {
 		spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
 	}
 }
-
