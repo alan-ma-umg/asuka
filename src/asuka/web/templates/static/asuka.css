@@ -150,6 +150,11 @@ small {
     background: #cccccc;
 }
 
+::placeholder {
+    color: #d0d0d0;
+}
+
+
 a {
     color: #00af4c;
     text-decoration: none;
@@ -169,7 +174,7 @@ h1 {
 input, button {
     -webkit-appearance: none;
     border-radius: 2px;
-    border: 1px solid #ccc;
+    border: 1px solid #e7e7e7;
 }
 
 .btn-sm, .inp-sm {
@@ -264,8 +269,8 @@ tr:hover {
 }
 
 .stop *:not(:last-child) {
-    opacity: 0.44;
-    text-decoration-line: line-through;
+    opacity: 0.4;
+    text-decoration: line-through;
 }
 
 .head_wrap {
