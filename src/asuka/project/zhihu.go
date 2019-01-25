@@ -36,12 +36,13 @@ type ZhiHu struct {
 	*Implement
 	lastRequestUrl  string
 	queueUrlLen     int64
+	insertSpeed     int
 	lastInsertId    int64
 	lastInsertError string
 }
 
 func (my *ZhiHu) Showing() (str string) {
-	str = "ID: " + strconv.Itoa(int(my.lastInsertId))
+	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
 	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
 		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertTillSuccessQueue))
 	}
@@ -56,6 +57,16 @@ func (my *ZhiHu) EntryUrl() []string {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		s := time.NewTicker(time.Second)
+		insertIdPoint := my.lastInsertId
+		for {
+			<-s.C
+			my.insertSpeed = int(my.lastInsertId - insertIdPoint)
+			insertIdPoint = my.lastInsertId
+		}
+	}()
 
 	go func() {
 		t := time.NewTicker(time.Second * 5)

@@ -52,12 +52,13 @@ var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchSt
 type DouBan struct {
 	*Implement
 	lastRequestUrl  string
+	insertSpeed     int
 	lastInsertId    int64
 	lastInsertError string
 }
 
 func (my *DouBan) Showing() (str string) {
-	str = "ID: " + strconv.Itoa(int(my.lastInsertId))
+	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
 	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
 		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertTillSuccessQueue))
 	}
@@ -68,6 +69,17 @@ func (my *DouBan) Showing() (str string) {
 }
 
 func (my *DouBan) EntryUrl() []string {
+
+	go func() {
+		s := time.NewTicker(time.Second)
+		insertIdPoint := my.lastInsertId
+		for {
+			<-s.C
+			my.insertSpeed = int(my.lastInsertId - insertIdPoint)
+			insertIdPoint = my.lastInsertId
+		}
+	}()
+
 	err := database.Mysql().CreateTables(&AsukaDouBan{})
 	if err != nil {
 		panic(err)
