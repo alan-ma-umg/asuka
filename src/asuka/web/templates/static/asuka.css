@@ -265,6 +265,11 @@ tr:hover {
 
 .stop {
     opacity: 0.4;
+    text-decoration-line: line-through;
+}
+
+.stop * {
+    text-decoration-line: line-through;
 }
 
 .head_wrap {
