@@ -112,15 +112,18 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 	if title == "" {
 		return
 	}
-	_, err = database.Mysql().Insert(&AsukaWww{
+
+	model := &AsukaWww{
 		Url: spider.CurrentRequest().URL.String(),
 		Data: map[string]interface{}{
 			"title":  title,
 			"server": spider.Transport.S.ServerAddr,
 			"time":   time.Since(spider.RequestStartTime).String(),
 		},
-	})
+	}
+	_, err = database.Mysql().Insert(model)
 	if err != nil {
+		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }

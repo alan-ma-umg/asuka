@@ -503,6 +503,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 
 	_, err = database.Mysql().Insert(model)
 	if err != nil {
+		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }

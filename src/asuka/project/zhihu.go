@@ -171,8 +171,7 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 
-	//2019/01/14 16:41:03 zhihu.go:171: https://www.jianshu.com/nb/31338671 Error 1366: Incorrect string value: '\xF0\x9F\x92\x8E&\xF0...' for column 'title' at row 1
-	_, err = database.Mysql().Insert(&AsukaZhiHu{
+	model := &AsukaZhiHu{
 		Url:      spider.CurrentRequest().URL.String(),
 		Referer:  spider.CurrentRequest().Referer(),                                                  //todo only test
 		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest().Header.Get("cookie")), 2000, ""), //todo only test
@@ -185,8 +184,10 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 			"watch":  watch,
 			"view":   view,
 		},
-	})
+	}
+	_, err = database.Mysql().Insert(model)
 	if err != nil {
+		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
 }
