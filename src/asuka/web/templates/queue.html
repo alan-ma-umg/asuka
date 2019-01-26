@@ -9,9 +9,7 @@
 </head>
 <body>
 <div>
-    <a href="/{{.ProjectName}}">{{.ProjectName}}</a>
-    <br>
-    <br>
+    <h2><a href="/{{.ProjectName}}">{{.ProjectName}}</a></h2>
     {{range $index, $element := .List}}
         <a href="{{$element}}" target="_blank">{{$element}}</a><br>
     {{end}}

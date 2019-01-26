@@ -132,7 +132,7 @@
 }
 
 body {
-    font-family: open sans, Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
+    font-family: 'Open Sans', Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
     color: rgb(97, 100, 102);
     font-size: 12px;
     background: rgb(247, 250, 252);
@@ -154,7 +154,6 @@ small {
     color: #d0d0d0;
 }
 
-
 a {
     color: #00af4c;
     text-decoration: none;
@@ -163,12 +162,11 @@ a {
 h1, h2, h3, h4, h5, h6 {
     margin: 10px 0;
     color: rgb(103, 106, 108);
+    font-weight: 300;
 }
 
 h1 {
-    font-weight: 100;
     font-size: 30px;
-    line-height: 36px;
 }
 
 input, button {
