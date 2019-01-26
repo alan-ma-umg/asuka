@@ -51,8 +51,9 @@ var MysqlDelayInsertTillSuccessQueueLock sync.Mutex
 func MysqlDelayInsertTillSuccess(beans ...interface{}) {
 	MysqlDelayInsertTillSuccessQueueLock.Lock()
 	defer MysqlDelayInsertTillSuccessQueueLock.Unlock()
-
-	MysqlDelayInsertTillSuccessQueue = append(MysqlDelayInsertTillSuccessQueue, beans)
+	for _, e := range beans {
+		MysqlDelayInsertTillSuccessQueue = append(MysqlDelayInsertTillSuccessQueue, e)
+	}
 }
 
 func Mysql() *xorm.Engine {
