@@ -294,8 +294,8 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
                 </td>
 
-                <td class="right">
-                    <button class="btn-sm" :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
+                <td class="right ctl">
+                    <button class="btn-sm ctl" :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
                             v-on:click.stop.prevent="switchServer(server.name)">{{"{{server.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>

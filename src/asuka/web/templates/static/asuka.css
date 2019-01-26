@@ -268,9 +268,12 @@ tr:hover {
     background: #00af4c !important;
 }
 
-.stop *:not(:last-child) {
-    opacity: 0.4;
+.stop td:not(.ctl), .stop div:not(.ctl) {
     text-decoration: line-through;
+}
+
+.stop td:not(.ctl) {
+    opacity: 0.4;
 }
 
 .head_wrap {
