@@ -31,7 +31,7 @@ func main() {
 func asuka() {
 	fmt.Println("Monitor: http://127.0.0.1:666")
 
-	err := web.Server([]*project.Dispatcher{
+	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}).Run(),
 		project.New(&project.Test{}).Run(),
 		project.New(&project.Test2{}).Run(),
@@ -45,8 +45,7 @@ func asuka() {
 		//project.New(&project.ZhiHu{}).CleanUp().Run(),
 		//project.New(&project.JianShu{}).CleanUp().Run(),
 		//project.New(&project.Www{}).CleanUp().Run(),
-	}, ":666") // http://127.0.0.1:666
-	log.Println(err)
+	}, ":666")) // http://127.0.0.1:666
 	helper.ExitHandleFunc()
 }
 
