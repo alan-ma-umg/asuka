@@ -76,45 +76,39 @@ type Dispatcher struct {
 	queue                *queue.Queue
 	Spiders              []*spider.Spider
 	Stop                 bool
-	RecentFetchMutex     sync.Mutex
+	recentFetchMutex     sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
 }
 
 func New(project IProject) *Dispatcher {
 	d := &Dispatcher{IProject: project}
-
+	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-
-		encStrSlice := make(map[string]interface{})
 		for _, sp := range d.GetSpiders() {
 			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
 				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
 				fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
 			}
-
-			//gob
-			gob.Register(d.IProject) //do register once
-			encBuf := &bytes.Buffer{}
-			enc := gob.NewEncoder(encBuf)
-			err := enc.Encode(sp)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			encStrSlice[sp.Transport.S.ServerAddr] = encBuf.String()
 		}
-		//spider, write to redis
-		database.Redis().Del(d.getGOBKey())
-		database.Redis().HMSet(d.getGOBKey(), encStrSlice)
+
+		//gob
+		encBuf := &bytes.Buffer{}
+		if err := gob.NewEncoder(encBuf).Encode(d); err != nil {
+			log.Println(err)
+		} else {
+			//spider, write to redis
+			database.Redis().Del(d.getGOBKey())
+			database.Redis().Set(d.getGOBKey(), encBuf.String(), 0)
+		}
 
 		//queue, write to file
 		d.queue.BlSave()
 
-		fmt.Println("Spiders status saved")
+		fmt.Println(d.Name() + " status saved")
 	})
 
 	return d
@@ -141,10 +135,22 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 }
 
 func (my *Dispatcher) initSpider() []*spider.Spider {
-	defer func() {
-		database.Redis().Del(my.getGOBKey())
-	}()
-	gobEnc, _ := database.Redis().HGetAll(my.getGOBKey()).Result()
+	defer database.Redis().Del(my.getGOBKey())
+
+	gobEnc, err := database.Redis().Get(my.getGOBKey()).Result()
+	recoverSpiders := make(map[string]*spider.Spider)
+	if err == nil && gobEnc != "" {
+		decBuf := &bytes.Buffer{}
+		decBuf.WriteString(gobEnc)
+		if err = gob.NewDecoder(decBuf).Decode(my); err != nil {
+			log.Println(err)
+		} else {
+			for _, item := range my.Spiders {
+				recoverSpiders[item.Transport.S.ServerAddr] = item
+			}
+		}
+		my.Spiders = []*spider.Spider{}
+	}
 
 	for _, t := range my.initTransport() {
 		s := spider.New(t, my.queue)
@@ -155,15 +161,11 @@ func (my *Dispatcher) initSpider() []*spider.Spider {
 		clientAddr := s.Transport.S.ClientAddr
 
 		//recover from
-		if recoverSpider, ok := gobEnc[s.Transport.S.ServerAddr]; ok {
-			decBuf := &bytes.Buffer{}
-			decBuf.WriteString(recoverSpider)
-			dec := gob.NewDecoder(decBuf)
-			err := dec.Decode(s)
-			if err != nil {
+		if recoverSpider, ok := recoverSpiders[s.Transport.S.ServerAddr]; ok {
+			encBuf := &bytes.Buffer{}
+			if err = gob.NewEncoder(encBuf).Encode(recoverSpider); err != nil || gob.NewDecoder(encBuf).Decode(s) != nil {
 				log.Println(err)
 			}
-			//s.ResetSleep()
 		}
 
 		s.Stop = !enable
@@ -273,12 +275,12 @@ func Crawl(project *Dispatcher, spider *spider.Spider) {
 	_, summary, err := spider.Fetch(u)
 
 	//recent fetch
-	project.RecentFetchMutex.Lock()
+	project.recentFetchMutex.Lock()
 	project.RecentFetchLastIndex++
 	summary.Index = project.RecentFetchLastIndex
 	summary.ConsumeTime = time.Since(spider.RequestStartTime).Truncate(time.Millisecond).String()
 	project.RecentFetchList = append(project.RecentFetchList[helper.MaxInt(len(project.RecentFetchList)-RecentFetchCount, 0):], summary)
-	project.RecentFetchMutex.Unlock()
+	project.recentFetchMutex.Unlock()
 
 	if err != nil {
 		return
