@@ -19,13 +19,13 @@ func init() {
 		for {
 			<-s.C
 
-			MysqlDelayInsertTillSuccessQueueLock.Lock() //lock
+			MysqlDelayInsertQueueLock.Lock() //lock
 
-			mSlice := make([]interface{}, len(MysqlDelayInsertTillSuccessQueue))
-			copy(mSlice, MysqlDelayInsertTillSuccessQueue)
-			MysqlDelayInsertTillSuccessQueue = []interface{}{}
+			mSlice := make([]interface{}, len(MysqlDelayInsertQueue))
+			copy(mSlice, MysqlDelayInsertQueue)
+			MysqlDelayInsertQueue = []interface{}{}
 
-			MysqlDelayInsertTillSuccessQueueLock.Unlock() //unlock
+			MysqlDelayInsertQueueLock.Unlock() //unlock
 
 			//retry
 			for _, m := range mSlice {
@@ -36,8 +36,8 @@ func init() {
 				}
 			}
 
-			if len(MysqlDelayInsertTillSuccessQueue) > 0 {
-				fmt.Println("MysqlDelayInsertTillSuccessQueue: ", len(MysqlDelayInsertTillSuccessQueue))
+			if len(MysqlDelayInsertQueue) > 0 {
+				fmt.Println("MysqlDelayInsertQueue: ", len(MysqlDelayInsertQueue))
 			}
 
 		}
@@ -45,14 +45,14 @@ func init() {
 
 }
 
-var MysqlDelayInsertTillSuccessQueue []interface{}
-var MysqlDelayInsertTillSuccessQueueLock sync.Mutex
+var MysqlDelayInsertQueue []interface{}
+var MysqlDelayInsertQueueLock sync.Mutex
 
 func MysqlDelayInsertTillSuccess(beans ...interface{}) {
-	MysqlDelayInsertTillSuccessQueueLock.Lock()
-	defer MysqlDelayInsertTillSuccessQueueLock.Unlock()
+	MysqlDelayInsertQueueLock.Lock()
+	defer MysqlDelayInsertQueueLock.Unlock()
 	for _, e := range beans {
-		MysqlDelayInsertTillSuccessQueue = append(MysqlDelayInsertTillSuccessQueue, e)
+		MysqlDelayInsertQueue = append(MysqlDelayInsertQueue, e)
 	}
 }
 

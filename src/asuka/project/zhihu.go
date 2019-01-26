@@ -47,8 +47,8 @@ func (my *ZhiHu) Name() (str string) {
 
 func (my *ZhiHu) Showing() (str string) {
 	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
-	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
-		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertTillSuccessQueue))
+	if len(database.MysqlDelayInsertQueue) > 0 {
+		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertQueue))
 	}
 	if my.lastInsertError != "" {
 		str += " Error: " + my.lastInsertError

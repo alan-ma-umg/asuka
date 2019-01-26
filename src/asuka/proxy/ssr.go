@@ -53,7 +53,7 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	SocksInfo.setListener(listener)
-	SocksInfo.OpenChan <- true
+	SocksInfo.openChan <- true
 
 	for {
 		localConn, err := listener.Accept()

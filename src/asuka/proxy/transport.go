@@ -124,6 +124,7 @@ func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 			DualStack: true,
 		}).DialContext
 	} else { //use socks5 proxy
+		SockInfo.WaitUntilConnected() //waiting
 		dialer, err := proxy.SOCKS5("tcp", SockInfo.ClientAddr, nil, proxy.Direct)
 		if err != nil {
 			log.Fatal(err)
@@ -274,7 +275,6 @@ func (transport *Transport) Reconnect() {
 	if transport.S.ServerAddr != "" {
 		transport.S.Close()
 		transport.t.(*http.Transport).CloseIdleConnections()
-		<-transport.S.OpenChan
 	}
 	transport.t = createHttpTransport(transport.S)
 }

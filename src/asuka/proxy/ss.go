@@ -24,11 +24,14 @@ type SsAddr struct {
 	Connections int
 	listener    net.Listener
 	closeFlag   bool
-	OpenChan    chan bool
+	openChan    chan bool
 }
 
 func (my *SsAddr) setListener(l net.Listener) {
 	my.listener = l
+}
+func (my *SsAddr) WaitUntilConnected() {
+	<-my.openChan
 }
 
 func (my *SsAddr) Close() {
@@ -47,7 +50,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Name:       server.Name,
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
-				OpenChan:   make(chan bool),
+				openChan:   make(chan bool),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -82,7 +85,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Name:       server.Name,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
-				OpenChan:   make(chan bool),
+				openChan:   make(chan bool),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -137,7 +140,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 	SocksInfo.setListener(l)
-	SocksInfo.OpenChan <- true
+	SocksInfo.openChan <- true
 
 	for {
 		c, err := l.Accept()

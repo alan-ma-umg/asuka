@@ -195,7 +195,6 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 		}
 		repeat = append(repeat, ssAddr.ServerAddr)
 
-		<-ssAddr.OpenChan
 		t, err := proxy.NewTransport(ssAddr)
 		if err != nil {
 			log.Println("proxy error: ", err)
