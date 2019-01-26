@@ -67,12 +67,16 @@ func ExitHandle() {
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 	go func() {
 		for range c {
-			for _, f := range ExitHandleFuncSlice {
-				f()
-			}
+			ExitHandleFunc()
 			os.Exit(0)
 		}
 	}()
+}
+
+func ExitHandleFunc() {
+	for _, f := range ExitHandleFuncSlice {
+		f()
+	}
 }
 
 // Contains tells whether a contains x.

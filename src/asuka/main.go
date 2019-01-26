@@ -31,7 +31,7 @@ func main() {
 func asuka() {
 	fmt.Println("Monitor: http://127.0.0.1:666")
 
-	web.Server([]*project.Dispatcher{
+	err := web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}).Run(),
 		project.New(&project.Test{}).Run(),
 		project.New(&project.Test2{}).Run(),
@@ -46,6 +46,8 @@ func asuka() {
 		//project.New(&project.JianShu{}).CleanUp().Run(),
 		//project.New(&project.Www{}).CleanUp().Run(),
 	}, ":666") // http://127.0.0.1:666
+	log.Println(err)
+	helper.ExitHandleFunc()
 }
 
 //2019/01/24 11:56:11 h2_bundle.go:8723: protocol error: received *http.http2GoAwayFrame before a SETTINGS frame

@@ -71,7 +71,7 @@ func commonHandle(h http.Handler) http.Handler {
 	})
 }
 
-func Server(d []*project.Dispatcher, address string) {
+func Server(d []*project.Dispatcher, address string) error {
 	dispatchers = d
 
 	//init start time
@@ -97,7 +97,7 @@ func Server(d []*project.Dispatcher, address string) {
 	})
 	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir(helper.Env().TemplatePath+"static")))))
 
-	log.Fatal(http.ListenAndServe(address, nil))
+	return http.ListenAndServe(address, nil)
 }
 
 func switchServer(w http.ResponseWriter, r *http.Request) {
