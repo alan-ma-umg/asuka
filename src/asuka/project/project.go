@@ -52,6 +52,7 @@ type IProject interface {
 
 	//Showing 在web监控上展示信息
 	Showing() string
+	Name() string
 }
 
 type Implement struct {
@@ -63,6 +64,9 @@ func (my *Implement) Showing() string {
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {
 }
 func (my *Implement) ResponseAfter(spider *spider.Spider) {
+}
+func (my *Implement) Name() string {
+	return ""
 }
 
 const RecentFetchCount = 50
@@ -80,7 +84,7 @@ type Dispatcher struct {
 func New(project IProject) *Dispatcher {
 	d := &Dispatcher{IProject: project}
 
-	d.queue = queue.NewQueue(d.GetProjectName())
+	d.queue = queue.NewQueue(d.Name())
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
@@ -117,14 +121,18 @@ func New(project IProject) *Dispatcher {
 }
 
 func (my *Dispatcher) getGOBKey() string {
-	return my.GetProjectName() + "_gob"
+	return my.Name() + "_gob"
 }
 
 func (my *Dispatcher) GetQueueKey() string {
 	return my.queue.GetKey()
 }
 
-func (my *Dispatcher) GetProjectName() string {
+func (my *Dispatcher) Name() string {
+	if name := my.IProject.Name(); name != "" {
+		return name
+	}
+
 	return strings.Split(reflect.TypeOf(my.IProject).String(), ".")[1]
 }
 

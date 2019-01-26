@@ -206,7 +206,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName string
 	}{
 		GOOS:        runtime.GOOS,
-		ProjectName: p.GetProjectName(),
+		ProjectName: p.Name(),
 	}
 
 	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
@@ -346,7 +346,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 
 func getDispatcher(name string) *project.Dispatcher {
 	for _, d := range dispatchers {
-		if name == d.GetProjectName() {
+		if name == d.Name() {
 			return d
 		}
 	}
@@ -373,7 +373,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName string
 	}{
 		List:        list,
-		ProjectName: p.GetProjectName(),
+		ProjectName: p.Name(),
 	}
 
 	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
@@ -510,7 +510,7 @@ func indexJson() []byte {
 		projectMap["connections"] = connections
 		projectMap["access_count"] = accessCount
 		projectMap["failure_count"] = failureCount
-		projectMap["name"] = p.GetProjectName()
+		projectMap["name"] = p.Name()
 
 		jsonMap["projects"] = append(jsonMap["projects"].([]map[string]interface{}), projectMap)
 	}
@@ -712,7 +712,7 @@ func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}
 
 func getProjectByName(name string) *project.Dispatcher {
 	for _, e := range dispatchers {
-		if e.GetProjectName() == name {
+		if e.Name() == name {
 			return e
 		}
 	}
@@ -721,7 +721,7 @@ func getProjectByName(name string) *project.Dispatcher {
 
 func searchSpider(projectName string, serverName string) *spider.Spider {
 	for _, e := range dispatchers {
-		if e.GetProjectName() == projectName {
+		if e.Name() == projectName {
 			for _, e := range e.GetSpiders() {
 				if e.Transport.S.Name == serverName {
 					return e

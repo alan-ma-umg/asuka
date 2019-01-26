@@ -57,6 +57,10 @@ type DouBan struct {
 	lastInsertError string
 }
 
+func (my *DouBan) Name() string {
+	return "Senjougahara"
+}
+
 func (my *DouBan) Showing() (str string) {
 	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
 	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {

@@ -41,6 +41,10 @@ type ZhiHu struct {
 	lastInsertError string
 }
 
+func (my *ZhiHu) Name() (str string) {
+	return "Miyamori"
+}
+
 func (my *ZhiHu) Showing() (str string) {
 	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
 	if len(database.MysqlDelayInsertTillSuccessQueue) > 0 {
