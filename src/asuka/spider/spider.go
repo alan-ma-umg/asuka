@@ -347,10 +347,13 @@ func (spider *Spider) requestErrorHandler(err error) string {
 
 	switch err.(type) {
 	case *x509.SystemRootsError:
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		return "x509.SystemRootsError"
 	case *x509.UnknownAuthorityError:
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		return "x509.UnknownAuthorityError"
 	case *x509.HostnameError:
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 		return "x509.HostnameError"
 	case *net.DNSConfigError:
 		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
@@ -427,7 +430,8 @@ func (spider *Spider) responseErrorHandler(err error) string {
 
 	switch err.(type) {
 	case *net.OpError:
-		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
+		//2019/01/25 15:19:03 spider.go:431: Response *net.OpError  jp-b.mitsuha-node.com *net.OpError:  local error: tls: bad record MAC https://book.douban.com/subject/1836097/
 		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
@@ -441,16 +445,16 @@ func (spider *Spider) responseErrorHandler(err error) string {
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "url.Error"
 	case tls.RecordHeaderError:
-		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "tls.RecordHeaderError"
 	case flate.CorruptInputError:
-		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		log.Println("Response Error "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "flate.CorruptInputError"
 	default:
 		if strings.HasPrefix(err.Error(), "malformed chunked encoding") {
-			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 			return "chunked encoding"
 		}
 		if strings.HasPrefix(err.Error(), "invalid URL") {
@@ -465,11 +469,11 @@ func (spider *Spider) responseErrorHandler(err error) string {
 			return "http.reading trailer"
 		}
 		if gzip.ErrHeader == err {
-			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 			return "gzip.ErrHeader"
 		}
 		if gzip.ErrChecksum == err {
-			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 1)
+			spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 2)
 			return "gzip.ErrChecksum"
 		}
 		if io.EOF == err {

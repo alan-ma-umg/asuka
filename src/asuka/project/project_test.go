@@ -13570,27 +13570,32 @@ func TestTime(t *testing.T) {
 	jsonStr := []byte(`{
   "@context":"http://schema.org",
   "@type":"Book",
-  "workExample": [],
-  "name" : "九州·旅人·崔罗石",
+  "workExample": [], 
+  "name" : "李天命思考艺术",
   "author": 
   [
-    {
+    {   
       "@type": "Person",
-      "name": "江南/今何在\ 潘海天"
-    }
+      "name": "戎子由\"
+    }   
+    ,   
+    {   
+      "@type": "Person",
+      "name": "梁沛霖" 
+    }   
   ]
 ,
-  "url" : "https://book.douban.com/subject/3188511/",
-  "isbn" : "9781004885015",
-  "sameAs": "https://book.douban.com/subject/3188511/"
+  "url" : "https://book.douban.com/subject/2298835/",
+  "isbn" : "9789623572972",
+  "sameAs": "https://book.douban.com/subject/2298835/"
 }
 `)
 
-	for i, ch := range jsonStr {
-		if ch == 92 {
-			jsonStr[i] = '/'
-		}
-	}
+	//for i, ch := range jsonStr {
+	//	if ch == 92 {
+	//jsonStr[i] = '/'
+	//}
+	//}
 
 	//log.Println(byte('\\'))
 	//jsonStr = strings.Replace(jsonStr, `\`, `/`, len(jsonStr))
