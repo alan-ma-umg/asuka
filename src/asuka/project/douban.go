@@ -104,7 +104,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 35e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
 
 	if spider.FailureLevel > 1 {
 		DouBanResetSpider(spider)
