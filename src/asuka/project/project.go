@@ -134,7 +134,7 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 	return my.Spiders
 }
 
-func (my *Dispatcher) initSpider() []*spider.Spider {
+func (my *Dispatcher) initSpider() {
 	defer database.Redis().Del(my.getGOBKey())
 
 	gobEnc, err := database.Redis().Get(my.getGOBKey()).Result()
@@ -176,7 +176,6 @@ func (my *Dispatcher) initSpider() []*spider.Spider {
 
 		my.Spiders = append(my.Spiders, s)
 	}
-	return my.Spiders
 }
 
 func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
@@ -207,13 +206,15 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 }
 
 func (my *Dispatcher) Run() *Dispatcher {
+	my.initSpider()
+
 	for _, l := range my.EntryUrl() {
 		if !my.queue.BlTestString(l) {
 			my.queue.Enqueue(l)
 		}
 	}
 
-	for _, s := range my.initSpider() {
+	for _, s := range my.GetSpiders() {
 		go func(spider *spider.Spider) {
 			for {
 				for {

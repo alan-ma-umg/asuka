@@ -179,7 +179,6 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			}()
 
 			SocksInfo.Connections++
-
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)
 			if err != nil {

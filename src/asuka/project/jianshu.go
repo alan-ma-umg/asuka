@@ -100,8 +100,8 @@ func (my *JianShu) Throttle(spider *spider.Spider) {
 
 	if spider.FailureLevel > 1 {
 		jianShuResetSpider(spider)
-		//} else if rand.Intn(30) == 10 {
-		//	jianShuResetSpider(spider)
+	} else if rand.Intn(30) == 10 {
+		jianShuResetSpider(spider)
 	}
 }
 
