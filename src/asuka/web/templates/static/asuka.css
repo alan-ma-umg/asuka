@@ -189,8 +189,9 @@ button {
     border: none;
 }
 
-button:disabled {
-    opacity: 0.4;
+button.ctl:disabled {
+    /*opacity: 0.4;*/
+    visibility: hidden;
 }
 
 li {

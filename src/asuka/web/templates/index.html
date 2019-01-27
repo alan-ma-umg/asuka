@@ -179,7 +179,7 @@
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
                 <td class="right ctl">
-                    <button class="btn-sm clt" :disabled="item._btnDisabled"
+                    <button class="btn-sm ctl" :disabled="item._btnDisabled"
                             :class="{orange:!item.stop,green:item.stop}"
                             style="color:#fff"
                             v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
