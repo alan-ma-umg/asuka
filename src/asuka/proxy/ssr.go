@@ -58,14 +58,22 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 	for {
 		localConn, err := listener.Accept()
 		if err != nil {
-			if SocksInfo.closeFlag {
-				SocksInfo.closeFlag = false
+			select {
+			case <-SocksInfo.closeChan:
+				// If we called stop() then there will be a value in es.done, so
+				// we'll get here and we can exit without showing the error.
+				//SocksInfo.Connections++
 				return
+			default:
+				if strings.Contains(err.Error(), "use of closed network connection") {
+					time.Sleep(time.Millisecond)
+				} else {
+					log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
+				}
+				continue
 			}
-
-			log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
-			continue
 		}
+
 		go bi.Handle(localConn, SocksInfo)
 	}
 }

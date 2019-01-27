@@ -36,8 +36,15 @@ func (my *Test) EntryUrl() []string {
 }
 
 // frequency
+var times int
+
 func (my *Test) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
+
+	if times < 200 {
+		times++
+		spider.UpdateTransport()
+	}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {

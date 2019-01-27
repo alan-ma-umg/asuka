@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,8 +24,9 @@ type SsAddr struct {
 	TrafficOut  uint64
 	Connections int
 	listener    net.Listener
-	closeFlag   bool
-	openChan    chan bool
+	//closeFlag   bool
+	openChan  chan bool
+	closeChan chan bool
 }
 
 func (my *SsAddr) setListener(l net.Listener) {
@@ -35,8 +37,8 @@ func (my *SsAddr) WaitUntilConnected() {
 }
 
 func (my *SsAddr) Close() {
-	my.closeFlag = true
 	my.listener.Close()
+	my.closeChan <- true
 	my.ClientAddr = ""
 }
 
@@ -51,6 +53,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),
+				closeChan:  make(chan bool, 1),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -86,6 +89,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),
+				closeChan:  make(chan bool, 1),
 			}
 			ssAddr = append(ssAddr, ss)
 
@@ -145,13 +149,28 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			if SocksInfo.closeFlag {
-				SocksInfo.closeFlag = false
-				return
-			}
+			//if SocksInfo.closeFlag {
+			//	SocksInfo.closeFlag = false
+			//	return
+			//}
+			//
+			//log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
+			//continue
 
-			log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
-			continue
+			select {
+			case <-SocksInfo.closeChan:
+				// If we called stop() then there will be a value in es.done, so
+				// we'll get here and we can exit without showing the error.
+				//SocksInfo.Connections++
+				return
+			default:
+				if strings.Contains(err.Error(), "use of closed network connection") {
+					time.Sleep(time.Millisecond)
+				} else {
+					log.Printf(SocksInfo.ServerAddr+" Accept failed: %v", err)
+				}
+				continue
+			}
 		}
 		go func() {
 			defer func() {

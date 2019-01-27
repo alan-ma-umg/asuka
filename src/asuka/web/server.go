@@ -126,6 +126,10 @@ func switchServer(w http.ResponseWriter, r *http.Request) {
 	}
 	s.Stop = !s.Stop
 
+	if !s.Stop {
+		s.UpdateTransport()
+	}
+
 	jsonMap := map[string]interface{}{
 		"success": true,
 		"data":    post["name"],
