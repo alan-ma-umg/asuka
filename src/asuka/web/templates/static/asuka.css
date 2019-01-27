@@ -189,6 +189,10 @@ button {
     border: none;
 }
 
+button:disabled {
+    opacity: 0.4;
+}
+
 li {
     list-style: none;
 }

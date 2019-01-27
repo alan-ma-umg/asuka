@@ -179,8 +179,10 @@
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
                 <td class="right ctl">
-                    <button class="btn-sm clt" :class="{orange:!item.stop,green:item.stop}" style="color:#fff"
-                            v-on:click.stop.prevent="switchProject(item.name)">{{"{{item.stop?'start':'stop'}}"}}</button>
+                    <button class="btn-sm clt" :disabled="item._btnDisabled"
+                            :class="{orange:!item.stop,green:item.stop}"
+                            style="color:#fff"
+                            v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>
             </tbody>
@@ -212,8 +214,9 @@
             goTo: function (name) {
                 location.href = "/" + name
             },
-            switchProject: function (name) {
-                axios.post('/switchProject', {name: name,});
+            switchProject: function (item) {
+                this.$set(item, '_btnDisabled', true);
+                axios.post('/switchProject', {name: item.name,});
             }
         },
         computed: {
