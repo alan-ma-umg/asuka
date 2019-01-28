@@ -199,6 +199,11 @@
 </div>
 
 <div class="ctrl-wrap">
+    {{if not .Check}}
+        <a href="/login">
+            <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
+        </a>
+    {{end}}
     <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
         Off
     </button>
