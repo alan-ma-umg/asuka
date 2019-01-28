@@ -14,6 +14,10 @@
             -webkit-box-sizing: border-box;
         }
 
+        *:focus {
+            outline: none;
+        }
+
         body, html {
             background: #f6f6f6;
             font-family: 'Open Sans', Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
@@ -36,6 +40,7 @@
         }
 
         input {
+            -webkit-appearance: none;
             width: 200px;
             padding: 8px 10px;
             border: 1px solid #dedede;
@@ -52,7 +57,7 @@
 <body>
 <div class="container">
     <div class="wrap">
-        <h1>UNLOCK</h1>
+        <h1>Login</h1>
         <input type="password" name="password" id="password" placeholder="Password" autofocus>
     </div>
 </div>
