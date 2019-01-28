@@ -185,7 +185,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		GOOS: runtime.GOOS,
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -213,7 +213,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -384,7 +384,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{Name: "id", Value: "id-value", Path: "/", Expires: expire, MaxAge: 86400, HttpOnly: true}
 	http.SetCookie(w, cookie)
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {

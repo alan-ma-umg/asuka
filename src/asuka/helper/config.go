@@ -17,6 +17,7 @@ type LocalTransport struct {
 
 type SsServer struct {
 	Enable     bool
+	EnablePing bool
 	Interval   float64
 	Name       string
 	Server     string

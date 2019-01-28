@@ -15,6 +15,7 @@ import (
 
 type SsAddr struct {
 	Enable      bool
+	EnablePing  bool
 	Interval    float64
 	Type        string
 	Name        string
@@ -48,6 +49,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 
 			ss := &SsAddr{
 				Enable:     server.Enable,
+				EnablePing: server.EnablePing,
 				Interval:   server.Interval,
 				Name:       server.Name,
 				Type:       "ssr",
@@ -84,6 +86,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 
 			ss := &SsAddr{
 				Enable:     server.Enable,
+				EnablePing: server.EnablePing,
 				Interval:   server.Interval,
 				Name:       server.Name,
 				Type:       "ss",

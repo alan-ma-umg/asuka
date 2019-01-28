@@ -37,7 +37,9 @@ func init() {
 			time.Sleep(10e9)
 			serverAddrMap := make(map[string][]*Transport)
 			for _, t := range transportList {
-				serverAddrMap[t.S.ServerAddr] = append(serverAddrMap[t.S.ServerAddr], t)
+				if t.S.EnablePing {
+					serverAddrMap[t.S.ServerAddr] = append(serverAddrMap[t.S.ServerAddr], t)
+				}
 			}
 
 			for host, transports := range serverAddrMap {
