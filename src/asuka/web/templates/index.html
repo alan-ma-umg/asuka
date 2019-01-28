@@ -227,10 +227,18 @@
                 return total(this.projects, "failure_count");
             },
             failurePeriodAvg: function () {
-                return (total(this.projects, "failure_period") / this.projects.length).toFixed(2)
+                if (this.projects.length) {
+                    return (total(this.projects, "failure_period") / this.projects.length).toFixed(2)
+                } else {
+                    return 0
+                }
             },
             failureAllAvg: function () {
-                return (total(this.projects, "failure_all") / this.projects.length).toFixed(2)
+                if (this.projects.length) {
+                    return (total(this.projects, "failure_all") / this.projects.length).toFixed(2)
+                } else {
+                    return 0
+                }
             },
             retries: function () {
                 let str = "", k;
@@ -331,7 +339,9 @@
             let data = JSON.parse(evt.data);
             vueContent.$data.projects = data.projects;
             vueContent.$data.basic = data.basic;
-            document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
+            if (data.basic.loads) {
+                document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
+            }
             ws.send("");
 
             //chart
@@ -341,7 +351,7 @@
                     vueContent.chart1.data.datasets[0].data.push(data.basic.loads[s]);
                 }
                 vueContent.chart1.update();
-            } else {
+            } else if (data.basic.loads) {
                 vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(Object.keys(data.basic.loads)))
             }
         };

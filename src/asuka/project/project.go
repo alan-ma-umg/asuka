@@ -181,9 +181,10 @@ func (my *Dispatcher) initSpider() {
 func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	dt, _ := proxy.NewTransport(&proxy.SsAddr{
-		Name:     helper.Env().LocalTransport.Name,
-		Enable:   helper.Env().LocalTransport.Enable,
-		Interval: helper.Env().LocalTransport.Interval,
+		Name:       helper.Env().LocalTransport.Name,
+		Enable:     helper.Env().LocalTransport.Enable,
+		EnablePing: false,
+		Interval:   helper.Env().LocalTransport.Interval,
 	})
 	transports = append(transports, dt)
 

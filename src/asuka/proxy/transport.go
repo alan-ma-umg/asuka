@@ -33,8 +33,12 @@ func init() {
 
 	//ping
 	go func() {
+		sleep := 10
 		for {
-			time.Sleep(10e9)
+			time.Sleep(time.Duration(sleep) * time.Second)
+			sleep = helper.MinInt(600, sleep+10)
+
+
 			serverAddrMap := make(map[string][]*Transport)
 			for _, t := range transportList {
 				if t.S.EnablePing {
@@ -61,7 +65,6 @@ func init() {
 					}
 				}(host, transports)
 			}
-			time.Sleep(time.Minute)
 		}
 	}()
 }

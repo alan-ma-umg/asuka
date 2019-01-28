@@ -35,8 +35,8 @@ func asuka() {
 		project.New(&project.DouBan{}).Run(),
 		project.New(&project.Test{}).Run(),
 		project.New(&project.Test2{}).Run(),
-		project.New(&project.ZhiHu{}).Run(),
-		project.New(&project.JianShu{}).Run(),
+		//project.New(&project.ZhiHu{}).Run(),
+		//project.New(&project.JianShu{}).Run(),
 		//project.New(&project.Www{}).Run(),
 
 		//project.New(&project.DouBan{}).CleanUp().Run(),
