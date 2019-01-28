@@ -381,7 +381,8 @@ func queue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expire := time.Now().Add(time.Hour)
-	cookie := &http.Cookie{Name: "id", Value: "id-value", Path: "/", Expires: expire, MaxAge: 86400, HttpOnly: true}
+	id, _ := helper.Enc([]byte("123456"))
+	cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: expire, MaxAge: 86400, HttpOnly: true}
 	http.SetCookie(w, cookie)
 
 	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)

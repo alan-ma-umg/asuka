@@ -1,12 +1,18 @@
 package helper
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/md5"
+	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/tatsushid/go-fastping"
 	"golang.org/x/net/publicsuffix"
+	"io"
 	"io/ioutil"
 	"log"
 	"math"
@@ -378,6 +384,51 @@ func PrintMemUsage() {
 	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
 
-//func AddGod(data interface{}){
+func KDF(password string, keyLen int) []byte {
+	var b, prev []byte
+	h := md5.New()
+	for len(b) < keyLen {
+		h.Write(prev)
+		h.Write([]byte(password))
+		b = h.Sum(b)
+		prev = b[len(b)-h.Size():]
+		h.Reset()
+	}
+	return b[:keyLen]
+}
 
-//}
+func Enc(plain []byte) (encData string, nonce []byte) {
+	block, err := aes.NewCipher(KDF("123456", 32))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// Never use more than 2^32 random nonces with a given key because of the risk of a repeat.
+	nonce = make([]byte, 12)
+	io.ReadFull(rand.Reader, nonce)
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return hex.EncodeToString(gcm.Seal(nil, nonce, plain, nil)), nonce
+}
+
+func Dec(encData string, nonce []byte) (plain []byte, err error) {
+	block, err := aes.NewCipher(KDF("123456", 32))
+	if err != nil {
+		return
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return
+	}
+
+	encString, err := hex.DecodeString(encData)
+	if err != nil {
+		return
+	}
+
+	return gcm.Open(nil, nonce, encString, nil)
+}
