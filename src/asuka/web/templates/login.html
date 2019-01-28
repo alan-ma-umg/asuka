@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asuka Unlock</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <script async defer src="/static/axios.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+
+        body, html {
+            background: #f6f6f6;
+            font-family: 'Open Sans', Helvetica Neue, Arial, sans-serif, Microsoft YaHei;
+            height: 100%;
+        }
+
+        .container {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+        }
+
+        .wrap {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            margin-top: -180px;
+            position: relative;
+            top: 50%;
+        }
+
+        input {
+            width: 200px;
+            padding: 8px 10px;
+            border: 1px solid #dedede;
+        }
+
+        h1 {
+            margin: 0 0 50px;
+            color: #dbdbdb;
+            font-size: 100px;
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="wrap">
+        <h1>UNLOCK</h1>
+        <input type="password" name="password" id="password" placeholder="Password" autofocus>
+    </div>
+</div>
+<script>
+    document.getElementById('password').addEventListener("keypress", function (evt) {
+        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+            axios.post('/login/post', {password: evt.target.value}).then(function (response) {
+                if (response.data.success) {
+                    location.href = response.data.url
+                } else {
+                    alert(response.data.message)
+                }
+            });
+        }
+    }, false)
+</script>
+</body>
+</html>

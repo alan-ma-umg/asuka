@@ -142,7 +142,9 @@
             <thead>
             <tr>
                 <th style="width: 1px"></th>
-                <th>Server</th>
+                {{if .Check}}
+                    <th>Server</th>
+                {{end}}
                 <th>Add Time</th>
                 <th>Consume Time</th>
                 <th>Status</th>
@@ -156,14 +158,20 @@
             <tr v-for="item in fetchList"
                 :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
                 <td class="center">{{"{{item.Index}}"}}</td>
-                <td class="center">{{"{{item.TransportName}}"}}</td>
+                {{if .Check}}
+                    <td class="center">{{"{{item.TransportName}}"}}</td>
+                {{end}}
                 <td class="center">{{"{{item.AddTime}}"}}</td>
                 <td class="center">{{"{{item.ConsumeTime}}"}}</td>
                 <td class="center">{{"{{item.StatusCode}}"}}</td>
                 <td class="center">{{"{{item.ResponseSize}}"}}</td>
                 <td class="center">{{"{{item.ContentType}}"}}</td>
                 <td class="center">{{"{{item.ErrType}}"}}</td>
-                <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
+                {{if .Check}}
+                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
+                {{else}}
+                    <td class="right">********</td>
+                {{end}}
             </tr>
             </tbody>
         </table>
@@ -174,7 +182,9 @@
             <thead>
             <tr>
                 <th style="width: 1px"></th>
-                <th>Server</th>
+                {{if .Check}}
+                    <th>Server</th>
+                {{end}}
                 <th>Status</th>
                 <th style="min-width:145px">Failure Recent/all</th>
                 <th style="width:1px">Dispatch</th>
@@ -185,11 +195,17 @@
                 <th>Reconn</th>
                 <th>HTTP I/O</th>
                 <th>TCP I/O</th>
-                <th></th>
+                {{if .Check}}
+                    <th></th>
+                {{end}}
             </tr>
             <tr style="background:#dadada">
-                <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
-                </td>
+                {{if .Check}}
+                    <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
+                    </td>
+                {{else}}
+                    <td></td>
+                {{end}}
                 <td class="center">{{"{{statusAvg}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
@@ -229,15 +245,19 @@
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
                 </td>
-                <td></td>
+                {{if .Check}}
+                    <td></td>
+                {{end}}
             </tr>
             </thead>
             <tbody>
             <tr v-for="server in home.servers" :class="{warning:server.failure_level,stop: server.stop}">
                 <td class="center">{{"{{server.index+1}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
-                </td>
+                {{if .Check}}
+                    <td class="center">
+                        <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
+                    </td>
+                {{end}}
                 <td :style="{color: 'hsl('+server.failure_level_hsl+', 100%, 35%)'}" style="font-weight:800;"
                     class="center">
                     {{"{{server.failure_level}}"}}
@@ -294,11 +314,13 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
                 </td>
 
-                <td class="right ctl">
-                    <button class="btn-sm ctl" :disabled="server._btnDisabled"
-                            :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
-                            v-on:click.stop.prevent="switchServer(server)">{{"{{server.stop?'start':'stop'}}"}}</button>
-                </td>
+                {{if .Check}}
+                    <td class="right ctl">
+                        <button class="btn-sm ctl" :disabled="server._btnDisabled"
+                                :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
+                                v-on:click.stop.prevent="switchServer(server)">{{"{{server.stop?'start':'stop'}}"}}</button>
+                    </td>
+                {{end}}
             </tr>
             </tbody>
         </table>

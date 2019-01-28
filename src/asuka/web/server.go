@@ -86,6 +86,8 @@ func Server(d []*project.Dispatcher, address string) error {
 	}()
 
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
+	http.HandleFunc("/login", commonHandleFunc(login))
+	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
 	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
@@ -135,12 +137,9 @@ func switchServer(w http.ResponseWriter, r *http.Request) {
 		"data":    post["name"],
 	}
 
-	b, err := json.Marshal(jsonMap)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
+	b, _ := json.Marshal(jsonMap)
 	w.Header().Set("Content-type", "application/json")
-	io.WriteString(w, string(b))
+	w.Write(b)
 }
 
 func switchProject(w http.ResponseWriter, r *http.Request) {
@@ -170,22 +169,25 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 		"data":    post["name"],
 	}
 
-	b, err := json.Marshal(jsonMap)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
+	b, _ := json.Marshal(jsonMap)
 	w.Header().Set("Content-type", "application/json")
-	io.WriteString(w, string(b))
+	w.Write(b)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		GOOS string
+		GOOS  string
+		Check bool
 	}{
 		GOOS: runtime.GOOS,
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		data.Check = authCheck(cookie.Value)
+	}
+
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -208,12 +210,18 @@ func home(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		GOOS        string
 		ProjectName string
+		Check       bool
 	}{
 		GOOS:        runtime.GOOS,
 		ProjectName: p.Name(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		data.Check = authCheck(cookie.Value)
+	}
+
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -358,6 +366,50 @@ func getDispatcher(name string) *project.Dispatcher {
 	return nil
 }
 
+func login(w http.ResponseWriter, r *http.Request) {
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"login.html")).Execute(w, nil)
+}
+
+func loginPost(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
+	post := make(map[string]string)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&post)
+	if err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+
+	if _, ok := post["password"]; !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	jsonMap := map[string]interface{}{}
+	if post["password"] == helper.Env().WEBPassword {
+		jsonMap["success"] = true
+		jsonMap["message"] = "success"
+		jsonMap["url"] = "/"
+
+		expireDuration := time.Hour * 48
+		id, _ := helper.Enc([]byte(helper.Env().WEBPassword))
+		cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: time.Now().Add(expireDuration), MaxAge: 86400, HttpOnly: true}
+		database.Redis().Set(id, helper.Env().WEBPassword, expireDuration)
+		http.SetCookie(w, cookie)
+	} else {
+		jsonMap["success"] = false
+		jsonMap["message"] = "Password incorrect"
+	}
+
+	b, _ := json.Marshal(jsonMap)
+	w.Write(b)
+}
+
 func queue(w http.ResponseWriter, r *http.Request) {
 	path := strings.Split(r.URL.Path, "/")
 	if len(path) < 3 {
@@ -380,12 +432,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	expire := time.Now().Add(time.Hour)
-	id, _ := helper.Enc([]byte("123456"))
-	cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: expire, MaxAge: 86400, HttpOnly: true}
-	http.SetCookie(w, cookie)
-
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
@@ -601,10 +648,7 @@ func projectJson(p *project.Dispatcher, sType string) []byte {
 	//basic
 	responseJsonCommon([]*project.Dispatcher{p}, jsonMap, start)
 
-	b, err := json.Marshal(jsonMap)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
+	b, _ := json.Marshal(jsonMap)
 	return b
 }
 func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
@@ -740,4 +784,11 @@ func searchSpider(projectName string, serverName string) *spider.Spider {
 		}
 	}
 	return nil
+}
+
+func authCheck(id string) bool {
+	if res, err := database.Redis().Get(id).Result(); err == nil && res == helper.Env().WEBPassword {
+		return true
+	}
+	return false
 }

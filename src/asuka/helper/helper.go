@@ -398,7 +398,7 @@ func KDF(password string, keyLen int) []byte {
 }
 
 func Enc(plain []byte) (encData string, nonce []byte) {
-	block, err := aes.NewCipher(KDF("123456", 32))
+	block, err := aes.NewCipher(KDF(Env().WEBPassword, 32))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -415,7 +415,7 @@ func Enc(plain []byte) (encData string, nonce []byte) {
 }
 
 func Dec(encData string, nonce []byte) (plain []byte, err error) {
-	block, err := aes.NewCipher(KDF("123456", 32))
+	block, err := aes.NewCipher(KDF(Env().WEBPassword, 32))
 	if err != nil {
 		return
 	}
