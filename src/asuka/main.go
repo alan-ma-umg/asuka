@@ -32,9 +32,9 @@ func asuka() {
 	fmt.Println("Monitor: http://127.0.0.1:666")
 
 	log.Println(web.Server([]*project.Dispatcher{
-		//project.New(&project.DouBan{}).Run(),
-		project.New(&project.Test{}).Run(),
-		project.New(&project.Test2{}).Run(),
+		project.New(&project.DouBan{}).Run(),
+		//project.New(&project.Test{}).Run(),
+		//project.New(&project.Test2{}).Run(),
 		//project.New(&project.ZhiHu{}).Run(),
 		//project.New(&project.JianShu{}).Run(),
 		//project.New(&project.Www{}).Run(),
