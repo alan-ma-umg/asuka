@@ -251,6 +251,12 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
+	check := false
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		check = authCheck(cookie.Value)
+	}
+
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
@@ -278,7 +284,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		err = c.WriteMessage(websocket.TextMessage, indexJson())
+		err = c.WriteMessage(websocket.TextMessage, indexJson(check))
 		if err != nil {
 			//log.Println("write:", err)
 			break
@@ -304,6 +310,12 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 	if p == nil {
 		c.Close()
 		return
+	}
+
+	check := false
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		check = authCheck(cookie.Value)
 	}
 
 	webSocketConnections++
@@ -355,9 +367,9 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 
 		switch responseContent {
 		case "home":
-			err = c.WriteMessage(websocket.TextMessage, projectJson(p, responseContent))
+			err = c.WriteMessage(websocket.TextMessage, projectJson(check, p, responseContent))
 		case "recent":
-			jsonRes, n := recentJson(p, responseContent, recentFetchIndex)
+			jsonRes, n := recentJson(check, p, responseContent, recentFetchIndex)
 			recentFetchIndex = n
 			err = c.WriteMessage(websocket.TextMessage, jsonRes)
 		}
@@ -481,7 +493,7 @@ func forever(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
-func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]byte, int64) {
+func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchIndex int64) ([]byte, int64) {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
@@ -499,7 +511,7 @@ func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]
 		}
 	}
 
-	responseJsonCommon([]*project.Dispatcher{p}, jsonMap, start)
+	responseJsonCommon(check, []*project.Dispatcher{p}, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
@@ -507,7 +519,7 @@ func recentJson(p *project.Dispatcher, sType string, recentFetchIndex int64) ([]
 	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
 
-func indexJson() []byte {
+func indexJson(check bool) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"projects": []map[string]interface{}{},
@@ -608,7 +620,7 @@ func indexJson() []byte {
 		jsonMap["projects"] = append(jsonMap["projects"].([]map[string]interface{}), projectMap)
 	}
 
-	responseJsonCommon(dispatchers, jsonMap, start)
+	responseJsonCommon(check, dispatchers, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		fmt.Println("error:", err)
@@ -616,7 +628,7 @@ func indexJson() []byte {
 	return b
 }
 
-func projectJson(p *project.Dispatcher, sType string) []byte {
+func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
 		"type":    sType,
@@ -683,12 +695,12 @@ func projectJson(p *project.Dispatcher, sType string) []byte {
 	}
 
 	//basic
-	responseJsonCommon([]*project.Dispatcher{p}, jsonMap, start)
+	responseJsonCommon(check, []*project.Dispatcher{p}, jsonMap, start)
 
 	b, _ := json.Marshal(jsonMap)
 	return b
 }
-func responseJsonCommon(ps []*project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
+func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
 	defer func() {
 		jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
 	}()
