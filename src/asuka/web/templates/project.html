@@ -534,7 +534,11 @@
                 }
                 vueContent.chart1.update();
             } else {
-                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(Object.keys(data.basic.loads)))
+                let labels = [];
+                for (let k in data.basic.loads) {
+                    labels.push(timestamHumanReadable(k));
+                }
+                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(labels))
             }
         };
         ws.onopen = function () {
@@ -586,6 +590,22 @@
                 title: {display: false,}
             }
         };
+    }
+
+    function timestamHumanReadable(timestamp) {
+        if (timestamp < 60) {
+            return timestamp + 's';
+        }
+        if (timestamp < 3600) {
+            return timestamp / 60 + 'm';
+        }
+        if (timestamp < 3600) {
+            return timestamp / 60 + 'm';
+        }
+        if (timestamp < 86400) {
+            return timestamp / 3600 + 'h';
+        }
+        return timestamp / 86400 + 'd';
     }
 </script>
 </body>

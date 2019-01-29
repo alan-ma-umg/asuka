@@ -563,10 +563,11 @@ func indexJson(check bool) []byte {
 			loads[60*15] += s.Transport.LoadRate(900)
 			loads[60*30] += s.Transport.LoadRate(1800)
 			loads[3600] += s.Transport.LoadRate(3600)
-			loads[3600*5] += s.Transport.LoadRate(3600 * 5)
-			loads[36000] += s.Transport.LoadRate(36000)
+			loads[3600*6] += s.Transport.LoadRate(3600 * 6)
+			loads[3600*12] += s.Transport.LoadRate(3600 * 12)
 			loads[86400] += s.Transport.LoadRate(86400)
-			loads[86400*2] += s.Transport.LoadRate(172800)
+			loads[86400*2] += s.Transport.LoadRate(86400 * 2)
+			loads[86400*3] += s.Transport.LoadRate(86400 * 3)
 
 			sleepDuration += s.GetSleep()
 
@@ -659,10 +660,11 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		loads[60*15] += s.Transport.LoadRate(900)
 		loads[60*30] += s.Transport.LoadRate(1800)
 		loads[3600] += s.Transport.LoadRate(3600)
-		loads[3600*5] += s.Transport.LoadRate(3600 * 5)
-		loads[36000] += s.Transport.LoadRate(36000)
+		loads[3600*6] += s.Transport.LoadRate(3600 * 6)
+		loads[3600*12] += s.Transport.LoadRate(3600 * 12)
 		loads[86400] += s.Transport.LoadRate(86400)
-		loads[86400*2] += s.Transport.LoadRate(172800)
+		loads[86400*2] += s.Transport.LoadRate(86400 * 2)
+		loads[86400*3] += s.Transport.LoadRate(86400 * 3)
 
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
@@ -749,10 +751,11 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			loads[60*15] += s.Transport.LoadRate(900)
 			loads[60*30] += s.Transport.LoadRate(1800)
 			loads[3600] += s.Transport.LoadRate(3600)
-			loads[3600*5] += s.Transport.LoadRate(3600 * 5)
-			loads[36000] += s.Transport.LoadRate(36000)
+			loads[3600*6] += s.Transport.LoadRate(3600 * 6)
+			loads[3600*12] += s.Transport.LoadRate(3600 * 12)
 			loads[86400] += s.Transport.LoadRate(86400)
-			loads[86400*2] += s.Transport.LoadRate(172800)
+			loads[86400*2] += s.Transport.LoadRate(86400 * 2)
+			loads[86400*3] += s.Transport.LoadRate(86400 * 3)
 
 			serverCount++
 			if !s.Stop {
