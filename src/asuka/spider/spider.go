@@ -88,16 +88,10 @@ func (spider *Spider) Client() *http.Client {
 }
 
 func (spider *Spider) setClient() {
-	if spider.client == nil {
+	if spider.client == nil || spider.client.Transport.(*http.Transport) != spider.Transport.Connect() {
 		j, _ := cookiejar.New(nil)
 		spider.client = &http.Client{Transport: spider.Transport.Connect(), Jar: j, Timeout: time.Second * 30}
-		fmt.Println("transport init")
-	}
-
-	if spider.client.Transport.(*http.Transport) != spider.Transport.Connect() {
-		j, _ := cookiejar.New(nil)
-		spider.client = &http.Client{Transport: spider.Transport.Connect(), Jar: j, Timeout: time.Second * 30}
-		fmt.Println("transport changed")
+		//fmt.Println("transport changed")
 	}
 }
 
