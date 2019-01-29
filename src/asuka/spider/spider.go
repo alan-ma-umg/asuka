@@ -73,14 +73,9 @@ type Spider struct {
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
-	spider.updateClient()
+	//spider.updateClient()
 	spider.registerHttpTrace()
 	return spider
-}
-
-func (spider *Spider) UpdateTransport() {
-	spider.Transport.Reconnect()
-	spider.updateClient()
 }
 
 func (spider *Spider) CurrentRequest() *http.Request {
@@ -88,12 +83,22 @@ func (spider *Spider) CurrentRequest() *http.Request {
 }
 
 func (spider *Spider) Client() *http.Client {
+	spider.setClient()
 	return spider.client
 }
 
-func (spider *Spider) updateClient() {
-	j, _ := cookiejar.New(nil)
-	spider.client = &http.Client{Transport: spider.Transport.GetHttpTransport(), Jar: j, Timeout: time.Second * 30}
+func (spider *Spider) setClient() {
+	if spider.client == nil {
+		j, _ := cookiejar.New(nil)
+		spider.client = &http.Client{Transport: spider.Transport.Connect(), Jar: j, Timeout: time.Second * 30}
+		fmt.Println("transport init")
+	}
+
+	if spider.client.Transport.(*http.Transport) != spider.Transport.Connect() {
+		j, _ := cookiejar.New(nil)
+		spider.client = &http.Client{Transport: spider.Transport.Connect(), Jar: j, Timeout: time.Second * 30}
+		fmt.Println("transport changed")
+	}
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
@@ -116,6 +121,7 @@ func (spider *Spider) Throttle() {
 		if !spider.Stop {
 			break
 		}
+		spider.Transport.Close()
 		time.Sleep(3e9)
 	}
 

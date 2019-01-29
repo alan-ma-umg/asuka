@@ -222,6 +222,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 					if !my.Stop {
 						break
 					}
+					spider.Transport.Close()
 					time.Sleep(3e9)
 				}
 				Crawl(my, spider)

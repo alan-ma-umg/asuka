@@ -21,7 +21,7 @@ func (my *Test) EntryUrl() []string {
 	var links []string
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, "http://hk.flysay.com:888/")
+		links = append(links, "http://192.168.100.125:666/forever/")
 	}
 
 	go func() {
@@ -41,10 +41,10 @@ var times int
 func (my *Test) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
 
-	if times < 200 {
-		times++
-		spider.UpdateTransport()
-	}
+	//if times < 200 {
+	//	times++
+	//	spider.UpdateTransport()
+	//}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {

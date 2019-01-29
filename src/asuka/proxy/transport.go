@@ -38,7 +38,6 @@ func init() {
 			time.Sleep(time.Duration(sleep) * time.Second)
 			sleep = helper.MinInt(600, sleep+10)
 
-
 			serverAddrMap := make(map[string][]*Transport)
 			for _, t := range transportList {
 				if t.S.EnablePing {
@@ -80,8 +79,9 @@ func lookIp(addr string) (*net.IPAddr, error) {
 var transportList []*Transport
 
 type Transport struct {
-	S *SsAddr
-	t http.RoundTripper
+	S               *SsAddr
+	t               http.RoundTripper
+	transportClosed bool
 
 	countSliceMutex         sync.RWMutex
 	CountSliceCursor        int
@@ -276,14 +276,21 @@ func (transport *Transport) recordFailureSecondCount() {
 	}
 }
 
-func (transport *Transport) Reconnect() {
-	if transport.S.ServerAddr != "" {
-		transport.S.Close()
-		transport.t.(*http.Transport).CloseIdleConnections()
+func (transport *Transport) Close() {
+	if !transport.transportClosed {
+		if transport.S.ServerAddr != "" {
+			transport.S.Close()
+			transport.t.(*http.Transport).CloseIdleConnections()
+		}
+		transport.transportClosed = true
 	}
-	transport.t = createHttpTransport(transport.S)
 }
 
-func (transport *Transport) GetHttpTransport() *http.Transport {
+func (transport *Transport) Connect() *http.Transport {
+	if transport.transportClosed {
+		transport.t = createHttpTransport(transport.S)
+		transport.transportClosed = false
+	}
+
 	return transport.t.(*http.Transport)
 }

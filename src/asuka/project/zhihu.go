@@ -239,5 +239,5 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 
 func zhiHuResetSpider(spider *spider.Spider) {
 	spider.RequestsMap = map[string]*http.Request{}
-	spider.UpdateTransport()
+	spider.Transport.Close()
 }

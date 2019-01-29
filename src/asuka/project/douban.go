@@ -563,5 +563,5 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 
 func DouBanResetSpider(spider *spider.Spider) {
 	spider.RequestsMap = map[string]*http.Request{}
-	spider.UpdateTransport()
+	spider.Transport.Close()
 }
