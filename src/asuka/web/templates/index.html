@@ -154,9 +154,7 @@
                 <th>Reconn</th>
                 <th>HTTP I/O</th>
                 <th>TCP I/O</th>
-                {{if .Check}}
-                    <th></th>
-                {{end}}
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -180,14 +178,12 @@
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
-                {{if .Check}}
-                    <td class="right ctl">
-                        <button class="btn-sm ctl" :disabled="item._btnDisabled"
-                                :class="{orange:!item.stop,green:item.stop}"
-                                style="color:#fff"
-                                v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
-                    </td>
-                {{end}}
+                <td class="right ctl">
+                    <button class="btn-sm ctl" :disabled="item._btnDisabled"
+                            :class="{orange:!item.stop,green:item.stop}"
+                            style="color:#fff"
+                            v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -196,18 +192,23 @@
     <div class="right" style="color: #dadada">
         {{"{{basic.date}}"}}
     </div>
-</div>
 
-<div class="ctrl-wrap">
-    {{if not .Check}}
-        <a href="/login">
-            <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
-        </a>
-    {{end}}
-    <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
-        Off
-    </button>
-    <input type="text" id="send-value" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
+
+    <div class="ctrl-wrap">
+        {{if not .Check}}
+            <a href="/login">
+                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
+            </a>
+        {{else}}
+            <button v-on:click="logout()" class="btn-mb"
+                    style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
+            </button>
+        {{end}}
+        <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+            Off
+        </button>
+        <input type="text" id="send-value" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
+    </div>
 </div>
 <script src="/static/Chart.min.js"></script>
 <script>
@@ -225,7 +226,16 @@
             },
             switchProject: function (item) {
                 this.$set(item, '_btnDisabled', true);
-                axios.post('/switchProject', {name: item.name,});
+                axios.post('/switchProject', {name: item.name,}).catch(function (error) {
+                    if (error.response.status === 401) {
+                        location.href = "/login"
+                    }
+                });
+            },
+            logout: function () {
+                axios.post('/logout').then(function () {
+                    location.reload();
+                });
             }
         },
         computed: {

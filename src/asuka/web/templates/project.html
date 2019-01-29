@@ -168,7 +168,8 @@
                 <td class="center">{{"{{item.ContentType}}"}}</td>
                 <td class="center">{{"{{item.ErrType}}"}}</td>
                 {{if .Check}}
-                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a></td>
+                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a>
+                    </td>
                 {{else}}
                     <td class="right">********</td>
                 {{end}}
@@ -195,9 +196,7 @@
                 <th>Reconn</th>
                 <th>HTTP I/O</th>
                 <th>TCP I/O</th>
-                {{if .Check}}
-                    <th></th>
-                {{end}}
+                <th></th>
             </tr>
             <tr style="background:#dadada">
                 {{if .Check}}
@@ -245,9 +244,7 @@
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
                 </td>
-                {{if .Check}}
-                    <td></td>
-                {{end}}
+                <td></td>
             </tr>
             </thead>
             <tbody>
@@ -314,13 +311,11 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
                 </td>
 
-                {{if .Check}}
-                    <td class="right ctl">
-                        <button class="btn-sm ctl" :disabled="server._btnDisabled"
-                                :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
-                                v-on:click.stop.prevent="switchServer(server)">{{"{{server.stop?'start':'stop'}}"}}</button>
-                    </td>
-                {{end}}
+                <td class="right ctl">
+                    <button class="btn-sm ctl" :disabled="server._btnDisabled"
+                            :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
+                            v-on:click.stop.prevent="switchServer(server)">{{"{{server.stop?'start':'stop'}}"}}</button>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -329,20 +324,26 @@
     <div class="right" style="color: #dadada">
         {{"{{basic.date}}"}}
     </div>
-</div>
 
-<div class="ctrl-wrap">
-    {{if not .Check}}
-        <a href="/login">
-            <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
-        </a>
-    {{end}}
-    <button id="ws-page-switch" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H / R
-    </button>
-    <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
-        Off
-    </button>
-    <input type="text" id="send-value" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
+
+    <div class="ctrl-wrap">
+        {{if not .Check}}
+            <a href="/login">
+                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
+            </a>
+        {{else}}
+            <button v-on:click="logout()" class="btn-mb"
+                    style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
+            </button>
+        {{end}}
+        <button id="ws-page-switch" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H /
+            R
+        </button>
+        <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+            Off
+        </button>
+        <input type="text" id="send-value" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
+    </div>
 </div>
 <script src="/static/Chart.min.js"></script>
 <script>
@@ -359,7 +360,16 @@
         methods: {
             switchServer: function (server) {
                 this.$set(server, '_btnDisabled', true);
-                axios.post('/switchServer', {project: '{{.ProjectName}}', name: server.name,});
+                axios.post('/switchServer', {project: '{{.ProjectName}}', name: server.name,}).catch(function (error) {
+                    if (error.response.status === 401) {
+                        location.href = "/login"
+                    }
+                });
+            },
+            logout: function () {
+                axios.post('/logout').then(function () {
+                    location.reload();
+                });
             }
         },
         computed: {
