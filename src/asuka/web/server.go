@@ -506,7 +506,12 @@ func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchInde
 			continue
 		}
 		if l.Index > recentFetchIndex {
-			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.Summary), l)
+			ll := *l
+			if !check {
+				ll.TransportName = ""
+				ll.RawUrl = ""
+			}
+			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.Summary), &ll)
 			lastIndex = helper.MaxInt64(lastIndex, l.Index)
 		}
 	}
@@ -669,7 +674,11 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["failure_level"] = s.FailureLevel
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
-		server["name"] = s.Transport.S.Name
+		if check {
+			server["name"] = s.Transport.S.Name
+		} else {
+			server["name"] = ""
+		}
 		if s.Transport.Ping == 0 {
 			server["ping"] = "-"
 		} else {
@@ -770,7 +779,11 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		num, _ := database.Redis().LLen(p.GetQueueKey()).Result() //about 1ms
 		queueCount += num
 
-		jsonMap["basic"].(map[string]interface{})["showing"] = p.Showing()
+		if check {
+			jsonMap["basic"].(map[string]interface{})["showing"] = p.Showing()
+		} else {
+			jsonMap["basic"].(map[string]interface{})["showing"] = ""
+		}
 	}
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)

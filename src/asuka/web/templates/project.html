@@ -75,7 +75,11 @@
                 <tbody>
                 <tr>
                     <td colspan="4">
-                        <p style="overflow:hidden;text-overflow: ellipsis;max-width: 400px">{{"{{basic.showing}}"}}</p>
+                        {{if .Check}}
+                            <p style="overflow:hidden;text-overflow: ellipsis;max-width: 400px">{{"{{basic.showing}}"}}</p>
+                        {{else}}
+                            <a href="/login" style="color: #ff9c38">Login Required</a>
+                        {{end}}
                     </td>
                 </tr>
                 <tr>
