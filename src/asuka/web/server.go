@@ -456,7 +456,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 
 	//login check
 	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
