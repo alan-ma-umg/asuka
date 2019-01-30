@@ -237,7 +237,7 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
                 </td>
-                <td class="center">{{"{{connectionSum?connectionSum:'-'}}"}}</td>
+                <td class="center">{{"{{connectionSum?connectionSum:'-'}}"}}/{{"{{established}}"}}</td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
                     /
@@ -303,7 +303,13 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
                 </td>
-                <td class="center">{{"{{server.connections?server.connections:'-'}}"}}</td>
+                <td class="center">
+                    <div style="display:inline-block;width:50px"
+                         class="right">{{"{{server.connections?server.connections:'-'}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:50px" class="left"
+                         :class="{'running':server.proxy_status == 30}">{{"{{server.proxy_status}}"}}</div>
+                </td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
                     /
@@ -394,6 +400,17 @@
             },
             connectionSum: function () {
                 return total(this.home.servers, "connections")
+            },
+            established: function () {
+
+                let total = 0;
+                for (let item of this.home.servers) {
+                    if (item["proxy_status"] !== "undefined" && item["proxy_status"] === 30) {
+                        total++
+                    }
+                }
+                return total;
+
             },
             retries: function () {
                 let str = "", k;

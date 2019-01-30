@@ -267,6 +267,11 @@ tr:hover {
     background: #ff9c38 !important;
 }
 
+.running {
+    color: #00af4c !important;
+    font-weight: 800;
+}
+
 .green {
     background: #00af4c !important;
 }

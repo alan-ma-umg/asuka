@@ -9,19 +9,25 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
 type Test struct {
 	*Implement
-	queueUrlLen int64
+	queueUrlLen      int64
+	spiderChannel    chan *spider.Spider
+	spiderLimit      map[string]int
+	spiderLimitMutex sync.Mutex
 }
 
 func (my *Test) EntryUrl() []string {
 	var links []string
+	my.spiderChannel = make(chan *spider.Spider, 5)
+	my.spiderLimit = make(map[string]int)
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, "http://192.168.100.125:666/forever/")
+		links = append(links, "http://hk.flysay.com:88/")
 	}
 
 	go func() {
@@ -35,16 +41,37 @@ func (my *Test) EntryUrl() []string {
 	return links
 }
 
-// frequency
-var times int
-
 func (my *Test) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
 
-	if times < 200 {
-		times++
-		spider.Transport.Close()
+	my.spiderLimitMutex.Lock()
+	_, ok := my.spiderLimit[spider.Transport.S.ServerAddr]
+	my.spiderLimitMutex.Unlock()
+
+	if !ok {
+		my.spiderChannel <- spider //stuck
 	}
+
+	my.spiderLimitMutex.Lock()
+	my.spiderLimit[spider.Transport.S.ServerAddr]++
+	limit := my.spiderLimit[spider.Transport.S.ServerAddr]
+	my.spiderLimitMutex.Unlock()
+
+	if limit > 5 || spider.FailureLevel != 0 {
+		spider.Transport.Close()
+		//spider.AddSleep(5e9)
+		spider.AddSleep(time.Duration(rand.Float64() * 10e9 * float64(limit)))
+		<-my.spiderChannel
+		my.spiderLimitMutex.Lock()
+		delete(my.spiderLimit, spider.Transport.S.ServerAddr)
+		my.spiderLimitMutex.Unlock()
+	}
+
+	//spider.AddSleep(time.Duration(rand.Float64() * 2e9))
+
+	//if times < 200 {
+	//	times++
+	//	spider.Transport.Close()
+	//}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {

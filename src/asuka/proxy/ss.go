@@ -25,9 +25,9 @@ type SsAddr struct {
 	TrafficOut  uint64
 	Connections int
 	listener    net.Listener
-	//closeFlag   bool
-	openChan  chan bool
-	closeChan chan bool
+	openChan    chan bool
+	closeChan   chan bool
+	Status      int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
 }
 
 func (my *SsAddr) setListener(l net.Listener) {
@@ -138,6 +138,7 @@ func relay(left, right net.Conn) (int64, int64, error) {
 }
 
 func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
+	SocksInfo.Status = 0
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Println("SS failed to listen: ", err)
@@ -147,9 +148,11 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 	SocksInfo.setListener(l)
+	SocksInfo.Status = 10
 	SocksInfo.openChan <- true
 
 	for {
+		SocksInfo.Status = 20
 		c, err := l.Accept()
 		if err != nil {
 			//if SocksInfo.closeFlag {
@@ -176,6 +179,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			}
 		}
 		go func() {
+			SocksInfo.Status = 30
 			defer func() {
 				c.Close()
 				//SocksInfo.Connections--

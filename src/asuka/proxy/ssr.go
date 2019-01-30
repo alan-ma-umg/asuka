@@ -44,6 +44,7 @@ type BackendInfo struct {
 }
 
 func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
+	SocksInfo.Status = 0
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Println("SSR failed to listen : ", err)
@@ -53,9 +54,11 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 
 	SocksInfo.ClientAddr = "127.0.0.1:" + strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	SocksInfo.setListener(listener)
+	SocksInfo.Status = 10
 	SocksInfo.openChan <- true
 
 	for {
+		SocksInfo.Status = 20
 		localConn, err := listener.Accept()
 		if err != nil {
 			select {
@@ -79,6 +82,7 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 }
 
 func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
+	SocksInfo.Status = 30
 	defer func() {
 		src.Close()
 		//SocksInfo.Connections--
