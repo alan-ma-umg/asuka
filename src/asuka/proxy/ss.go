@@ -19,6 +19,7 @@ type SsAddr struct {
 	Interval    float64
 	Type        string
 	Name        string
+	Group       string
 	ServerAddr  string
 	ClientAddr  string
 	TrafficIn   uint64
@@ -52,6 +53,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				EnablePing: server.EnablePing,
 				Interval:   server.Interval,
 				Name:       server.Name,
+				Group:      server.Group,
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),
@@ -89,6 +91,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				EnablePing: server.EnablePing,
 				Interval:   server.Interval,
 				Name:       server.Name,
+				Group:      server.Group,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),

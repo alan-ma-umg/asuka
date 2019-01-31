@@ -69,6 +69,8 @@ type Spider struct {
 
 	httpTrace                   *httptrace.ClientTrace
 	RecentSeveralTimesResultCap int
+
+	Test int
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {

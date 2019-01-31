@@ -14,6 +14,7 @@ type LocalTransport struct {
 	Enable   bool
 	Interval float64
 	Name     string
+	Group    string
 }
 
 type SsServer struct {
@@ -21,6 +22,7 @@ type SsServer struct {
 	EnablePing bool
 	Interval   float64
 	Name       string
+	Group      string
 	Server     string
 	ServerPort string
 	Password   string

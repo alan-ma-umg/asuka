@@ -182,6 +182,7 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	dt, _ := proxy.NewTransport(&proxy.SsAddr{
 		Name:       helper.Env().LocalTransport.Name,
+		Group:      helper.Env().LocalTransport.Group,
 		Enable:     helper.Env().LocalTransport.Enable,
 		EnablePing: false,
 		Interval:   helper.Env().LocalTransport.Interval,
@@ -232,6 +233,119 @@ func (my *Dispatcher) Run() *Dispatcher {
 
 	return my
 }
+
+func (my *Dispatcher) Run2() {
+	my.initSpider()
+
+	for _, l := range my.EntryUrl() {
+		if !my.queue.BlTestString(l) {
+			my.queue.Enqueue(l)
+		}
+	}
+
+	spiderChs := make(map[string]chan *spider.Spider)
+	for _, s := range my.GetSpiders() {
+		if _, ok := spiderChs[s.Transport.S.Group]; !ok {
+			spiderChs[s.Transport.S.Group] = make(chan *spider.Spider,5)
+		}
+	}
+
+	for group := range spiderChs {
+		go func(group string) {
+			for {
+				for _, s := range my.GetSpiders() {
+					if s.Transport.S.Group == group {
+						spiderChs[group] <- s
+						fmt.Println(group)
+					}
+				}
+			}
+		}(group)
+	}
+
+	//log.Println(len(spiderChs))
+	//go func() {
+	//	for {
+	//		for _, s := range my.GetSpiders() {
+	//			spiderChs[s.Transport.S.Group] <- s
+	//		}
+	//	}
+	//}()
+
+	time.Sleep(1e9)
+
+	//time.Sleep(1e9)
+
+	//for _, s := range my.GetSpiders() {
+	//	go func(sss *spider.Spider) {
+	//		for {
+	//			s := <-spiderChs[sss.Transport.S.ServerAddr]
+	//			project.Throttle(s)
+	//			project.RequestBefore(s)
+	//			s.Crawl(project.EnqueueFilter)
+	//			project.ResponseAfter(s)
+	//		}
+	//	}(s)
+	//}
+}
+
+//
+//func (dispatcher *Dispatcher) Run(project project.Project) {
+//	dispatcher.InitSpider()
+//
+//	for _, l := range project.EntryUrl() {
+//		if !database.Bl().TestString(l) {
+//			database.AddUrlQueue(l)
+//		}
+//	}
+//
+//	go func() {
+//		t := time.NewTicker(time.Minute)
+//		for {
+//			<-t.C
+//			min := 999999999999.0
+//			for _, s := range dispatcher.spiderArr {
+//				if s.Transport.LoopCountCut < min {
+//					min = s.Transport.LoopCountCut
+//				}
+//			}
+//
+//			//todo lock
+//			for _, s := range dispatcher.spiderArr {
+//				s.Transport.LoopCountCut /= min
+//			}
+//		}
+//	}()
+//
+//	spiderChs := make(map[string]chan *spider.Spider)
+//	for _, s := range dispatcher.spiderArr {
+//		spiderChs[s.Transport.S.ServerAddr] = make(chan *spider.Spider, 1)
+//	}
+//
+//	go func() {
+//		for {
+//			s := dispatcher.dispatcherSpider()
+//			spiderChs[s.Transport.S.ServerAddr] <- s
+//		}
+//	}()
+//
+//	time.Sleep(1e9)
+//
+//	for _, s := range dispatcher.spiderArr {
+//		go func(sss *spider.Spider) {
+//			for {
+//				s := <-spiderChs[sss.Transport.S.ServerAddr]
+//				project.Throttle(s)
+//				project.RequestBefore(s)
+//				s.Crawl(project.EnqueueFilter)
+//				project.ResponseAfter(s)
+//			}
+//		}(s)
+//	}
+//
+//	stuck := make(chan int)
+//	<-stuck
+//}
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")

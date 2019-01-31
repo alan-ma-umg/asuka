@@ -25,7 +25,8 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	asuka()
+	project.New(&project.Test{}).Run2()
+	//asuka()
 }
 
 func asuka() {

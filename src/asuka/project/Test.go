@@ -4,7 +4,7 @@ import (
 	"asuka/database"
 	"asuka/helper"
 	"asuka/spider"
-	"math/rand"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -40,32 +40,50 @@ func (my *Test) EntryUrl() []string {
 
 	return links
 }
-
-func (my *Test) Throttle(spider *spider.Spider) {
-
+func (my *Test) inQueue(spider *spider.Spider) {
 	my.spiderLimitMutex.Lock()
 	_, ok := my.spiderLimit[spider.Transport.S.ServerAddr]
 	my.spiderLimitMutex.Unlock()
 
 	if !ok {
 		my.spiderChannel <- spider //stuck
+		spider.Test = 10
+		fmt.Println("in")
 	}
 
 	my.spiderLimitMutex.Lock()
 	my.spiderLimit[spider.Transport.S.ServerAddr]++
+	my.spiderLimitMutex.Unlock()
+}
+
+func (my *Test) release(spider *spider.Spider) {
+
+	my.spiderLimitMutex.Lock()
 	limit := my.spiderLimit[spider.Transport.S.ServerAddr]
 	my.spiderLimitMutex.Unlock()
 
-	if limit > 5 || spider.FailureLevel != 0 {
-		spider.Transport.Close()
-		//spider.AddSleep(5e9)
-		spider.AddSleep(time.Duration(rand.Float64() * 10e9 * float64(limit)))
+	if spider.Stop || limit >= 5 || spider.FailureLevel > 1 {
 		<-my.spiderChannel
+		fmt.Println("out")
+		spider.Test = 20
+		spider.Transport.Close()
 		my.spiderLimitMutex.Lock()
+		//spider.AddSleep(time.Duration(rand.Float64() * 10e9 * float64(my.spiderLimit[spider.Transport.S.ServerAddr])))
 		delete(my.spiderLimit, spider.Transport.S.ServerAddr)
 		my.spiderLimitMutex.Unlock()
 	}
+}
 
+func (my *Test) ResponseAfter(spider *spider.Spider) {
+		my.release(spider)
+
+	//if spider.FailureLevel > 1 {
+	//	my.release(spider)
+	//}
+}
+func (my *Test) Throttle(spider *spider.Spider) {
+	my.inQueue(spider)
+	my.release(spider)
 	//spider.AddSleep(time.Duration(rand.Float64() * 2e9))
 
 	//if times < 200 {

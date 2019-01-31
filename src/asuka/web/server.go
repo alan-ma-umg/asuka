@@ -665,6 +665,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
 		server["proxy_status"] = s.Transport.S.Status
+		server["test"] = s.Test
 		server["loads"] = loads
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
