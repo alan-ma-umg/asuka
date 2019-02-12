@@ -75,25 +75,30 @@ func (my *Test) release(spider *spider.Spider) {
 }
 
 func (my *Test) ResponseAfter(spider *spider.Spider) {
-		my.release(spider)
+	//my.release(spider)
 
 	//if spider.FailureLevel > 1 {
 	//	my.release(spider)
 	//}
 }
 func (my *Test) Throttle(spider *spider.Spider) {
-	my.inQueue(spider)
-	my.release(spider)
-	//spider.AddSleep(time.Duration(rand.Float64() * 2e9))
+	//my.inQueue(spider)
+	//my.release(spider)
+
+	//spider.AddSleep(time.Duration(rand.Float64() * 60e9))
 
 	//if times < 200 {
 	//	times++
 	//	spider.Transport.Close()
 	//}
+
+	//if spider.Transport.LoadRate(60) > 5 {
+	//	spider.AddSleep((60 / 5) * 1e9)
+	//}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
-	spider.Client().Timeout = time.Second * 10
+	spider.Client().Timeout = time.Second * 2
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

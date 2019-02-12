@@ -226,7 +226,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 					spider.Transport.Close()
 					time.Sleep(3e9)
 				}
-				Crawl(my, spider)
+				Crawl(my, spider, nil)
 			}
 		}(s)
 	}
@@ -234,7 +234,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 	return my
 }
 
-func (my *Dispatcher) Run2() {
+func (my *Dispatcher) Run2() *Dispatcher {
 	my.initSpider()
 
 	for _, l := range my.EntryUrl() {
@@ -243,109 +243,70 @@ func (my *Dispatcher) Run2() {
 		}
 	}
 
-	spiderChs := make(map[string]chan *spider.Spider)
+	spiderChsByGroupAll := make(map[string]chan *spider.Spider)
+	spiderChsByGroupOut := make(map[string]chan *spider.Spider)
 	for _, s := range my.GetSpiders() {
-		if _, ok := spiderChs[s.Transport.S.Group]; !ok {
-			spiderChs[s.Transport.S.Group] = make(chan *spider.Spider,5)
+		if _, ok := spiderChsByGroupAll[s.Transport.S.Group]; !ok {
+			spiderChsByGroupAll[s.Transport.S.Group] = make(chan *spider.Spider, len(my.GetSpiders()))
+			spiderChsByGroupOut[s.Transport.S.Group] = make(chan *spider.Spider, 5)
 		}
+
+		spiderChsByGroupAll[s.Transport.S.Group] <- s
 	}
 
-	for group := range spiderChs {
+	//todo stop问题, spider不足空循环问题, 本地组
+	for group := range spiderChsByGroupAll {
 		go func(group string) {
-			for {
-				for _, s := range my.GetSpiders() {
-					if s.Transport.S.Group == group {
-						spiderChs[group] <- s
-						fmt.Println(group)
+			for s := range spiderChsByGroupAll[group] {
+				spiderChsByGroupOut[s.Transport.S.Group] <- s
+				go func(s *spider.Spider) {
+					s.Test = 10
+					release := false
+					var releaseSpider *spider.Spider
+
+					//stop status
+					for {
+						if !my.Stop && !s.Stop {
+							break
+						}
+
+						if !release {
+							release = true
+							releaseSpider = <-spiderChsByGroupOut[group]
+						}
+						s.Transport.Close()
+						time.Sleep(3e9)
 					}
-				}
+
+					for i := 0; i < 5; i++ {
+						Crawl(my, s, func(spider *spider.Spider) {
+							if s.FailureLevel > 1 {
+								if !release {
+									release = true
+									releaseSpider = <-spiderChsByGroupOut[group]
+								}
+								s.Transport.Close()
+							}
+						})
+					}
+
+					s.Transport.Close()
+					if !release {
+						release = true
+						releaseSpider = <-spiderChsByGroupOut[group]
+					}
+
+					s.Test = 20
+					time.Sleep(40e9)
+					spiderChsByGroupAll[group] <- releaseSpider
+				}(s)
 			}
 		}(group)
+
 	}
 
-	//log.Println(len(spiderChs))
-	//go func() {
-	//	for {
-	//		for _, s := range my.GetSpiders() {
-	//			spiderChs[s.Transport.S.Group] <- s
-	//		}
-	//	}
-	//}()
-
-	time.Sleep(1e9)
-
-	//time.Sleep(1e9)
-
-	//for _, s := range my.GetSpiders() {
-	//	go func(sss *spider.Spider) {
-	//		for {
-	//			s := <-spiderChs[sss.Transport.S.ServerAddr]
-	//			project.Throttle(s)
-	//			project.RequestBefore(s)
-	//			s.Crawl(project.EnqueueFilter)
-	//			project.ResponseAfter(s)
-	//		}
-	//	}(s)
-	//}
+	return my
 }
-
-//
-//func (dispatcher *Dispatcher) Run(project project.Project) {
-//	dispatcher.InitSpider()
-//
-//	for _, l := range project.EntryUrl() {
-//		if !database.Bl().TestString(l) {
-//			database.AddUrlQueue(l)
-//		}
-//	}
-//
-//	go func() {
-//		t := time.NewTicker(time.Minute)
-//		for {
-//			<-t.C
-//			min := 999999999999.0
-//			for _, s := range dispatcher.spiderArr {
-//				if s.Transport.LoopCountCut < min {
-//					min = s.Transport.LoopCountCut
-//				}
-//			}
-//
-//			//todo lock
-//			for _, s := range dispatcher.spiderArr {
-//				s.Transport.LoopCountCut /= min
-//			}
-//		}
-//	}()
-//
-//	spiderChs := make(map[string]chan *spider.Spider)
-//	for _, s := range dispatcher.spiderArr {
-//		spiderChs[s.Transport.S.ServerAddr] = make(chan *spider.Spider, 1)
-//	}
-//
-//	go func() {
-//		for {
-//			s := dispatcher.dispatcherSpider()
-//			spiderChs[s.Transport.S.ServerAddr] <- s
-//		}
-//	}()
-//
-//	time.Sleep(1e9)
-//
-//	for _, s := range dispatcher.spiderArr {
-//		go func(sss *spider.Spider) {
-//			for {
-//				s := <-spiderChs[sss.Transport.S.ServerAddr]
-//				project.Throttle(s)
-//				project.RequestBefore(s)
-//				s.Crawl(project.EnqueueFilter)
-//				project.ResponseAfter(s)
-//			}
-//		}(s)
-//	}
-//
-//	stuck := make(chan int)
-//	<-stuck
-//}
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")
@@ -355,13 +316,13 @@ func (my *Dispatcher) CleanUp() *Dispatcher {
 	return my
 }
 
-func Crawl(project *Dispatcher, spider *spider.Spider) {
+func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(spider *spider.Spider)) {
 	if project != nil {
 		spider.RequestBefore = project.RequestBefore
 		spider.DownloadFilter = project.DownloadFilter
 		spider.ProjectThrottle = project.Throttle
 	}
-	spider.Throttle()
+	spider.Throttle(dispatcherCallback)
 
 	link, err := spider.Queue.Dequeue()
 	if err != nil {

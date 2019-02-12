@@ -109,7 +109,7 @@ func (spider *Spider) ResetSleep() {
 	spider.SleepDuration = 0
 }
 
-func (spider *Spider) Throttle() {
+func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 	if spider.Transport.S.Interval > .0 {
 		spider.AddSleep(time.Duration(spider.Transport.S.Interval * 1e9))
 	}
@@ -162,6 +162,9 @@ func (spider *Spider) Throttle() {
 	}
 
 	spider.ProjectThrottle(spider)
+	if dispatcherCallback != nil {
+		dispatcherCallback(spider)
+	}
 	//go to sleep and reset sleep duration
 	if duration := spider.GetSleep(); duration > 0 {
 		time.Sleep(duration)
