@@ -40,8 +40,8 @@ func asuka() {
 		//project.New(&project.JianShu{}).Run(),
 		//project.New(&project.Www{}).Run(),
 
-		//project.New(&project.DouBan{}).CleanUp().Run(),
-		project.New(&project.Test{}).CleanUp().Run2(),
+		project.New(&project.DouBan{}).CleanUp().Run2(),
+		//project.New(&project.Test{}).CleanUp().Run2(),
 		//project.New(&project.Test2{}).CleanUp().Run(),
 		//project.New(&project.ZhiHu{}).CleanUp().Run(),
 		//project.New(&project.JianShu{}).CleanUp().Run(),

@@ -9,7 +9,6 @@ import (
 	"hash/crc32"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -108,13 +107,13 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
-
-	if spider.FailureLevel > 1 {
-		DouBanResetSpider(spider)
-	} else if rand.Intn(30) == 10 {
-		DouBanResetSpider(spider)
-	}
+	//spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+	//
+	//if spider.FailureLevel > 1 {
+	//	DouBanResetSpider(spider)
+	//} else if rand.Intn(30) == 10 {
+	//	DouBanResetSpider(spider)
+	//}
 }
 
 func (my *DouBan) RequestBefore(spider *spider.Spider) {
