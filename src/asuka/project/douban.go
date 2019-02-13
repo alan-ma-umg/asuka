@@ -9,6 +9,7 @@ import (
 	"hash/crc32"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -107,7 +108,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	//spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
 	//
 	//if spider.FailureLevel > 1 {
 	//	DouBanResetSpider(spider)
@@ -128,6 +129,11 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 	}
 
 	spider.Client().Timeout = 20 * time.Second
+}
+
+func (my *DouBan) ResponseAfter(spider *spider.Spider) {
+	spider.RequestsMap = map[string]*http.Request{}
+	spider.Transport.Close()
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -558,9 +564,4 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 	}
 
 	return l.Scheme + "://" + l.Host + l.Path
-}
-
-func DouBanResetSpider(spider *spider.Spider) {
-	spider.RequestsMap = map[string]*http.Request{}
-	spider.Transport.Close()
 }
