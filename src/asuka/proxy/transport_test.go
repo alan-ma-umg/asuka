@@ -3,10 +3,59 @@ package proxy
 import (
 	"asuka/helper"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"testing"
 	"time"
 )
+
+func TestHTTPProxyTransport(t *testing.T) {
+	//creating the proxyURL
+	proxyStr := ""
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//creating the URL to be loaded through the proxy
+	urlStr := "https://www.douban.com/"
+	uurl, err := url.Parse(urlStr)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//adding the proxy settings to the Transport object
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+
+	//adding the Transport object to the http Client
+	client := &http.Client{
+		Transport: transport,
+	}
+
+	//generating the HTTP GET request
+	request, err := http.NewRequest("GET", uurl.String(), nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//calling the URL
+	response, err := client.Do(request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//getting the response
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Println(err)
+	}
+	//printing the response
+	log.Println(string(data))
+}
 
 func TestTransport(t *testing.T) {
 	t1, _ := NewTransport(&SsAddr{})
@@ -46,7 +95,7 @@ func TestTransport(t *testing.T) {
 		//fmt.Println("Fail: ", t1.FailureRate(600))
 
 		//helper.PrintMemUsage()
-		t1.countSliceCursor++
+		//t1.countSliceCursor++
 		t1.recordAccessSecondCount()
 		t1.recordFailureSecondCount()
 	}
@@ -93,8 +142,8 @@ func TestTransport(t *testing.T) {
 	fmt.Println("Load: ", t1.LoadRate(3600))
 
 	fmt.Println(helper.SpiderFailureRate(t1.AccessCount(30 * 60)))
-	log.Println(len(t1.accessCountSecondSlice))
-	log.Println(len(t1.accessCountMinuteSlice))
+	//log.Println(len(t1.accessCountSecondSlice))
+	//log.Println(len(t1.accessCountMinuteSlice))
 	log.Println(t1.AccessCount(CountQueueSecondCap + 1))
 
 	startTime := time.Now()
