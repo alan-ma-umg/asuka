@@ -56,6 +56,11 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 	}
 
 	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+
+	if spider.FailureLevel > 1 {
+		spider.RequestsMap = map[string]*http.Request{}
+		spider.Transport.Close()
+	}
 }
 
 func (my *Pixiv) RequestBefore(spider *spider.Spider) {
@@ -73,8 +78,6 @@ func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
-	//spider.RequestsMap = map[string]*http.Request{}
-	//spider.Transport.Close()
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
