@@ -196,7 +196,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		data.Check = authCheck(cookie.Value)
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "index.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +230,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		data.Check = authCheck(cookie.Value)
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "project.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -388,7 +388,7 @@ func getDispatcher(name string) *project.Dispatcher {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "login.html")).Execute(w, nil)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"login.html")).Execute(w, nil)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -435,9 +435,9 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		jsonMap["message"] = "success"
 		jsonMap["url"] = "/"
 
-		expireDuration := time.Hour * 48
+		expireDuration := time.Hour * 24 * 7
 		id, _ := helper.Enc([]byte(helper.Env().WEBPassword))
-		cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: time.Now().Add(expireDuration), MaxAge: 86400, HttpOnly: true}
+		cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: time.Now().Add(expireDuration), MaxAge: 0, HttpOnly: true}
 		database.Redis().Set(id, helper.Env().WEBPassword, expireDuration)
 		http.SetCookie(w, cookie)
 	} else {
@@ -477,7 +477,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath + "queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {
