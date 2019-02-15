@@ -186,10 +186,25 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 		Enable:     helper.Env().LocalTransport.Enable,
 		EnablePing: false,
 		Interval:   helper.Env().LocalTransport.Interval,
+		Type:       "local",
 	})
 	transports = append(transports, dt)
-
 	var repeat []string
+
+	for _, ssAddr := range proxy.HttpProxyHandler() {
+		if helper.Contains(repeat, ssAddr.ServerAddr) {
+			log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+		}
+		repeat = append(repeat, ssAddr.ServerAddr)
+
+		t, err := proxy.NewTransport(ssAddr)
+		if err != nil {
+			log.Println("proxy error: ", err)
+			continue
+		}
+		transports = append(transports, t)
+	}
+
 	for _, ssAddr := range proxy.SSLocalHandler() {
 		if helper.Contains(repeat, ssAddr.ServerAddr) {
 			log.Println("DUPLICATE: " + ssAddr.ServerAddr)

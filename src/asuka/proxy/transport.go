@@ -8,6 +8,7 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -113,7 +114,6 @@ func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 
 func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 	t := &http.Transport{
-		Proxy:                 nil, //disable system proxy
 		MaxIdleConnsPerHost:   2,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
@@ -121,20 +121,35 @@ func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	if SockInfo.ServerAddr == "" { //no socks5 proxy
-
+	switch SockInfo.Type {
+	case "local":
+		t.Proxy = nil //disable system proxy
 		t.DialContext = (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
 			DualStack: true,
 		}).DialContext
-	} else { //use socks5 proxy
+	case "http", "https":
+		proxyURL, err := url.Parse(SockInfo.ServerAddr)
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+
+		t.Proxy = http.ProxyURL(proxyURL) // with http proxy
+		t.DialContext = (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext
+	case "ss", "ssr":
 		SockInfo.WaitUntilConnected() //waiting
 		dialer, err := proxy.SOCKS5("tcp", SockInfo.ClientAddr, nil, proxy.Direct)
 		if err != nil {
 			log.Fatal(err)
 			return nil
 		}
+		t.Proxy = nil //disable system proxy
 		t.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return dialer.Dial(network, addr)
 		}
@@ -278,7 +293,7 @@ func (transport *Transport) recordFailureSecondCount() {
 
 func (transport *Transport) Close() {
 	if !transport.transportClosed {
-		if transport.S.ServerAddr != "" {
+		if transport.S.Type == "ss" || transport.S.Type == "ssr" {
 			transport.S.Close()
 			transport.t.(*http.Transport).CloseIdleConnections()
 		}

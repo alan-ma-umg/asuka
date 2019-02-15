@@ -60,6 +60,17 @@ func Env() *EnvConfig {
 				}
 			}
 		}
+
+		//strings.TrimSpace for each type of string
+		for _, s := range envConfig.HttpProxyServers {
+			s := reflect.ValueOf(s).Elem()
+			for i := 0; i < s.NumField(); i++ {
+				f := s.Field(i)
+				if f.Kind() == reflect.String && f.CanSet() {
+					f.SetString(strings.TrimSpace(f.Interface().(string)))
+				}
+			}
+		}
 	})
 
 	return envConfig
@@ -249,6 +260,31 @@ func MaxInt64(a, b int64) int64 {
 		return b
 	}
 	return a
+}
+
+func HttpProxyParse(str string) {
+	var servers []*HttpProxyServer
+	for _, line := range strings.Split(str, "\n") {
+		s := strings.Split(line, ":")
+
+		servers = append(servers, &HttpProxyServer{
+			Enable:     true,
+			EnablePing: true,
+			Interval:   0,
+			Name:       s[0],
+			Group:      "httpProxy",
+			Server:     s[0],
+			ServerPort: s[1],
+			Type:       "http",
+		})
+	}
+
+	b, err := json.Marshal(servers)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(b))
 }
 
 func SSSubscriptionParse(rawUrl string) {

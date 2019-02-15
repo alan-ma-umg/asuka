@@ -1,13 +1,14 @@
 package helper
 
 type EnvConfig struct {
-	TemplatePath    string
-	BloomFilterPath string
-	WEBPassword     string
-	LocalTransport  LocalTransport //using http.DefaultTransport
-	SsServers       []*SsServer
-	Redis           Redis
-	MysqlDSN        string
+	TemplatePath     string
+	BloomFilterPath  string
+	WEBPassword      string
+	LocalTransport   LocalTransport //using http.DefaultTransport
+	SsServers        []*SsServer
+	HttpProxyServers []*HttpProxyServer
+	Redis            Redis
+	MysqlDSN         string
 }
 
 type LocalTransport struct {
@@ -15,6 +16,17 @@ type LocalTransport struct {
 	Interval float64
 	Name     string
 	Group    string
+}
+
+type HttpProxyServer struct {
+	Enable     bool
+	EnablePing bool
+	Interval   float64
+	Name       string
+	Group      string
+	Server     string
+	ServerPort string
+	Type       string
 }
 
 type SsServer struct {
