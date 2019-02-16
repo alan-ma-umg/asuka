@@ -640,6 +640,10 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
 
 	for index, s := range p.GetSpiders() {
+		if index > 200 {
+			break
+		}
+
 		avgTime := s.GetAvgTime()
 
 		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
@@ -709,6 +713,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	b, _ := json.Marshal(jsonMap)
 	return b
 }
+
 func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string]interface{}, start time.Time) {
 	defer func() {
 		jsonMap["basic"].(map[string]interface{})["time"] = time.Since(start).Truncate(time.Microsecond).String()
@@ -732,6 +737,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	var redisMem int64
 	var serverCount int
 	var serverEnable int
+	var accessCount int
+	var failureCount int
 
 	loads := make(map[int]float64, 9)
 	for _, p := range ps {
@@ -766,6 +773,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			TrafficOut += s.Transport.TrafficOut
 			NetIn += s.Transport.S.TrafficIn
 			NetOut += s.Transport.S.TrafficOut
+			accessCount += s.Transport.GetAccessCount()
+			failureCount += s.Transport.GetFailureCount()
 		}
 
 		if len(p.GetSpiders()) > 0 {
@@ -821,6 +830,9 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
+
+	jsonMap["basic"].(map[string]interface{})["access_count"] = accessCount
+	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
 
 	jsonMap["basic"].(map[string]interface{})["date"] = time.Now().Format(time.RFC3339)
 	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(StartTime).Truncate(time.Second).String()

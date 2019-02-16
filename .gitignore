@@ -5,6 +5,7 @@ bin
 temp
 *.db
 *.gob
+*.json
 nohup.out
 
 #config file

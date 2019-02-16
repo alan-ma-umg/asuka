@@ -4,7 +4,6 @@ import (
 	"asuka/database"
 	"asuka/helper"
 	"asuka/spider"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -17,11 +16,14 @@ type Test2 struct {
 	queueUrlLen int64
 }
 
+//var test2BaseUrl = "http://z.flysay.com:888/"
+var test2BaseUrl = "http://hk.flysay.com:88/"
+
 func (my *Test2) EntryUrl() []string {
 	var links []string
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, "http://z.flysay.com:888/")
+		links = append(links, test2BaseUrl)
 	}
 
 	go func() {
@@ -37,11 +39,11 @@ func (my *Test2) EntryUrl() []string {
 
 // frequency
 func (my *Test2) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
+	//spider.AddSleep(time.Duration(rand.Float64() * 1e9))
 }
 
 func (my *Test2) RequestBefore(spider *spider.Spider) {
-	spider.Client().Timeout = time.Second * 10
+	spider.Client().Timeout = time.Minute
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -57,6 +59,10 @@ func (my *Test2) DownloadFilter(spider *spider.Spider, response *http.Response) 
 // queue
 func (my *Test2) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if my.queueUrlLen > 20000 {
+		return
+	}
+
+	if !strings.HasPrefix(strings.ToLower(l.String()), test2BaseUrl) {
 		return
 	}
 

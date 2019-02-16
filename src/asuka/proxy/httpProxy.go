@@ -14,7 +14,7 @@ func HttpProxyHandler() (ssAddr []*SsAddr) {
 			Name:       server.Name,
 			Group:      server.Group,
 			Type:       strings.ToLower(server.Type),
-			ServerAddr: strings.ToLower(server.Type + "://" + server.Server + ":" + server.ServerPort),
+			ServerAddr: strings.ToLower(server.Server + ":" + server.ServerPort),
 			openChan:   make(chan bool),
 			closeChan:  make(chan bool, 1),
 		}

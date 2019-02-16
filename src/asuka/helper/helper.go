@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -48,6 +49,15 @@ func Env() *EnvConfig {
 		err = decoder.Decode(&envConfig)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
+		if err == nil {
+			decoder := json.NewDecoder(file)
+			err = decoder.Decode(&envConfig.HttpProxyServers)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		//strings.TrimSpace for each type of string
@@ -262,10 +272,13 @@ func MaxInt64(a, b int64) int64 {
 	return a
 }
 
-func HttpProxyParse(str string) {
+func HttpProxyParse(str string) string {
 	var servers []*HttpProxyServer
-	for _, line := range strings.Split(str, "\n") {
+	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
 		s := strings.Split(line, ":")
+		if len(s) != 2 {
+			continue
+		}
 
 		servers = append(servers, &HttpProxyServer{
 			Enable:     true,
@@ -279,12 +292,8 @@ func HttpProxyParse(str string) {
 		})
 	}
 
-	b, err := json.Marshal(servers)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(string(b))
+	b, _ := json.Marshal(servers)
+	return string(b)
 }
 
 func SSSubscriptionParse(rawUrl string) {

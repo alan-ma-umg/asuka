@@ -93,11 +93,11 @@
         </div>
         <div class="head-item">
             <div style="float:right">
-                <h1>{{"{{basic.net_out}}"}}</h1>
+                <h1>{{"{{basic.traffic_out}}"}}</h1>
                 <small>TCP traffic out</small>
             </div>
             <div>
-                <h1>{{"{{basic.net_in}}"}}</h1>
+                <h1>{{"{{basic.traffic_in}}"}}</h1>
                 <small>TCP traffic in</small>
             </div>
             <br>
@@ -108,13 +108,13 @@
                         Request
                     </td>
                     <td>
-                        <strong>{{"{{accessSum|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.access_count|numberFormat}}"}}</strong>
                     </td>
                     <td>
                         Failed
                     </td>
                     <td>
-                        <strong>{{"{{failureSum|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.failure_count|numberFormat}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -193,62 +193,12 @@
                 <th>Status</th>
                 <th style="min-width:145px">Failure Recent/all</th>
                 <th style="width:1px">Dispatch</th>
-                <th>Ping / Lost</th>
                 <th>Load 5s/60s</th>
                 <th style="min-width:70px">Time</th>
                 <th>Pass / Sleep</th>
                 <th>Reconn</th>
                 <th>HTTP I/O</th>
-                <th>TCP I/O</th>
                 <th></th>
-            </tr>
-            <tr style="background:#dadada">
-                {{if .Check}}
-                    <td colspan="2" class="left">{{"{{home.servers.length}}"}} Rows, {{"{{serverRunning}}"}}Running
-                    </td>
-                {{else}}
-                    <td></td>
-                {{end}}
-                <td class="center">{{"{{statusAvg}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{failurePeriodAvg}}"}}%</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureAllAvg}}"}}%</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{accessSum}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{failureSum}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.ping_avg}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.ping_failure_avg}}"}}%
-                    </div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">{{"{{basic.loads[5].toFixed(2)}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">{{"{{basic.loads[60].toFixed(2)}}"}}</div>
-                </td>
-                <td class="center">{{"{{basic.avg_time_avg}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:80px" class="right">{{"{{basic.waiting_avg}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:80px" class="left">{{"{{basic.sleep_avg}}"}}</div>
-                </td>
-                <td class="center">{{"{{connectionSum?connectionSum:'-'}}"}}/{{"{{established}}"}}</td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.traffic_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.traffic_out}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{basic.net_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{basic.net_out}}"}}</div>
-                </td>
-                <td></td>
             </tr>
             </thead>
             <tbody>
@@ -281,17 +231,6 @@
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.failure_count}}"}}</div>
                 </td>
                 <td class="center">
-                    <div style="display:inline-block;width:45px" class="right">
-                        <span :style="{color: 'hsl('+server.ping_hsl+', 100%, 35%)'}">{{"{{server.ping}}"}}</span>
-                    </div>
-                    /
-                    <div style="display:inline-block;width:45px" class="left">
-                    <span :style="{color: 'hsl('+server.ping_failure_hsl+', 100%, 35%)'}">
-                    {{"{{server.ping_failure}}"}} %
-                    </span>
-                    </div>
-                </td>
-                <td class="center">
                     <div style="display:inline-block;width:45px"
                          class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
                     /
@@ -316,12 +255,6 @@
                     /
                     <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
                 </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.net_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.net_out}}"}}</div>
-                </td>
-
                 <td class="right ctl">
                     <button class="btn-sm ctl" :disabled="server._btnDisabled"
                             :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
@@ -384,18 +317,18 @@
             }
         },
         computed: {
-            accessSum: function () {
-                return total(this.home.servers, "access_count");
-            },
-            failureSum: function () {
-                return total(this.home.servers, "failure_count");
-            },
-            failurePeriodAvg: function () {
-                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
-            },
-            failureAllAvg: function () {
-                return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
-            },
+            // accessSum: function () {
+            //     return total(this.home.servers, "access_count");
+            // },
+            // failureSum: function () {
+            //     return total(this.home.servers, "failure_count");
+            // },
+            // failurePeriodAvg: function () {
+            //     return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
+            // },
+            // failureAllAvg: function () {
+            //     return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
+            // },
             statusAvg: function () {
                 return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
             },

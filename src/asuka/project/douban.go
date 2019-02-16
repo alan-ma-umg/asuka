@@ -108,7 +108,7 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 60e9))
 	//
 	//if spider.FailureLevel > 1 {
 	//	DouBanResetSpider(spider)
@@ -374,13 +374,29 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 		}
 
 		//alias
-		if len(model.Alias) == 0 && n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "又名:" {
+		//if len(model.Alias) == 0 {
+		if n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "又名:" {
 			if alias := strings.Split(n.NextSibling.Data, "/"); len(alias) > 0 {
 				for _, v := range alias {
 					model.Alias = append(model.Alias, strings.TrimSpace(v))
 				}
 			}
 		}
+		if n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "副标题:" {
+			if alias := strings.Split(n.NextSibling.Data, "/"); len(alias) > 0 {
+				for _, v := range alias {
+					model.Alias = append(model.Alias, strings.TrimSpace(v))
+				}
+			}
+		}
+		if n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "原作名:" {
+			if alias := strings.Split(n.NextSibling.Data, "/"); len(alias) > 0 {
+				for _, v := range alias {
+					model.Alias = append(model.Alias, strings.TrimSpace(v))
+				}
+			}
+		}
+		//}
 
 		//date
 		if model.DateStr == "" && n.Data == "span" && n.FirstChild != nil && n.FirstChild.Data == "出版年:" && n.NextSibling != nil && n.NextSibling.Data != "" {
@@ -401,6 +417,8 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 				} else if t, err := time.Parse("2006年01月第一版", model.DateStr); err == nil {
 					model.Date = t.Unix()
 				} else if t, err := time.Parse("20060102", model.DateStr); err == nil {
+					model.Date = t.Unix()
+				} else if t, err := time.Parse("200601", model.DateStr); err == nil {
 					model.Date = t.Unix()
 				} else if t, err := time.Parse("2006年", model.DateStr); err == nil {
 					model.Date = t.Unix()
@@ -539,6 +557,10 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	if model.Title == "页面不存在" && model.Name == "" {
 		spider.Queue.EnqueueForFailure(spider.CurrentRequest().URL.String(), 3)
 	}
+
+	//clear
+	model.Title = ""
+	model.Data = make(map[string]interface{}, 1)
 
 	_, err = database.Mysql().Insert(model)
 	my.lastInsertId = model.Id

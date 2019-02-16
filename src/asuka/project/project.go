@@ -91,7 +91,7 @@ func New(project IProject) *Dispatcher {
 		for _, sp := range d.GetSpiders() {
 			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
 				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
-				fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
+				//fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
 			}
 		}
 
@@ -193,7 +193,8 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 
 	for _, ssAddr := range proxy.HttpProxyHandler() {
 		if helper.Contains(repeat, ssAddr.ServerAddr) {
-			log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+			//log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+			continue
 		}
 		repeat = append(repeat, ssAddr.ServerAddr)
 
