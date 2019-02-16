@@ -41,10 +41,10 @@ type AsukaDouBan struct {
 	Isbn      int64
 	Data      map[string]interface{} `xorm:"json"`
 	Url       string                 `xorm:"varchar(1024)"`
-	UrlCrc32  int64
-	Version   int `xorm:"version"`
-	UpdatedAt int `xorm:"updated"`
-	CreatedAt int `xorm:"created"`
+	UrlCrc32  int64                  `xorm:"index"`
+	Version   int                    `xorm:"version"`
+	UpdatedAt int                    `xorm:"updated"`
+	CreatedAt int                    `xorm:"created"`
 }
 
 var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchString
@@ -84,10 +84,12 @@ func (my *DouBan) EntryUrl() []string {
 		}
 	}()
 
+	//create table
 	err := database.Mysql().CreateTables(&AsukaDouBan{})
 	if err != nil {
 		panic(err)
 	}
+	database.Mysql().CreateIndexes(&AsukaDouBan{})
 
 	var links []string
 	for ii := 0; ii < 5; ii++ {
@@ -596,12 +598,26 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	model.Title = ""
 	model.Data = make(map[string]interface{}, 1)
 
-	_, err = database.Mysql().Insert(model)
-	my.lastInsertId = model.Id
-	if err != nil {
-		my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
-		database.MysqlDelayInsertTillSuccess(model)
-		log.Println(spider.CurrentRequest().URL.String(), err)
+	//database
+	existsModel := &AsukaDouBan{
+		UrlCrc32: model.UrlCrc32,
+		Url:      model.Url,
+	}
+	if ok, err := database.Mysql().Get(existsModel); ok && err == nil {
+		//update
+		model.Version = existsModel.Version
+		if _, err = database.Mysql().Id(existsModel.Id).Update(model); err != nil {
+			log.Println(spider.CurrentRequest().URL.String(), err)
+		}
+	} else {
+		//insert
+		_, err = database.Mysql().Insert(model)
+		my.lastInsertId = model.Id
+		if err != nil {
+			my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
+			database.MysqlDelayInsertTillSuccess(model)
+			log.Println(spider.CurrentRequest().URL.String(), err)
+		}
 	}
 }
 

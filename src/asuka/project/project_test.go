@@ -1,14 +1,18 @@
 package project
 
 import (
+	"asuka/database"
+	"asuka/helper"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/html"
+	"hash/crc32"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -15862,8 +15866,10 @@ func TestZhiHu_PageHtml(t *testing.T) {
 
 func TestDouBanPageHtml(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	helper.PathToEnvFile = os.Args[1]
+	helper.PathToEnvFile = "C:/data/codes/asuka/env.json"
 	//movie
-	u, _ := url.Parse("https://movie.douban.com/subject/26394152/?from=showing")
+	u, _ := url.Parse("https://movie.douban.com/subject/26394152/")
 	node, err := html.Parse(ioutil.NopCloser(bytes.NewBuffer([]byte(html22))))
 	if err != nil {
 		return
@@ -15887,6 +15893,16 @@ func TestDouBanPageHtml(t *testing.T) {
 	DouBanPageHtml(node, model)
 
 	printAll(reflect.ValueOf(model).Elem())
+
+	//update
+	existsModel := &AsukaDouBan{
+		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(u.String()))),
+		Url:      u.String(),
+	}
+	if ok, err := database.Mysql().Get(existsModel); ok && err == nil {
+		model.Version = existsModel.Version
+		database.Mysql().Id(existsModel.Id).Update(model)
+	}
 
 	fmt.Println("")
 	//book
