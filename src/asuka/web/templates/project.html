@@ -197,7 +197,6 @@
                 <th>Load 5s/60s</th>
                 <th style="min-width:70px">Time</th>
                 <th>Pass / Sleep</th>
-                <th>Reconn</th>
                 <th>HTTP I/O</th>
                 <th></th>
             </tr>
@@ -243,13 +242,6 @@
                     <div style="display:inline-block;width:80px" class="right">{{"{{server.waiting}}"}}</div>
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
-                </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px"
-                         class="right">{{"{{server.connections?server.connections:'-'}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left"
-                         :class="{'running':server.proxy_status == 30}">{{"{{server.proxy_status}}"}}</div>
                 </td>
                 <td class="center">
                     <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>

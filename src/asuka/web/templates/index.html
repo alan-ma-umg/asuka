@@ -95,11 +95,11 @@
         </div>
         <div class="head-item">
             <div style="float:right">
-                <h1>{{"{{basic.net_out}}"}}</h1>
+                <h1>{{"{{basic.traffic_out}}"}}</h1>
                 <small>TCP traffic out</small>
             </div>
             <div>
-                <h1>{{"{{basic.net_in}}"}}</h1>
+                <h1>{{"{{basic.traffic_in}}"}}</h1>
                 <small>TCP traffic in</small>
             </div>
             <br>
@@ -151,9 +151,7 @@
                 <th>Dispatch</th>
                 <th>Load 60s/15m</th>
                 <th>Pass/Sleep</th>
-                <th>Reconn</th>
-                <th>HTTP I/O</th>
-                <th>TCP I/O</th>
+                <th>Traffic I/O</th>
                 <th></th>
             </tr>
             </thead>
@@ -174,10 +172,8 @@
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.connections?item.connections:'-'}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.net_in}}"}} / {{"{{item.net_out}}"}}</td>
                 <td class="right ctl">
                     <button class="btn-sm ctl" :disabled="item._btnDisabled"
                             :class="{orange:!item.stop,green:item.stop}"
