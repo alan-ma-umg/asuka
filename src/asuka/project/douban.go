@@ -90,19 +90,19 @@ func (my *DouBan) EntryUrl() []string {
 	}
 
 	var links []string
-	for ii := 0; ii <= 3; ii++ {
-		for i := 0; i <= 12000; i++ {
-			if i%1000 == 0 {
-				links = append(links, "https://book.douban.com/tag/")
-				links = append(links, "https://movie.douban.com/tag/")
-				links = append(links, "https://movie.douban.com/tag/2019")
-				links = append(links, "https://movie.douban.com/tag/2018")
-				links = append(links, "https://movie.douban.com/tag/2017")
-				links = append(links, "https://movie.douban.com/tag/2016")
-				links = append(links, "https://movie.douban.com/tag/2015")
-			}
-			//links = append(links, "https://movie.douban.com/j/new_search_subjects?start="+strconv.Itoa(i))
-		}
+	for ii := 0; ii < 5; ii++ {
+		//for i := 0; i <= 12000; i++ {
+		//	if i%1000 == 0 {
+		links = append(links, "https://book.douban.com/tag/")
+		links = append(links, "https://movie.douban.com/tag/")
+		links = append(links, "https://movie.douban.com/tag/2019")
+		links = append(links, "https://movie.douban.com/tag/2018")
+		links = append(links, "https://movie.douban.com/tag/2017")
+		links = append(links, "https://movie.douban.com/tag/2016")
+		links = append(links, "https://movie.douban.com/tag/2015")
+		//}
+		//links = append(links, "https://movie.douban.com/j/new_search_subjects?start="+strconv.Itoa(i))
+		//}
 	}
 	return links
 }

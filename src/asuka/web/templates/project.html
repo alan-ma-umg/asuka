@@ -128,7 +128,8 @@
                         Failure All
                     </td>
                     <td>
-                        <strong>{{"{{failureAllAvg}}"}}%</strong>
+                        <strong>{{"{{ basic.access_count?(basic.failure_count/basic.access_count)*100:0 |numberFormat }}"}}
+                            %</strong>
                     </td>
                 </tr>
                 </tbody>
@@ -323,9 +324,9 @@
             // failureSum: function () {
             //     return total(this.home.servers, "failure_count");
             // },
-            // failurePeriodAvg: function () {
-            //     return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
-            // },
+            failurePeriodAvg: function () {
+                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
+            },
             // failureAllAvg: function () {
             //     return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
             // },
