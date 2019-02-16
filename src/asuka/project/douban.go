@@ -89,25 +89,21 @@ func (my *DouBan) EntryUrl() []string {
 		panic(err)
 	}
 
-	links := []string{
-		"https://book.douban.com/tag/",
-		"https://book.douban.com/tag/",
-		"https://book.douban.com/tag/",
-		"https://book.douban.com/tag/",
-		"https://book.douban.com/tag/",
-		"https://movie.douban.com/tag/",
-		"https://movie.douban.com/tag/",
-		"https://movie.douban.com/tag/",
-		"https://movie.douban.com/tag/",
-		"https://movie.douban.com/tag/",
-	}
-
-	for ii := 0; ii <= 5; ii++ {
+	var links []string
+	for ii := 0; ii <= 3; ii++ {
 		for i := 0; i <= 12000; i++ {
-			links = append(links, "https://movie.douban.com/j/new_search_subjects?start="+strconv.Itoa(i))
+			if i%1000 == 0 {
+				links = append(links, "https://book.douban.com/tag/")
+				links = append(links, "https://movie.douban.com/tag/")
+				links = append(links, "https://movie.douban.com/tag/2019")
+				links = append(links, "https://movie.douban.com/tag/2018")
+				links = append(links, "https://movie.douban.com/tag/2017")
+				links = append(links, "https://movie.douban.com/tag/2016")
+				links = append(links, "https://movie.douban.com/tag/2015")
+			}
+			//links = append(links, "https://movie.douban.com/j/new_search_subjects?start="+strconv.Itoa(i))
 		}
 	}
-
 	return links
 }
 
@@ -621,6 +617,18 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 
 	if strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/subject") && !isDouBanSubject(strings.ToLower(l.String())) {
 		return
+	}
+
+	//https://movie.douban.com/tag/%E6%97%A5%E8%AF%AD%E6%A0%87%E7%AD%BE?start=1
+	query := make(url.Values)
+	if l.Query().Get("start") != "" {
+		query.Set("start", l.Query().Get("start"))
+	}
+	if l.Query().Get("type") != "" {
+		query.Set("type", l.Query().Get("type"))
+	}
+	if query.Encode() != "" {
+		return l.Scheme + "://" + l.Host + l.Path + "?" + query.Encode()
 	}
 
 	return l.Scheme + "://" + l.Host + l.Path

@@ -16083,6 +16083,22 @@ func TestEEEEE(t *testing.T) {
 	fmt.Println(urls)
 }
 
+func TestUrlP(t *testing.T) {
+	l, _ := url.Parse("https://movie.douban.com/tag/%E6%97%A5%E8%AF%AD%E6%A0%87%E7%AD%BE?start=100&type=T")
+
+	fmt.Println(l.Query().Encode())
+	query := make(url.Values)
+	if l.Query().Get("start") != "" {
+		query.Set("start", l.Query().Get("start"))
+	}
+	if l.Query().Get("type") != "" {
+		query.Set("type", l.Query().Get("type"))
+	}
+	fmt.Println(query.Encode())
+
+	fmt.Println(l.Scheme + "://" + l.Host + l.Path)
+}
+
 func printAll(v reflect.Value) {
 	s := v
 	typeOfT := s.Type()
