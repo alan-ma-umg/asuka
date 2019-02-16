@@ -93,9 +93,10 @@ func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 		}
 
 		t.Proxy = http.ProxyURL(proxyURL) // with http proxy
+		t.TLSHandshakeTimeout = time.Minute
 		t.DialContext = (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
+			Timeout:   time.Minute,
+			KeepAlive: time.Minute,
 			DualStack: true,
 		}).DialContext
 	case "ss", "ssr":

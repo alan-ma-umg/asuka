@@ -135,7 +135,7 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest().Header.Set("Referer", my.lastRequestUrl)
 	}
 
-	spider.Client().Timeout = 20 * time.Second
+	spider.Client().Timeout = time.Minute
 }
 
 func (my *DouBan) ResponseAfter(spider *spider.Spider) {
