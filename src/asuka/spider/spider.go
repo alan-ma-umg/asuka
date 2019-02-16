@@ -437,7 +437,7 @@ func (spider *Spider) responseErrorHandler(err error) string {
 	case *net.OpError:
 		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		//2019/01/25 15:19:03 spider.go:431: Response *net.OpError  jp-b.mitsuha-node.com *net.OpError:  local error: tls: bad record MAC https://book.douban.com/subject/1836097/
-		log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		//log.Println("Response *net.OpError  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
 		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 4)
