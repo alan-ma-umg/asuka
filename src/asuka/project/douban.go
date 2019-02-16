@@ -88,7 +88,8 @@ func (my *DouBan) EntryUrl() []string {
 	if err != nil {
 		panic(err)
 	}
-	return []string{
+
+	links := []string{
 		"https://book.douban.com/tag/",
 		"https://book.douban.com/tag/",
 		"https://book.douban.com/tag/",
@@ -100,6 +101,14 @@ func (my *DouBan) EntryUrl() []string {
 		"https://movie.douban.com/tag/",
 		"https://movie.douban.com/tag/",
 	}
+
+	for ii := 0; ii <= 5; ii++ {
+		for i := 0; i <= 12000; i++ {
+			links = append(links, "https://movie.douban.com/j/new_search_subjects?start="+strconv.Itoa(i))
+		}
+	}
+
+	return links
 }
 
 // frequency
@@ -139,7 +148,7 @@ func (my *DouBan) ResponseAfter(spider *spider.Spider) {
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
 func (my *DouBan) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
-	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
+	if !strings.Contains(response.Header.Get("Content-type"), "text/html") && !strings.Contains(response.Header.Get("Content-type"), "application/json") {
 		return false, nil
 	}
 	if strings.ToLower(response.Header.Get("Content-Encoding")) != "gzip" {
@@ -515,7 +524,36 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 // ResponseSuccess HTTP请求成功(Response.Body下载完成)之后
 // 一般用于采集数据的地方
 func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
+	//movie json handle
+	if strings.HasPrefix(spider.CurrentRequest().URL.String(), "https://movie.douban.com/j/new_search_subjects") {
+		buf := &bytes.Buffer{}
+		buf.Write(spider.ResponseByte)
+		decoder := json.NewDecoder(buf)
+		movieJson := make(map[string]interface{})
+		if err := decoder.Decode(&movieJson); err != nil {
+			return
+		}
 
+		if data, ok := movieJson["data"]; ok {
+			for _, item := range data.([]interface{}) {
+				if m, ok := item.(map[string]interface{}); ok {
+					if rawUrl, ok := m["url"]; ok {
+						u, _ := url.Parse(rawUrl.(string))
+						if enqueueUrl := my.EnqueueFilter(spider, u); enqueueUrl != "" {
+							if spider.Queue.BlTestAndAddString(enqueueUrl) {
+								continue
+							}
+							spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
+						}
+					}
+				}
+			}
+		}
+
+		return
+	}
+
+	//subject
 	my.lastRequestUrl = spider.CurrentRequest().URL.String()
 	if !strings.Contains(my.lastRequestUrl, "douban.com/subject/") {
 		return

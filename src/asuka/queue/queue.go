@@ -22,7 +22,7 @@ type Queue struct {
 
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, BlsTestCount: make(map[int]int)}
-	q.bloomFilterInstance = bloom.NewWithEstimates(10000000, 0.001)
+	q.bloomFilterInstance = bloom.NewWithEstimates(50000000, 0.001)
 	f, _ := os.Open(q.GetBlKey())
 	q.bloomFilterInstance.ReadFrom(f)
 	f.Close()
@@ -92,7 +92,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	for i := len(my.bls); i <= index; i++ {
-		bloomFilterInstance := bloom.NewWithEstimates(1000000, 0.01)
+		bloomFilterInstance := bloom.NewWithEstimates(10000000, 0.01)
 		f, _ := os.Open(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()
