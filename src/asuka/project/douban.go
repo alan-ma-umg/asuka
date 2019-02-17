@@ -52,7 +52,8 @@ var isDouBanSubject = regexp.MustCompile(`douban.com/subject/[0-9]+/?$`).MatchSt
 type DouBan struct {
 	*Implement
 	lastRequestUrl  string
-	insertSpeed     int
+	dbSpeed         int
+	dbSpeedNum      int
 	lastInsertId    int64
 	lastInsertError string
 }
@@ -62,7 +63,7 @@ func (my *DouBan) Name() string {
 }
 
 func (my *DouBan) Showing() (str string) {
-	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.insertSpeed) + "/s"
+	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.dbSpeed) + "/s"
 	if len(database.MysqlDelayInsertQueue) > 0 {
 		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertQueue))
 	}
@@ -76,11 +77,11 @@ func (my *DouBan) EntryUrl() []string {
 
 	go func() {
 		s := time.NewTicker(time.Second)
-		insertIdPoint := my.lastInsertId
+		dbSpeedPoint := my.dbSpeedNum
 		for {
 			<-s.C
-			my.insertSpeed = int(my.lastInsertId - insertIdPoint)
-			insertIdPoint = my.lastInsertId
+			my.dbSpeed = int(my.dbSpeedNum - dbSpeedPoint)
+			dbSpeedPoint = my.dbSpeedNum
 		}
 	}()
 
@@ -607,10 +608,13 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		UrlCrc32: model.UrlCrc32,
 		Url:      model.Url,
 	}
+
+	my.dbSpeedNum++
 	if ok, err := database.Mysql().Get(existsModel); ok && err == nil {
 		//update
 		model.Version = existsModel.Version
 		if _, err = database.Mysql().Id(existsModel.Id).Update(model); err != nil {
+			my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
 			log.Println(spider.CurrentRequest().URL.String(), err)
 		}
 	} else {
