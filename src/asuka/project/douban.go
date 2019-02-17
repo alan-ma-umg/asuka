@@ -115,13 +115,17 @@ func (my *DouBan) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 60e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
 	//
 	//if spider.FailureLevel > 1 {
 	//	DouBanResetSpider(spider)
 	//} else if rand.Intn(30) == 10 {
 	//	DouBanResetSpider(spider)
 	//}
+
+	if spider.FailureLevel > 40 {
+		spider.Delete = true
+	}
 }
 
 func (my *DouBan) RequestBefore(spider *spider.Spider) {

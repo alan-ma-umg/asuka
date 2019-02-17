@@ -74,9 +74,10 @@ const RecentFetchCount = 50
 type Dispatcher struct {
 	IProject
 	queue                *queue.Queue
-	Spiders              []*spider.Spider
+	Spiders              []*spider.Spider //make public for GOB
 	Stop                 bool
 	recentFetchMutex     sync.Mutex
+	removeSpiderMutex    sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
 }
@@ -234,8 +235,12 @@ func (my *Dispatcher) Run() *Dispatcher {
 
 	for _, s := range my.GetSpiders() {
 		go func(spider *spider.Spider) {
+			defer my.RemoveSpider(spider)
 			for {
 				for {
+					if spider.Delete {
+						return
+					}
 					if !my.Stop {
 						break
 					}
@@ -247,82 +252,49 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}(s)
 	}
 
-	return my
-}
-
-func (my *Dispatcher) Run2() *Dispatcher {
-	my.initSpider()
-
-	for _, l := range my.EntryUrl() {
-		if !my.queue.BlTestString(l) {
-			my.queue.Enqueue(l)
-		}
-	}
-
-	spiderChsByGroupAll := make(map[string]chan *spider.Spider)
-	spiderChsByGroupOut := make(map[string]chan *spider.Spider)
-	for _, s := range my.GetSpiders() {
-		if _, ok := spiderChsByGroupAll[s.Transport.S.Group]; !ok {
-			spiderChsByGroupAll[s.Transport.S.Group] = make(chan *spider.Spider, len(my.GetSpiders()))
-			spiderChsByGroupOut[s.Transport.S.Group] = make(chan *spider.Spider, 5)
-		}
-
-		spiderChsByGroupAll[s.Transport.S.Group] <- s
-	}
-
-	//todo stop问题, spider不足空循环问题, 本地组
-	for group := range spiderChsByGroupAll {
-		go func(group string) {
-			for s := range spiderChsByGroupAll[group] {
-				spiderChsByGroupOut[s.Transport.S.Group] <- s
-				go func(s *spider.Spider) {
-					s.Test = 10
-					release := false
-					var releaseSpider *spider.Spider
-
-					//stop status
-					for {
-						if !my.Stop && !s.Stop {
-							break
-						}
-
-						if !release {
-							release = true
-							releaseSpider = <-spiderChsByGroupOut[group]
-						}
-						s.Transport.Close()
-						time.Sleep(3e9)
-					}
-
-					for i := 0; i < 5; i++ {
-						Crawl(my, s, func(spider *spider.Spider) {
-							if s.FailureLevel > 1 {
-								if !release {
-									release = true
-									releaseSpider = <-spiderChsByGroupOut[group]
-								}
-								s.Transport.Close()
-							}
-						})
-					}
-
-					s.Transport.Close()
-					if !release {
-						release = true
-						releaseSpider = <-spiderChsByGroupOut[group]
-					}
-
-					s.Test = 20
-					time.Sleep(40e9)
-					spiderChsByGroupAll[group] <- releaseSpider
-				}(s)
+	go func() {
+		s := time.NewTicker(time.Second * proxy.SecondInterval)
+		defer s.Stop()
+		for {
+			<-s.C
+			spiders := my.GetSpiders()
+			if len(spiders) == 0 {
+				break
 			}
-		}(group)
-
-	}
+			for _, s := range spiders {
+				if s != nil {
+					s.Transport.CountSliceCursor++
+					s.Transport.RecordAccessSecondCount()
+					s.Transport.RecordFailureSecondCount()
+				}
+			}
+		}
+	}()
 
 	return my
 }
+
+func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
+	my.removeSpiderMutex.Lock()
+	defer my.removeSpiderMutex.Unlock()
+	var newSpiders []*spider.Spider
+	for _, e := range my.GetSpiders() {
+		if e != s {
+			newSpiders = append(newSpiders, e)
+		}
+	}
+
+	my.Spiders = newSpiders
+}
+
+//func (my *Dispatcher) SearchSpider(serverName string) *spider.Spider {
+//	for _, e := range my.GetSpiders() {
+//		if e.Transport.S.Name == serverName {
+//			return e
+//		}
+//	}
+//	return nil
+//}
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")

@@ -61,6 +61,7 @@ type Spider struct {
 	StartTime        time.Time
 	RequestStartTime time.Time
 	Stop             bool
+	Delete           bool
 	SleepDuration    time.Duration
 
 	RequestBefore   func(spider *Spider)
@@ -166,6 +167,12 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 	if dispatcherCallback != nil {
 		dispatcherCallback(spider)
 	}
+
+	//exit check
+	if spider.Delete {
+		return
+	}
+
 	//go to sleep and reset sleep duration
 	if duration := spider.GetSleep(); duration > 0 {
 		time.Sleep(duration)

@@ -19,22 +19,6 @@ const CountQueueSecondCap = MinuteInterval * 2
 
 var CountQueueMinuteCap = 1 //initial value, will dynamic changes
 
-func init() {
-	go func() {
-		s := time.NewTicker(time.Second * SecondInterval)
-		for {
-			<-s.C
-			for _, t := range transportList {
-				t.CountSliceCursor++
-				t.recordAccessSecondCount()
-				t.recordFailureSecondCount()
-			}
-		}
-	}()
-}
-
-var transportList []*Transport
-
 type Transport struct {
 	S               *SsAddr
 	t               http.RoundTripper
@@ -64,7 +48,6 @@ type Transport struct {
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
 	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr), LoopCount: 0}
-	transportList = append(transportList, instance)
 	return instance, nil
 }
 
@@ -185,6 +168,10 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 	accessSliceLen := len(transport.AccessCountSecondSlice)
 	failureSliceLen := len(transport.FailureCountSecondSlice)
 
+	if accessSliceLen+failureSliceLen == 0 {
+		return
+	}
+
 	times := int(math.Ceil(float64(second) / SecondInterval))
 	if times == 0 {
 		return
@@ -219,7 +206,7 @@ func (transport *Transport) AccessCount(second int) (accessTimes, failureTimes i
 	return
 }
 
-func (transport *Transport) recordAccessSecondCount() {
+func (transport *Transport) RecordAccessSecondCount() {
 	//Write lock
 	defer func() {
 		transport.countSliceMutex.Unlock()
@@ -233,7 +220,7 @@ func (transport *Transport) recordAccessSecondCount() {
 	}
 }
 
-func (transport *Transport) recordFailureSecondCount() {
+func (transport *Transport) RecordFailureSecondCount() {
 	//Write lock
 	defer func() {
 		transport.countSliceMutex.Unlock()
