@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"reflect"
 	"strings"
@@ -158,10 +157,6 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl stri
 }
 
 func (my *Www) ResponseAfter(spider *spider.Spider) {
-
-	//free the memory
-	if len(spider.RequestsMap) > 10 {
-		spider.Client().Jar, _ = cookiejar.New(nil)
-		spider.RequestsMap = map[string]*http.Request{}
-	}
+	spider.ResetRequest()
+	spider.Transport.Close()
 }

@@ -139,7 +139,7 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *DouBan) ResponseAfter(spider *spider.Spider) {
-	spider.RequestsMap = map[string]*http.Request{}
+	spider.ResetRequest()
 	spider.Transport.Close()
 }
 

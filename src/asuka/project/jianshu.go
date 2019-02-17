@@ -238,6 +238,6 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl 
 }
 
 func jianShuResetSpider(spider *spider.Spider) {
-	spider.RequestsMap = map[string]*http.Request{}
+	spider.ResetRequest()
 	spider.Transport.Close()
 }

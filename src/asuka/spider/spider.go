@@ -47,7 +47,7 @@ type Spider struct {
 	client    *http.Client
 	Queue     *queue.Queue
 
-	RequestsMap    map[string]*http.Request
+	requestsMap    map[string]*http.Request
 	currentRequest *http.Request
 
 	ResponseStr  string
@@ -74,7 +74,8 @@ type Spider struct {
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, RequestsMap: map[string]*http.Request{}, TimeLenLimit: 10, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+	spider := &Spider{Queue: queue, Transport: t, TimeLenLimit: 10, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+	spider.ResetRequest()
 	//spider.updateClient()
 	spider.registerHttpTrace()
 	return spider
@@ -185,7 +186,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 		tld = "DefaultRequest"
 	}
 
-	r, ok := spider.RequestsMap[tld]
+	r, ok := spider.requestsMap[tld]
 	if ok {
 		r.URL = url
 		spider.currentRequest = r
@@ -201,7 +202,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 		}
 
 		spider.currentRequest = r
-		spider.RequestsMap[tld] = r
+		spider.requestsMap[tld] = r
 	}
 
 	//spider.currentRequest.Close = true // prevents re-use of TCP connections between requests to the same hosts
@@ -218,6 +219,10 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 
 	spider.currentRequest = spider.currentRequest.WithContext(httptrace.WithClientTrace(spider.currentRequest.Context(), spider.httpTrace))
 	return spider
+}
+
+func (spider *Spider) ResetRequest() {
+	spider.requestsMap = map[string]*http.Request{}
 }
 
 func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, err error) {

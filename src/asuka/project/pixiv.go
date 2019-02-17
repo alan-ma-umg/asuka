@@ -58,7 +58,7 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
 
 	if spider.FailureLevel > 1 {
-		spider.RequestsMap = map[string]*http.Request{}
+		spider.ResetRequest()
 		spider.Transport.Close()
 	}
 }
