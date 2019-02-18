@@ -96,9 +96,9 @@ func Server(d []*project.Dispatcher, address string) error {
 	http.HandleFunc("/forever/", forever)
 	http.HandleFunc("/", commonHandleFunc(home))
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, helper.Env().TemplatePath+"/favicon.ico")
+		http.ServeFile(w, r, "web/templates/favicon.ico")
 	})
-	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir(helper.Env().TemplatePath+"static")))))
+	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir("web/templates/static")))))
 
 	return http.ListenAndServe(address, nil)
 }
@@ -196,7 +196,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		data.Check = authCheck(cookie.Value)
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"index.html")).Execute(w, data)
+	template.Must(template.ParseFiles("web/templates/index.html")).Execute(w, data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +230,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		data.Check = authCheck(cookie.Value)
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"project.html")).Execute(w, data)
+	template.Must(template.ParseFiles("web/templates/project.html")).Execute(w, data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -388,7 +388,7 @@ func getDispatcher(name string) *project.Dispatcher {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"login.html")).Execute(w, nil)
+	template.Must(template.ParseFiles("web/templates/login.html")).Execute(w, nil)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -477,7 +477,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	template.Must(template.ParseFiles(helper.Env().TemplatePath+"queue.html")).Execute(w, data)
+	template.Must(template.ParseFiles("web/templates/queue.html")).Execute(w, data)
 }
 
 func forever(w http.ResponseWriter, r *http.Request) {

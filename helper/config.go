@@ -1,7 +1,6 @@
 package helper
 
 type EnvConfig struct {
-	TemplatePath     string
 	BloomFilterPath  string
 	WEBPassword      string
 	LocalTransport   LocalTransport //using http.DefaultTransport
