@@ -85,6 +85,7 @@ func Server(d []*project.Dispatcher, address string) error {
 		}
 	}()
 
+	http.HandleFunc("/add/", commonHandleFunc(addServer))
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
@@ -385,6 +386,41 @@ func getDispatcher(name string) *project.Dispatcher {
 	}
 
 	return nil
+}
+
+func addServer(w http.ResponseWriter, r *http.Request) {
+	ps := strings.Split(r.URL.Path, "/")
+	if len(ps) != 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(ps[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if r.Method == "POST" {
+		addServerPost(w, r, p)
+	}
+
+	data := struct {
+		ProjectName     string
+		FormValueServer string
+	}{
+		ProjectName:     p.Name(),
+		FormValueServer: strings.TrimSpace(r.FormValue("servers")),
+	}
+	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, data)
+}
+
+func addServerPost(w http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
+	for _, line := range helper.HttpProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
+		fmt.Println(line)
+	}
+
+	//http.Redirect(w, r, "/"+dispatcher.Name(), 302)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
