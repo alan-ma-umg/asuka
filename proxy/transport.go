@@ -1,8 +1,8 @@
 package proxy
 
 import (
-	"asuka/helper"
 	"context"
+	"github.com/chenset/asuka/helper"
 	"golang.org/x/net/proxy"
 	"log"
 	"math"

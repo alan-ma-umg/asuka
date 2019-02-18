@@ -1,10 +1,10 @@
 package project
 
 import (
-	"asuka/database"
-	"asuka/helper"
-	"asuka/spider"
 	"bytes"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/spider"
 	"github.com/willf/bloom"
 	"golang.org/x/net/html"
 	"io/ioutil"

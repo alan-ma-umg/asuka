@@ -1,10 +1,10 @@
 package project
 
 import (
-	"asuka/database"
-	"asuka/helper"
-	"asuka/spider"
 	"fmt"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/spider"
 	"net/http"
 	"net/url"
 	"reflect"

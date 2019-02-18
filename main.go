@@ -1,10 +1,10 @@
 package main
 
 import (
-	"asuka/helper"
-	"asuka/project"
-	"asuka/web"
 	"fmt"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/project"
+	"github.com/chenset/asuka/web"
 	"log"
 	"os"
 	"time"

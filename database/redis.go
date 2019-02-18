@@ -1,7 +1,7 @@
 package database
 
 import (
-	"asuka/helper"
+	"github.com/chenset/asuka/helper"
 	"github.com/go-redis/redis"
 	"sync"
 )

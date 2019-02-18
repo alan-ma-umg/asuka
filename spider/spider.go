@@ -1,9 +1,6 @@
 package spider
 
 import (
-	"asuka/helper"
-	"asuka/proxy"
-	"asuka/queue"
 	"bytes"
 	"compress/flate"
 	"compress/gzip"
@@ -11,6 +8,9 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/proxy"
+	"github.com/chenset/asuka/queue"
 	"golang.org/x/net/html"
 	"io"
 	"io/ioutil"

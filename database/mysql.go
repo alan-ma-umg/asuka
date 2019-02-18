@@ -1,8 +1,8 @@
 package database
 
 import (
-	"asuka/helper"
 	"fmt"
+	"github.com/chenset/asuka/helper"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"log"

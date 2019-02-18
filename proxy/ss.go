@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"asuka/helper"
+	"github.com/chenset/asuka/helper"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 	"github.com/shadowsocks/go-shadowsocks2/socks"
 	"io"

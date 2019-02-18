@@ -1,8 +1,8 @@
 package queue
 
 import (
-	"asuka/database"
-	"asuka/helper"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/helper"
 	"github.com/willf/bloom"
 	"log"
 	"os"

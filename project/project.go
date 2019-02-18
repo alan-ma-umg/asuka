@@ -1,14 +1,14 @@
 package project
 
 import (
-	"asuka/database"
-	"asuka/helper"
-	"asuka/proxy"
-	"asuka/queue"
-	"asuka/spider"
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/proxy"
+	"github.com/chenset/asuka/queue"
+	"github.com/chenset/asuka/spider"
 	"log"
 	"net/http"
 	"net/url"

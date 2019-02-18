@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"asuka/helper"
+	"github.com/chenset/asuka/helper"
 	"strings"
 )
 

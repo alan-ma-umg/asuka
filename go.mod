@@ -1,4 +1,4 @@
-module asuka
+module github.com/chenset/asuka
 
 require (
 	github.com/Yawning/chacha20 v0.0.0-20170904085104-e3b1f968fc63 // indirect

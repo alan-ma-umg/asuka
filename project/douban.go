@@ -1,10 +1,10 @@
 package project
 
 import (
-	"asuka/database"
-	"asuka/spider"
 	"bytes"
 	"encoding/json"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/spider"
 	"golang.org/x/net/html"
 	"hash/crc32"
 	"io/ioutil"

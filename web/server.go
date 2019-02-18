@@ -1,13 +1,13 @@
 package web
 
 import (
-	"asuka/database"
-	"asuka/helper"
-	"asuka/project"
-	"asuka/spider"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"github.com/chenset/asuka/database"
+	"github.com/chenset/asuka/helper"
+	"github.com/chenset/asuka/project"
+	"github.com/chenset/asuka/spider"
 	"github.com/gorilla/websocket"
 	"html/template"
 	"io"
