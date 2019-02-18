@@ -7,6 +7,7 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/project"
+	"github.com/chenset/asuka/proxy"
 	"github.com/chenset/asuka/spider"
 	"github.com/gorilla/websocket"
 	"html/template"
@@ -389,6 +390,12 @@ func getDispatcher(name string) *project.Dispatcher {
 }
 
 func addServer(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+		http.Error(w, "Login Required", 401)
+		return
+	}
+
 	ps := strings.Split(r.URL.Path, "/")
 	if len(ps) != 3 {
 		http.NotFound(w, r)
@@ -415,15 +422,13 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, data)
 }
 
-func addServerPost(w http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
-	for _, line := range helper.HttpProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
-		fmt.Println(line)
+func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
+	for _, ssAddr := range proxy.HttpProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
+		dispatcher.AddSpider(ssAddr)
 	}
-
-	//http.Redirect(w, r, "/"+dispatcher.Name(), 302)
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
+func login(w http.ResponseWriter, _ *http.Request) {
 	template.Must(template.ParseFiles("web/templates/login.html")).Execute(w, nil)
 }
 
@@ -516,7 +521,7 @@ func queue(w http.ResponseWriter, r *http.Request) {
 	template.Must(template.ParseFiles("web/templates/queue.html")).Execute(w, data)
 }
 
-func forever(w http.ResponseWriter, r *http.Request) {
+func forever(w http.ResponseWriter, _ *http.Request) {
 	str := ""
 	for i := 0; i < rand.Intn(4); i++ {
 		str += "<a href=\"/forever/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"

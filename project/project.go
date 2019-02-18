@@ -77,7 +77,7 @@ type Dispatcher struct {
 	Spiders              []*spider.Spider //make public for GOB
 	Stop                 bool
 	recentFetchMutex     sync.Mutex
-	removeSpiderMutex    sync.Mutex
+	spiderSliceMutex     sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
 }
@@ -89,6 +89,11 @@ func New(project IProject) *Dispatcher {
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+		if r := recover(); r != nil {
+			fmt.Println("Exit error")
+			fmt.Println(r)
+		}
+
 		for _, sp := range d.GetSpiders() {
 			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
 				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
@@ -224,6 +229,41 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	return
 }
 
+func (my *Dispatcher) AddSpider(ssAddr *proxy.SsAddr) {
+	my.spiderSliceMutex.Lock()
+	defer my.spiderSliceMutex.Unlock()
+
+	for _, oldSpider := range my.Spiders {
+		if oldSpider.Transport.S.ServerAddr == ssAddr.ServerAddr {
+			return
+		}
+	}
+
+	t, _ := proxy.NewTransport(ssAddr)
+	s := spider.New(t, my.queue)
+	my.Spiders = append([]*spider.Spider{s}, my.Spiders...)
+	my.runSpider(s)
+}
+
+func (my *Dispatcher) runSpider(s *spider.Spider) {
+	go func(spider *spider.Spider) {
+		defer my.RemoveSpider(spider)
+		for {
+			for {
+				if spider.Delete {
+					return
+				}
+				if !my.Stop {
+					break
+				}
+				spider.Transport.Close()
+				time.Sleep(3e9)
+			}
+			Crawl(my, spider, nil)
+		}
+	}(s)
+}
+
 func (my *Dispatcher) Run() *Dispatcher {
 	my.initSpider()
 
@@ -234,22 +274,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 	}
 
 	for _, s := range my.GetSpiders() {
-		go func(spider *spider.Spider) {
-			defer my.RemoveSpider(spider)
-			for {
-				for {
-					if spider.Delete {
-						return
-					}
-					if !my.Stop {
-						break
-					}
-					spider.Transport.Close()
-					time.Sleep(3e9)
-				}
-				Crawl(my, spider, nil)
-			}
-		}(s)
+		my.runSpider(s)
 	}
 
 	go func() {
@@ -275,8 +300,8 @@ func (my *Dispatcher) Run() *Dispatcher {
 }
 
 func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
-	my.removeSpiderMutex.Lock()
-	defer my.removeSpiderMutex.Unlock()
+	my.spiderSliceMutex.Lock()
+	defer my.spiderSliceMutex.Unlock()
 	var newSpiders []*spider.Spider
 	for _, e := range my.GetSpiders() {
 		if e != s {

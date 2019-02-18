@@ -272,34 +272,6 @@ func MaxInt64(a, b int64) int64 {
 	return a
 }
 
-func HttpProxyParse(str string) (servers []*HttpProxyServer) {
-	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
-		line = strings.ToLower(line)
-		if !strings.HasPrefix(line, "http") {
-			line = "http://" + line
-		}
-		ipAddr, err := url.Parse(line)
-		if err != nil {
-			continue
-		}
-
-		servers = append(servers, &HttpProxyServer{
-			Enable:     true,
-			EnablePing: true,
-			Interval:   0,
-			Name:       ipAddr.Hostname(),
-			Group:      "httpProxy",
-			Server:     ipAddr.Port(),
-			ServerPort: ipAddr.Hostname(),
-			Type:       "http",
-		})
-	}
-
-	return
-	//b, _ := json.Marshal(servers)
-	//return string(b)
-}
-
 func SSSubscriptionParse(rawUrl string) {
 	resp, err := http.Get(rawUrl)
 	if err != nil {
