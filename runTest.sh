@@ -10,7 +10,7 @@ if [ $? -ne 0 ];then
 fi
 
 echo 'Rebuild Asuka!'
-go build asuka
+go build
 
 sleep 2
 echo 'Now, Asuka is alive .'
