@@ -94,7 +94,7 @@ func (my *DouBan) Init() {
 
 func (my *DouBan) EntryUrl() []string {
 	var links []string
-	for ii := 0; ii < 100; ii++ {
+	for ii := 0; ii < 20; ii++ {
 		//for i := 0; i <= 12000; i++ {
 		//	if i%1000 == 0 {
 		links = append(links, "https://book.douban.com/tag/")
