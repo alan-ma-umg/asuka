@@ -60,7 +60,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 	}
 
 	switch SockInfo.Type {
-	case "local":
+	case "direct":
 		t.Proxy = nil //disable system proxy
 		t.DialContext = (&net.Dialer{
 			Timeout:   30 * time.Second,
@@ -81,7 +81,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			KeepAlive: time.Minute,
 			DualStack: true,
 		}).DialContext
-	case "ss", "ssr":
+	case "socks5":
 		SockInfo.WaitUntilConnected() //waiting
 		dialer, err := proxy.SOCKS5("tcp", SockInfo.ClientAddr, nil, proxy.Direct)
 		if err != nil {
@@ -98,7 +98,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 
 func (transport *Transport) Close() {
 	if !transport.transportClosed {
-		if transport.S.Type == "ss" || transport.S.Type == "ssr" {
+		if transport.S.Type == "socks5" {
 			transport.S.Close()
 		}
 

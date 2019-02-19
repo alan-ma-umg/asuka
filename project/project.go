@@ -202,7 +202,7 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 		Enable: helper.Env().LocalTransport.Enable,
 		//EnablePing: false,
 		Interval: helper.Env().LocalTransport.Interval,
-		Type:     "local",
+		Type:     "direct",
 	})
 	transports = append(transports, dt)
 	var repeat []string
@@ -368,7 +368,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 
 	ssArr := spider.Transport.S.ServerAddr
 	if ssArr == "" {
-		ssArr = "localhost"
+		ssArr = "direct"
 	}
 
 	defer func() {
