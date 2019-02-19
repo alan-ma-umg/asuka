@@ -13,24 +13,6 @@ import (
 	"time"
 )
 
-type AddrInfo struct {
-	Enable bool
-	//EnablePing bool
-	Interval float64
-	Type     string
-	Name     string
-	//Group      string
-	ServerAddr string
-	ClientAddr string
-	//TrafficIn   uint64
-	//TrafficOut  uint64
-	//Connections int
-	listener  net.Listener
-	openChan  chan bool
-	closeChan chan bool
-	Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
-}
-
 func (my *AddrInfo) setListener(l net.Listener) {
 	my.listener = l
 }
