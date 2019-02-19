@@ -406,6 +406,8 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oldSpiderCount := len(p.GetSpiders())
+
 	if r.Method == "POST" {
 		addServerPost(w, r, p)
 	}
@@ -413,16 +415,31 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		ProjectName     string
 		FormValueServer string
+		FormValueType   string
+		AddNum          int
 	}{
 		ProjectName:     p.Name(),
 		FormValueServer: strings.TrimSpace(r.FormValue("servers")),
+		FormValueType:   strings.TrimSpace(r.FormValue("type")),
+		AddNum:          len(p.GetSpiders()) - oldSpiderCount,
 	}
 	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, data)
 }
 
 func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
-	for _, ssAddr := range proxy.HttpProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
-		dispatcher.AddSpider(ssAddr)
+	switch r.FormValue("type") {
+	case "https":
+		for _, addr := range proxy.HttpProxyParse("https", strings.TrimSpace(r.FormValue("servers"))) {
+			dispatcher.AddSpider(addr)
+		}
+	case "http":
+		for _, addr := range proxy.HttpProxyParse("http", strings.TrimSpace(r.FormValue("servers"))) {
+			dispatcher.AddSpider(addr)
+		}
+	case "socks5":
+		for _, addr := range proxy.Socks5ProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
+			dispatcher.AddSpider(addr)
+		}
 	}
 }
 

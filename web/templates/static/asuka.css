@@ -169,10 +169,13 @@ h1 {
     font-size: 30px;
 }
 
-input, button {
-    -webkit-appearance: none;
+input, button, select {
     border-radius: 2px;
     border: 1px solid #e7e7e7;
+}
+
+input, button {
+    -webkit-appearance: none;
 }
 
 .btn-sm, .inp-sm {

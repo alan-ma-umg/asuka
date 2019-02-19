@@ -82,8 +82,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			DualStack: true,
 		}).DialContext
 	case "socks5":
-		SockInfo.WaitUntilConnected() //waiting
-		dialer, err := proxy.SOCKS5("tcp", SockInfo.ClientAddr, nil, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", SockInfo.ServerAddr, nil, proxy.Direct)
 		if err != nil {
 			log.Fatal(err)
 			return nil
