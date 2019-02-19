@@ -87,7 +87,7 @@ func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
 		src.Close()
 		//SocksInfo.Connections--
 	}()
-	SocksInfo.Connections++
+	//SocksInfo.Connections++
 	src.(*net.TCPConn).SetKeepAlive(true)
 
 	socks.ReadAddr(src)
@@ -118,9 +118,10 @@ func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
 		return //ignore i/o timeout
 	}
 	defer dst.Close()
-	out, in, _ := tcpRelay(dst, src)
-	SocksInfo.TrafficIn += uint64(in)
-	SocksInfo.TrafficOut += uint64(out)
+	tcpRelay(dst, src)
+	//out, in, _ := tcpRelay(dst, src)
+	//SocksInfo.TrafficIn += uint64(in)
+	//SocksInfo.TrafficOut += uint64(out)
 
 	//_, _, err = tcpRelay(src, dst)
 	//if err != nil {

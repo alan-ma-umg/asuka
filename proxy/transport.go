@@ -18,8 +18,8 @@ type Transport struct {
 	transportClosed bool
 
 	//traffic size
-	TrafficIn  uint64
-	TrafficOut uint64
+	//TrafficIn  uint64
+	//TrafficOut uint64
 
 	Ping            time.Duration
 	PingFailureRate float64

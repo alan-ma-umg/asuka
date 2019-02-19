@@ -14,21 +14,21 @@ import (
 )
 
 type SsAddr struct {
-	Enable      bool
-	EnablePing  bool
-	Interval    float64
-	Type        string
-	Name        string
-	Group       string
-	ServerAddr  string
-	ClientAddr  string
-	TrafficIn   uint64
-	TrafficOut  uint64
-	Connections int
-	listener    net.Listener
-	openChan    chan bool
-	closeChan   chan bool
-	Status      int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
+	Enable     bool
+	EnablePing bool
+	Interval   float64
+	Type       string
+	Name       string
+	Group      string
+	ServerAddr string
+	ClientAddr string
+	//TrafficIn   uint64
+	//TrafficOut  uint64
+	//Connections int
+	listener  net.Listener
+	openChan  chan bool
+	closeChan chan bool
+	Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
 }
 
 func (my *SsAddr) setListener(l net.Listener) {
@@ -188,7 +188,7 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 				//SocksInfo.Connections--
 			}()
 
-			SocksInfo.Connections++
+			//SocksInfo.Connections++
 			c.(*net.TCPConn).SetKeepAlive(true)
 			tgt, err := getAddr(c)
 			if err != nil {
@@ -227,9 +227,10 @@ func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(ne
 			}
 
 			//log.Println("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt)
-			out, in, _ := relay(rc, c)
-			SocksInfo.TrafficIn += uint64(in)
-			SocksInfo.TrafficOut += uint64(out)
+			relay(rc, c)
+			//out, in, _ := relay(rc, c)
+			//SocksInfo.TrafficIn += uint64(in)
+			//SocksInfo.TrafficOut += uint64(out)
 			//_, _, err = relay(rc, c)
 			//if err != nil {
 			//	if err, ok := err.(net.Error); ok && err.Timeout() {

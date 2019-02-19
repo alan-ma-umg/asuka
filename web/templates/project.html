@@ -169,7 +169,7 @@
                 <td class="center">{{"{{item.AddTime}}"}}</td>
                 <td class="center">{{"{{item.ConsumeTime}}"}}</td>
                 <td class="center">{{"{{item.StatusCode}}"}}</td>
-                <td class="center">{{"{{item.ResponseSize}}"}}</td>
+                <td class="center">{{"{{item.TrafficInStr}}"}}</td>
                 <td class="center">{{"{{item.ContentType}}"}}</td>
                 <td class="center">{{"{{item.ErrType}}"}}</td>
                 {{if .Check}}
@@ -196,7 +196,7 @@
                 {{/*<th>Load 5s/60s</th>*/}}
                 <th style="min-width:70px">Time</th>
                 <th>Pass / Sleep</th>
-                <th>Traffic I/O</th>
+                {{/*<th>Traffic I/O</th>*/}}
                 <th></th>
             </tr>
             </thead>
@@ -241,11 +241,11 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
                 </td>
-                <td class="center">
-                    <div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>
-                    /
-                    <div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>
-                </td>
+                {{/*<td class="center">*/}}
+                {{/*<div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>*/}}
+                {{/*/*/}}
+                {{/*<div style="display:inline-block;width:50px" class="left">{{"{{server.traffic_out}}"}}</div>*/}}
+                {{/*</td>*/}}
                 <td class="right ctl">
                     <button class="btn-sm ctl" :disabled="server._btnDisabled"
                             :class="{orange:!server.stop,green:server.stop}" style="color:#fff"

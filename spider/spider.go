@@ -38,7 +38,9 @@ type Summary struct {
 	ConsumeTime   string
 	AddTime       string
 	ErrType       string
-	ResponseSize  string
+	TrafficInStr  string
+	TrafficIn     uint64
+	TrafficOut    uint64
 	ContentType   string
 }
 
@@ -274,11 +276,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 	//traffic
 	dump, err := httputil.DumpRequestOut(spider.currentRequest, true)
 	summary.ErrType = spider.requestErrorHandler(err)
-	spider.Transport.TrafficOut += uint64(len(dump))
+	summary.TrafficOut = uint64(len(dump))
 	//for localhost
-	if spider.Transport.S.Type == "" {
-		spider.Transport.S.TrafficOut += uint64(len(dump))
-	}
+	//if spider.Transport.S.Type == "" {
+	//	spider.Transport.S.TrafficOut += uint64(len(dump))
+	//}
 
 	resp, err = spider.client.Do(spider.currentRequest)
 	if err != nil {
@@ -295,12 +297,12 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 		if err != nil || !filter {
 			//traffic  response header only
 			dump, _ = httputil.DumpResponse(resp, false)
-			summary.ResponseSize = helper.ByteCountBinary(uint64(len(dump)))
-			spider.Transport.TrafficIn += uint64(len(dump))
+			summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump)))
+			summary.TrafficIn = uint64(len(dump))
 			//for localhost
-			if spider.Transport.S.Type == "" {
-				spider.Transport.S.TrafficIn += uint64(len(dump))
-			}
+			//if spider.Transport.S.Type == "" {
+			//	spider.Transport.S.TrafficIn += uint64(len(dump))
+			//}
 
 			if err != nil {
 				summary.ErrType = "project.Filtered"
@@ -322,12 +324,12 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 	//traffic
 	dump, err = httputil.DumpResponse(resp, false)
 	summary.ErrType = spider.responseErrorHandler(err)
-	summary.ResponseSize = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
-	spider.Transport.TrafficIn += uint64(len(dump) + len(resByte))
+	summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
+	summary.TrafficIn = uint64(len(dump) + len(resByte))
 	//for localhost
-	if spider.Transport.S.Type == "" {
-		spider.Transport.S.TrafficIn += uint64(len(dump) + len(resByte))
-	}
+	//if spider.Transport.S.Type == "" {
+	//	spider.Transport.S.TrafficIn += uint64(len(dump) + len(resByte))
+	//}
 
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))

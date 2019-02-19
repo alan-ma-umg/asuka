@@ -80,12 +80,15 @@ type Dispatcher struct {
 	IProject
 	*helper.Counting
 	queue                *queue.Queue
-	Spiders              []*spider.Spider //make public for GOB
+	spiders              []*spider.Spider //make public for GOB
 	Stop                 bool
 	recentFetchMutex     sync.Mutex
 	spiderSliceMutex     sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
+	//traffic size
+	TrafficIn  uint64
+	TrafficOut uint64
 }
 
 func New(project IProject) *Dispatcher {
@@ -144,7 +147,7 @@ func (my *Dispatcher) Name() string {
 }
 
 func (my *Dispatcher) GetSpiders() []*spider.Spider {
-	return my.Spiders
+	return my.spiders
 }
 
 func (my *Dispatcher) initSpider() {
@@ -158,11 +161,11 @@ func (my *Dispatcher) initSpider() {
 		if err = gob.NewDecoder(decBuf).Decode(my); err != nil {
 			log.Println(err)
 		} else {
-			for _, item := range my.Spiders {
+			for _, item := range my.spiders {
 				recoverSpiders[item.Transport.S.ServerAddr] = item
 			}
 		}
-		my.Spiders = []*spider.Spider{}
+		my.spiders = []*spider.Spider{}
 	}
 
 	for _, t := range my.initTransport() {
@@ -187,7 +190,7 @@ func (my *Dispatcher) initSpider() {
 		s.Transport.S.Interval = interval
 		s.Transport.S.ClientAddr = clientAddr
 
-		my.Spiders = append(my.Spiders, s)
+		my.spiders = append(my.spiders, s)
 	}
 }
 
@@ -240,7 +243,7 @@ func (my *Dispatcher) AddSpider(ssAddr *proxy.SsAddr) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 
-	for _, oldSpider := range my.Spiders {
+	for _, oldSpider := range my.spiders {
 		if oldSpider.Transport.S.ServerAddr == ssAddr.ServerAddr {
 			return
 		}
@@ -248,7 +251,7 @@ func (my *Dispatcher) AddSpider(ssAddr *proxy.SsAddr) {
 
 	t, _ := proxy.NewTransport(ssAddr)
 	s := spider.New(t, my.queue)
-	my.Spiders = append([]*spider.Spider{s}, my.Spiders...)
+	my.spiders = append([]*spider.Spider{s}, my.spiders...)
 	my.runSpider(s)
 }
 
@@ -323,7 +326,7 @@ func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
 		}
 	}
 
-	my.Spiders = newSpiders
+	my.spiders = newSpiders
 }
 
 //func (my *Dispatcher) SearchSpider(serverName string) *spider.Spider {
@@ -379,6 +382,10 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	if err != nil || summary.StatusCode != 200 {
 		project.AddFailure()
 	}
+
+	//IO
+	project.TrafficIn += summary.TrafficIn
+	project.TrafficOut += summary.TrafficOut
 
 	//recent fetch
 	project.recentFetchMutex.Lock()

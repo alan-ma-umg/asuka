@@ -580,9 +580,9 @@ func indexJson(check bool) []byte {
 		var waiting time.Duration
 		var TrafficIn uint64
 		var TrafficOut uint64
-		var NetIn uint64
-		var NetOut uint64
-		var connections int
+		//var NetIn uint64
+		//var NetOut uint64
+		//var connections int
 		var accessCount int
 		var failureCount int
 		var serverCount int
@@ -606,6 +606,8 @@ func indexJson(check bool) []byte {
 		}
 		accessCount += p.GetAccessCount()
 		failureCount += p.GetFailureCount()
+		TrafficIn += p.TrafficIn
+		TrafficOut += p.TrafficOut
 
 		for _, s := range p.GetSpiders() {
 			sleepDuration += s.GetSleep()
@@ -622,11 +624,9 @@ func indexJson(check bool) []byte {
 				}
 			}
 
-			TrafficIn += s.Transport.TrafficIn
-			TrafficOut += s.Transport.TrafficOut
-			NetIn += s.Transport.S.TrafficIn
-			NetOut += s.Transport.S.TrafficOut
-			connections += s.Transport.S.Connections
+			//NetIn += s.Transport.S.TrafficIn
+			//NetOut += s.Transport.S.TrafficOut
+			//connections += s.Transport.S.Connections
 		}
 
 		projectMap["stop"] = p.Stop
@@ -652,10 +652,10 @@ func indexJson(check bool) []byte {
 
 		projectMap["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 		projectMap["traffic_out"] = helper.ByteCountBinary(TrafficOut)
-		projectMap["net_in"] = helper.ByteCountBinary(NetIn)
-		projectMap["net_out"] = helper.ByteCountBinary(NetOut)
+		//projectMap["net_in"] = helper.ByteCountBinary(NetIn)
+		//projectMap["net_out"] = helper.ByteCountBinary(NetOut)
 		projectMap["loads"] = loads
-		projectMap["connections"] = connections
+		//projectMap["connections"] = connections
 		projectMap["access_count"] = accessCount
 		projectMap["failure_count"] = failureCount
 		projectMap["name"] = p.Name()
@@ -738,11 +738,11 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		if !s.RequestStartTime.IsZero() {
 			server["waiting"] = time.Since(s.RequestStartTime).Truncate(time.Millisecond).String()
 		}
-		server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
-		server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
-		server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
-		server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
-		server["connections"] = s.Transport.S.Connections
+		//server["traffic_in"] = helper.ByteCountBinary(s.Transport.TrafficIn)
+		//server["traffic_out"] = helper.ByteCountBinary(s.Transport.TrafficOut)
+		//server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
+		//server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
+		//server["connections"] = s.Transport.S.Connections
 		server["access_count"] = s.Transport.GetAccessCount()
 		server["failure_count"] = s.Transport.GetFailureCount()
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
@@ -772,8 +772,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	var avgTimeAvg time.Duration
 	var TrafficIn uint64
 	var TrafficOut uint64
-	var NetIn uint64
-	var NetOut uint64
+	//var NetIn uint64
+	//var NetOut uint64
 	var queueCount int64
 	var redisMem int64
 	var serverCount int
@@ -795,7 +795,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		loads[86400*3] += p.LoadRate(86400 * 3)
 		accessCount += p.GetAccessCount()
 		failureCount += p.GetFailureCount()
-
+		TrafficIn += p.TrafficIn
+		TrafficOut += p.TrafficOut
 		for _, s := range p.GetSpiders() {
 			if s.FailureLevel == 0 && !s.Stop {
 				failureLevelZeroCount++
@@ -812,10 +813,9 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			sleepAvg += s.GetSleep()
 			pingFailureAvg += s.Transport.PingFailureRate
 			pingAvg += s.Transport.Ping
-			TrafficIn += s.Transport.TrafficIn
-			TrafficOut += s.Transport.TrafficOut
-			NetIn += s.Transport.S.TrafficIn
-			NetOut += s.Transport.S.TrafficOut
+
+			//NetIn += s.Transport.S.TrafficIn
+			//NetOut += s.Transport.S.TrafficOut
 		}
 
 		if len(p.GetSpiders()) > 0 {
@@ -863,10 +863,10 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
-	jsonMap["basic"].(map[string]interface{})["net_in"] = helper.ByteCountBinary(NetIn)
-	jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
-	jsonMap["basic"].(map[string]interface{})["net_in_int"] = NetIn
-	jsonMap["basic"].(map[string]interface{})["net_out_int"] = NetOut
+	//jsonMap["basic"].(map[string]interface{})["net_in"] = helper.ByteCountBinary(NetIn)
+	//jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
+	//jsonMap["basic"].(map[string]interface{})["net_in_int"] = NetIn
+	//jsonMap["basic"].(map[string]interface{})["net_out_int"] = NetOut
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
