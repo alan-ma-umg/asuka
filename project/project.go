@@ -196,7 +196,7 @@ func (my *Dispatcher) initSpider() {
 
 func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
-	dt, _ := proxy.NewTransport(&proxy.SsAddr{
+	dt, _ := proxy.NewTransport(&proxy.AddrInfo{
 		Name: helper.Env().LocalTransport.Name,
 		//Group:      helper.Env().LocalTransport.Group,
 		Enable: helper.Env().LocalTransport.Enable,
@@ -239,7 +239,7 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	return
 }
 
-func (my *Dispatcher) AddSpider(ssAddr *proxy.SsAddr) {
+func (my *Dispatcher) AddSpider(ssAddr *proxy.AddrInfo) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 

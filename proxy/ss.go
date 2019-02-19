@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type SsAddr struct {
+type AddrInfo struct {
 	Enable bool
 	//EnablePing bool
 	Interval float64
@@ -31,24 +31,24 @@ type SsAddr struct {
 	Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
 }
 
-func (my *SsAddr) setListener(l net.Listener) {
+func (my *AddrInfo) setListener(l net.Listener) {
 	my.listener = l
 }
-func (my *SsAddr) WaitUntilConnected() {
+func (my *AddrInfo) WaitUntilConnected() {
 	<-my.openChan
 }
 
-func (my *SsAddr) Close() {
+func (my *AddrInfo) Close() {
 	my.listener.Close()
 	my.closeChan <- true
 	my.ClientAddr = ""
 }
 
-func SSLocalHandler() (ssAddr []*SsAddr) {
+func SSLocalHandler() (ssAddr []*AddrInfo) {
 	for _, server := range helper.Env().SsServers {
 		if server.Obfs != "" || server.ObfsParam != "" || server.ProtocolParam != "" || server.Protocol != "" {
 
-			ss := &SsAddr{
+			ss := &AddrInfo{
 				Enable: server.Enable,
 				//EnablePing: server.EnablePing,
 				Interval: server.Interval,
@@ -61,7 +61,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 			}
 			ssAddr = append(ssAddr, ss)
 
-			go func(server *helper.SsServer, ss *SsAddr) {
+			go func(server *helper.SsServer, ss *AddrInfo) {
 				bi := &BackendInfo{
 					Address: server.Server + ":" + server.ServerPort,
 					Type:    "ssr",
@@ -86,7 +86,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 				log.Fatal(err)
 			}
 
-			ss := &SsAddr{
+			ss := &AddrInfo{
 				Enable: server.Enable,
 				//EnablePing: server.EnablePing,
 				Interval: server.Interval,
@@ -107,7 +107,7 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 }
 
 // Create a SOCKS server listening on addr and proxy to server.
-func socksLocal(ssAddr *SsAddr, shadow func(net.Conn) net.Conn) {
+func socksLocal(ssAddr *AddrInfo, shadow func(net.Conn) net.Conn) {
 	for {
 		tcpLocal(ssAddr, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
 	}
@@ -140,7 +140,7 @@ func relay(left, right net.Conn) (int64, int64, error) {
 	return n, rs.N, err
 }
 
-func tcpLocal(SocksInfo *SsAddr, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
+func tcpLocal(SocksInfo *AddrInfo, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
 	SocksInfo.Status = 0
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

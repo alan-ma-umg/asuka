@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-func HttpProxyHandler() (ssAddr []*SsAddr) {
+func HttpProxyHandler() (ssAddr []*AddrInfo) {
 	for _, server := range helper.Env().HttpProxyServers {
-		ss := &SsAddr{
+		ss := &AddrInfo{
 			Enable: server.Enable,
 			//EnablePing: server.EnablePing,
 			Interval: server.Interval,
@@ -24,7 +24,7 @@ func HttpProxyHandler() (ssAddr []*SsAddr) {
 	return
 }
 
-func HttpProxyParse(str string) (servers []*SsAddr) {
+func HttpProxyParse(str string) (servers []*AddrInfo) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
 	str = strings.Replace(str, "\r", "\n", len(str))
 	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
@@ -46,7 +46,7 @@ func HttpProxyParse(str string) (servers []*SsAddr) {
 			serverAddr += userInfoStr + "@"
 		}
 
-		servers = append(servers, &SsAddr{
+		servers = append(servers, &AddrInfo{
 			Enable:   true,
 			Interval: 1,
 			Name:     urlAddr.Hostname(),

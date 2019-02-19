@@ -13,7 +13,7 @@ import (
 
 type Transport struct {
 	*helper.Counting
-	S               *SsAddr
+	S               *AddrInfo
 	t               http.RoundTripper
 	transportClosed bool
 
@@ -27,12 +27,12 @@ type Transport struct {
 	RecentFewTimesResult []bool
 }
 
-func NewTransport(ssAddr *SsAddr) (*Transport, error) {
+func NewTransport(ssAddr *AddrInfo) (*Transport, error) {
 	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr), Counting: &helper.Counting{}}
 	return instance, nil
 }
 
-func createHttpTransport(SockInfo *SsAddr) *http.Transport {
+func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 	t := &http.Transport{
 		MaxIdleConnsPerHost:   2,
 		MaxIdleConns:          100,

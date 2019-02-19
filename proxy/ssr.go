@@ -43,7 +43,7 @@ type BackendInfo struct {
 	Type    string
 }
 
-func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
+func (bi *BackendInfo) Listen(SocksInfo *AddrInfo) {
 	SocksInfo.Status = 0
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -81,7 +81,7 @@ func (bi *BackendInfo) Listen(SocksInfo *SsAddr) {
 	}
 }
 
-func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *SsAddr) {
+func (bi *BackendInfo) Handle(src net.Conn, SocksInfo *AddrInfo) {
 	SocksInfo.Status = 30
 	defer func() {
 		src.Close()
