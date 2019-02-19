@@ -55,8 +55,7 @@ func (my *ZhiHu) Showing() (str string) {
 	}
 	return
 }
-
-func (my *ZhiHu) EntryUrl() []string {
+func (my *ZhiHu) Init() {
 	err := database.Mysql().CreateTables(&AsukaZhiHu{})
 	if err != nil {
 		panic(err)
@@ -79,7 +78,8 @@ func (my *ZhiHu) EntryUrl() []string {
 			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
-
+}
+func (my *ZhiHu) EntryUrl() []string {
 	return []string{
 		"https://www.zhihu.com/explore",
 		"https://www.zhihu.com/explore",

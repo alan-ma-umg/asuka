@@ -22,7 +22,7 @@ func (my *Pixiv) Name() string {
 	return "Kumiko"
 }
 
-func (my *Pixiv) EntryUrl() []string {
+func (my *Pixiv) Init() {
 	go func() {
 		t := time.NewTicker(time.Second * 5)
 		for {
@@ -31,6 +31,8 @@ func (my *Pixiv) EntryUrl() []string {
 		}
 	}()
 
+}
+func (my *Pixiv) EntryUrl() []string {
 	return []string{
 		"https://www.pixiv.net/tags.php?tag=%E7%BE%8E%E3%81%97%E3%81%84",
 		"https://www.pixiv.net/member_illust.php?mode=medium&illust_id=63093148",

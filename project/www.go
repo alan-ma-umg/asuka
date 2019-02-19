@@ -34,7 +34,7 @@ type Www struct {
 	queueUrlLen int64
 }
 
-func (my *Www) EntryUrl() []string {
+func (my *Www) Init() {
 	tldFilter = bloom.NewWithEstimates(5000000, 0.01)
 	err := database.Mysql().CreateTables(&AsukaWww{})
 	if err != nil {
@@ -48,7 +48,9 @@ func (my *Www) EntryUrl() []string {
 			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
+}
 
+func (my *Www) EntryUrl() []string {
 	return []string{
 		"https://www.douban.com/",
 		"https://www.zhihu.com/explore",

@@ -19,13 +19,7 @@ type Test2 struct {
 //var test2BaseUrl = "http://z.flysay.com:888/"
 var test2BaseUrl = "http://hk.flysay.com:88/"
 
-func (my *Test2) EntryUrl() []string {
-	var links []string
-
-	for i := 0; i < 1000; i++ {
-		links = append(links, test2BaseUrl)
-	}
-
+func (my *Test2) Init() {
 	go func() {
 		t := time.NewTicker(time.Second * 5)
 		for {
@@ -33,7 +27,14 @@ func (my *Test2) EntryUrl() []string {
 			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
+}
 
+func (my *Test2) EntryUrl() []string {
+	var links []string
+
+	for i := 0; i < 1000; i++ {
+		links = append(links, test2BaseUrl)
+	}
 	return links
 }
 

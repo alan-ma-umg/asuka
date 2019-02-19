@@ -19,6 +19,9 @@ import (
 )
 
 type IProject interface {
+	// Init DoOnce func
+	Init()
+
 	// EntryUrl 万恶的起源
 	// Firstly
 	EntryUrl() []string
@@ -58,6 +61,8 @@ type IProject interface {
 type Implement struct {
 }
 
+func (my *Implement) Init() {
+}
 func (my *Implement) Showing() string {
 	return "Have a nice day !"
 }
@@ -86,6 +91,7 @@ func New(project IProject) *Dispatcher {
 	d := &Dispatcher{IProject: project}
 	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
+	d.Init()
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {

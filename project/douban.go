@@ -73,8 +73,7 @@ func (my *DouBan) Showing() (str string) {
 	return
 }
 
-func (my *DouBan) EntryUrl() []string {
-
+func (my *DouBan) Init() {
 	go func() {
 		s := time.NewTicker(time.Second)
 		dbSpeedPoint := my.dbSpeedNum
@@ -91,7 +90,9 @@ func (my *DouBan) EntryUrl() []string {
 		panic(err)
 	}
 	database.Mysql().CreateIndexes(&AsukaDouBan{})
+}
 
+func (my *DouBan) EntryUrl() []string {
 	var links []string
 	for ii := 0; ii < 5; ii++ {
 		//for i := 0; i <= 12000; i++ {
