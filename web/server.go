@@ -751,7 +751,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
 		if check {
-			server["name"] = s.Transport.S.Name
+			server["name"] = s.Transport.S.Host
 		} else {
 			server["name"] = ""
 		}
@@ -923,7 +923,7 @@ func searchSpider(projectName string, serverName string) *spider.Spider {
 	for _, e := range dispatchers {
 		if e.Name() == projectName {
 			for _, e := range e.GetSpiders() {
-				if e.Transport.S.Name == serverName {
+				if e.Transport.S.Host == serverName {
 					return e
 				}
 			}

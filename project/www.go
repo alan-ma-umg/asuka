@@ -119,7 +119,7 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 		Url: spider.CurrentRequest().URL.String(),
 		Data: map[string]interface{}{
 			"title":  title,
-			"server": spider.Transport.S.ServerAddr,
+			"server": spider.Transport.S.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 		},
 	}

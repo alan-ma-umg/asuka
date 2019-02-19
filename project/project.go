@@ -161,7 +161,7 @@ func (my *Dispatcher) initSpider() {
 			log.Println(err)
 		} else {
 			for _, item := range my.spiders {
-				recoverSpiders[item.Transport.S.ServerAddr] = item
+				recoverSpiders[item.Transport.S.Host] = item
 			}
 		}
 		my.spiders = []*spider.Spider{}
@@ -170,23 +170,23 @@ func (my *Dispatcher) initSpider() {
 	for _, t := range my.initTransport() {
 		s := spider.New(t, my.queue)
 
-		name := s.Transport.S.Name
-		enable := s.Transport.S.Enable
-		interval := s.Transport.S.Interval
+		//name := s.Transport.S.Name
+		//enable := s.Transport.S.Enable
+		//interval := s.Transport.S.Interval
 		//clientAddr := s.Transport.S.ClientAddr
 
 		//recover from
-		if recoverSpider, ok := recoverSpiders[s.Transport.S.ServerAddr]; ok {
+		if recoverSpider, ok := recoverSpiders[s.Transport.S.Host]; ok {
 			encBuf := &bytes.Buffer{}
 			if err = gob.NewEncoder(encBuf).Encode(recoverSpider); err != nil || gob.NewDecoder(encBuf).Decode(s) != nil {
 				log.Println(err)
 			}
 		}
 
-		s.Stop = !enable
-		s.Transport.S.Name = name
-		s.Transport.S.Enable = enable
-		s.Transport.S.Interval = interval
+		s.Stop = t.S.Stop
+		//s.Transport.S.Name = name
+		//s.Transport.S.Enable = enable
+		//s.Transport.S.Interval = interval
 		//s.Transport.S.ClientAddr = clientAddr
 
 		my.spiders = append(my.spiders, s)
@@ -195,40 +195,35 @@ func (my *Dispatcher) initSpider() {
 
 func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
-	dt, _ := proxy.NewTransport(&proxy.AddrInfo{
-		Name: helper.Env().LocalTransport.Name,
-		//Group:      helper.Env().LocalTransport.Group,
-		Enable: helper.Env().LocalTransport.Enable,
-		//EnablePing: false,
-		Interval: helper.Env().LocalTransport.Interval,
-		Type:     "direct",
-	})
+	u, _ := url.Parse("direct://localhost")
+	dt, _ := proxy.NewTransport(&proxy.AddrInfo{URL: u})
+	dt.S.Stop = !helper.Env().LocalTransport.Enable
 	transports = append(transports, dt)
-	var repeat []string
+	//var repeat []string
 
-	for _, ssAddr := range proxy.HttpProxyHandler() {
-		if helper.Contains(repeat, ssAddr.ServerAddr) {
-			//log.Println("DUPLICATE: " + ssAddr.ServerAddr)
-			continue
-		}
-		repeat = append(repeat, ssAddr.ServerAddr)
-
-		t, err := proxy.NewTransport(ssAddr)
-		if err != nil {
-			log.Println("proxy error: ", err)
-			continue
-		}
-		transports = append(transports, t)
-	}
-
-	//
-	//for _, ssAddr := range proxy.SSLocalHandler() {
-	//	if helper.Contains(repeat, ssAddr.ServerAddr) {
-	//		log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+	//for _, addr := range proxy.HttpProxyHandler() {
+	//	if helper.Contains(repeat, addr.Host) {
+	//		//log.Println("DUPLICATE: " + addr.ServerAddr)
+	//		continue
 	//	}
-	//	repeat = append(repeat, ssAddr.ServerAddr)
+	//	repeat = append(repeat, addr.Host)
 	//
-	//	t, err := proxy.NewTransport(ssAddr)
+	//	t, err := proxy.NewTransport(addr)
+	//	if err != nil {
+	//		log.Println("proxy error: ", err)
+	//		continue
+	//	}
+	//	transports = append(transports, t)
+	//}
+
+	//
+	//for _, addr := range proxy.SSLocalHandler() {
+	//	if helper.Contains(repeat, addr.ServerAddr) {
+	//		log.Println("DUPLICATE: " + addr.ServerAddr)
+	//	}
+	//	repeat = append(repeat, addr.ServerAddr)
+	//
+	//	t, err := proxy.NewTransport(addr)
 	//	if err != nil {
 	//		log.Println("proxy error: ", err)
 	//		continue
@@ -239,17 +234,17 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	return
 }
 
-func (my *Dispatcher) AddSpider(ssAddr *proxy.AddrInfo) {
+func (my *Dispatcher) AddSpider(addr *proxy.AddrInfo) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 
 	for _, oldSpider := range my.spiders {
-		if oldSpider.Transport.S.ServerAddr == ssAddr.ServerAddr {
+		if oldSpider.Transport.S.Host == addr.Host {
 			return
 		}
 	}
 
-	t, _ := proxy.NewTransport(ssAddr)
+	t, _ := proxy.NewTransport(addr)
 	s := spider.New(t, my.queue)
 	my.spiders = append([]*spider.Spider{s}, my.spiders...)
 	my.runSpider(s)
@@ -365,11 +360,6 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	if err != nil {
 		log.Println("URL parse failed ", link, err)
 		return
-	}
-
-	ssArr := spider.Transport.S.ServerAddr
-	if ssArr == "" {
-		ssArr = "direct"
 	}
 
 	defer func() {

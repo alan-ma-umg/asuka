@@ -21,20 +21,7 @@ func Socks5ProxyParse(str string) (servers []*AddrInfo) {
 		if err != nil || urlAddr.Port() == "" {
 			continue
 		}
-
-		serverAddr := ""
-		if userInfoStr := urlAddr.User.String(); userInfoStr != "" {
-			serverAddr += userInfoStr + "@"
-		}
-
-		servers = append(servers, &AddrInfo{
-			Enable:   true,
-			Interval: 1,
-			Name:     urlAddr.Hostname(),
-			//Group:      "new",
-			Type:       strings.ToLower(urlAddr.Scheme),
-			ServerAddr: strings.ToLower(serverAddr + urlAddr.Hostname() + ":" + urlAddr.Port()),
-		})
+		servers = append(servers, &AddrInfo{URL: urlAddr})
 	}
 
 	return

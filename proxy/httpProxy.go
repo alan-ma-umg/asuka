@@ -1,28 +1,27 @@
 package proxy
 
 import (
-	"github.com/chenset/asuka/helper"
 	"net/url"
 	"strings"
 )
 
-func HttpProxyHandler() (ssAddr []*AddrInfo) {
-	for _, server := range helper.Env().HttpProxyServers {
-		ss := &AddrInfo{
-			Enable: server.Enable,
-			//EnablePing: server.EnablePing,
-			Interval: server.Interval,
-			Name:     server.Name,
-			//Group:      server.Group,
-			Type:       strings.ToLower(server.Type),
-			ServerAddr: strings.ToLower(server.Server + ":" + server.ServerPort),
-			openChan:   make(chan bool),
-			//closeChan:  make(chan bool, 1),
-		}
-		ssAddr = append(ssAddr, ss)
-	}
-	return
-}
+//func HttpProxyHandler() (addr []*AddrInfo) {
+//	for _, server := range helper.Env().HttpProxyServers {
+//
+//		addr = append(addr, &AddrInfo{
+//			Enable: server.Enable,
+//			//EnablePing: server.EnablePing,
+//			Interval: server.Interval,
+//			Name:     server.Name,
+//			//Group:      server.Group,
+//			Type:       strings.ToLower(server.Type),
+//			ServerAddr: strings.ToLower(server.Server + ":" + server.ServerPort),
+//			//openChan:   make(chan bool),
+//			//closeChan:  make(chan bool, 1),
+//		})
+//	}
+//	return
+//}
 
 func HttpProxyParse(scheme string, str string) (servers []*AddrInfo) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
@@ -41,19 +40,7 @@ func HttpProxyParse(scheme string, str string) (servers []*AddrInfo) {
 			continue
 		}
 
-		serverAddr := ""
-		if userInfoStr := urlAddr.User.String(); userInfoStr != "" {
-			serverAddr += userInfoStr + "@"
-		}
-
-		servers = append(servers, &AddrInfo{
-			Enable:   true,
-			Interval: 1,
-			Name:     urlAddr.Hostname(),
-			//Group:      "new",
-			Type:       strings.ToLower(urlAddr.Scheme),
-			ServerAddr: strings.ToLower(serverAddr + urlAddr.Hostname() + ":" + urlAddr.Port()),
-		})
+		servers = append(servers, &AddrInfo{URL: urlAddr})
 	}
 
 	return

@@ -209,7 +209,7 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 		Title:    title,
 		Tag:      tag,
 		Data: map[string]interface{}{
-			"server": spider.Transport.S.ServerAddr,
+			"server": spider.Transport.S.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 			"watch":  watch,
 			"view":   view,

@@ -12,22 +12,30 @@ import (
 )
 
 type AddrInfo struct {
-	Enable bool
-	//EnablePing bool
-	Interval float64
-	Type     string
-	Name     string
-	//Group      string
-	ServerAddr string
-	//ClientAddr string
-	//TrafficIn   uint64
-	//TrafficOut  uint64
-	//Connections int
-	//listener  net.Listener
-	openChan chan bool
-	//closeChan chan bool
-	//Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
+	*url.URL
+	Stop bool
 }
+
+//func (addr *AddrInfo) String() string {
+//}
+
+//type AddrInfo struct {
+//	Enable bool
+//	//EnablePing bool
+//	Interval float64
+//	Type     string
+//	Name     string
+//	//Group      string
+//	ServerAddr string
+//	//ClientAddr string
+//	//TrafficIn   uint64
+//	//TrafficOut  uint64
+//	//Connections int
+//	//listener  net.Listener
+//	//openChan chan bool
+//	//closeChan chan bool
+//	//Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
+//}
 
 type Transport struct {
 	*helper.Counting
@@ -45,8 +53,9 @@ type Transport struct {
 	RecentFewTimesResult []bool
 }
 
-func NewTransport(ssAddr *AddrInfo) (*Transport, error) {
-	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr), Counting: &helper.Counting{}}
+func NewTransport(addr *AddrInfo) (*Transport, error) {
+	instance := &Transport{S: addr, t: createHttpTransport(addr), Counting: &helper.Counting{}}
+	//addr.
 	return instance, nil
 }
 
@@ -59,7 +68,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	switch SockInfo.Type {
+	switch SockInfo.Scheme {
 	case "direct":
 		t.Proxy = nil //disable system proxy
 		t.DialContext = (&net.Dialer{
@@ -68,13 +77,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			DualStack: true,
 		}).DialContext
 	case "http", "https":
-		proxyURL, err := url.Parse(SockInfo.Type + "://" + SockInfo.ServerAddr)
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
-
-		t.Proxy = http.ProxyURL(proxyURL) // with http proxy
+		t.Proxy = http.ProxyURL(SockInfo.URL) // with http proxy
 		t.TLSHandshakeTimeout = time.Minute
 		t.DialContext = (&net.Dialer{
 			Timeout:   time.Minute,
@@ -82,7 +85,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			DualStack: true,
 		}).DialContext
 	case "socks5":
-		dialer, err := proxy.SOCKS5("tcp", SockInfo.ServerAddr, nil, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", SockInfo.Host, nil, proxy.Direct)
 		if err != nil {
 			log.Fatal(err)
 			return nil
