@@ -95,7 +95,6 @@ func New(project IProject) *Dispatcher {
 	d := &Dispatcher{IProject: project, Counting: &helper.Counting{}, StartTime: time.Now()}
 	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
-	d.Init()
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
@@ -277,6 +276,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 
 func (my *Dispatcher) Run() *Dispatcher {
 	my.initSpider()
+	my.Init()
 
 	for _, l := range my.EntryUrl() {
 		if !my.queue.BlTestString(l) {
