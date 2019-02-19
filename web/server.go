@@ -428,6 +428,23 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 
 func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
 	switch r.FormValue("type") {
+	case "url":
+		for _, line := range strings.Split(strings.TrimSpace(strings.Replace(strings.Replace(r.FormValue("servers"), "\r\n", "\n", len(r.FormValue("servers"))), "\r", "\n", len(r.FormValue("servers")))), "\n") {
+			line = strings.ToLower(strings.TrimSpace(line))
+			if strings.HasPrefix(line, "http") {
+				for _, addr := range proxy.HttpProxyParse("http", line) {
+					dispatcher.AddSpider(addr)
+				}
+			} else if strings.HasPrefix(line, "https") {
+				for _, addr := range proxy.HttpProxyParse("https", line) {
+					dispatcher.AddSpider(addr)
+				}
+			} else if strings.HasPrefix(line, "socks5") {
+				for _, addr := range proxy.Socks5ProxyParse(line) {
+					dispatcher.AddSpider(addr)
+				}
+			}
+		}
 	case "https":
 		for _, addr := range proxy.HttpProxyParse("https", strings.TrimSpace(r.FormValue("servers"))) {
 			dispatcher.AddSpider(addr)
