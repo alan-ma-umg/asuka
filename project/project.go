@@ -284,7 +284,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 	}
 
 	go func() {
-		s := time.NewTicker(time.Second * proxy.SecondInterval)
+		s := time.NewTicker(time.Second * helper.SecondInterval)
 		defer s.Stop()
 		for {
 			<-s.C
