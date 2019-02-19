@@ -358,7 +358,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 
 	u, err := url.Parse(link)
 	if err != nil {
-		log.Println("URL parse failed ", link, err)
+		//log.Println("URL parse failed ", link, err)
 		return
 	}
 
