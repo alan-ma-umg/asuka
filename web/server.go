@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
@@ -85,6 +86,7 @@ func Server(d []*project.Dispatcher, address string) error {
 	}()
 
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
+	http.HandleFunc("/download/", commonHandleFunc(downloadServer))
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
@@ -385,6 +387,34 @@ func getDispatcher(name string) *project.Dispatcher {
 	}
 
 	return nil
+}
+
+func downloadServer(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+		http.Error(w, "Login Required", 401)
+		return
+	}
+
+	ps := strings.Split(r.URL.Path, "/")
+	if len(ps) != 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(ps[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	//string.jo
+	buf := &bytes.Buffer{}
+	for _, e := range p.GetSpiders() {
+		buf.WriteString(e.Transport.S.String())
+		buf.WriteString("<br>")
+	}
+	w.Write(buf.Bytes())
 }
 
 func addServer(w http.ResponseWriter, r *http.Request) {
