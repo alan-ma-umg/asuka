@@ -247,11 +247,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 
 	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Name}
 
-	spider.Transport.AddAccess(spider.currentRequest.URL.String())
+	spider.Transport.AddAccess()
 
 	defer func() {
 		if err != nil {
-			spider.Transport.AddFailure(spider.currentRequest.URL.String())
+			spider.Transport.AddFailure()
 		}
 
 		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
@@ -266,7 +266,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 
 		//recover
 		if r := recover(); r != nil {
-			spider.Transport.AddFailure(spider.currentRequest.URL.String())
+			spider.Transport.AddFailure()
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
 		}
 	}()
@@ -345,7 +345,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 
 	//http status
 	if resp.StatusCode != 200 && err == nil {
-		spider.Transport.AddFailure(spider.currentRequest.URL.String())
+		spider.Transport.AddFailure()
 	}
 
 	spider.ResponseStr = string(res[:])

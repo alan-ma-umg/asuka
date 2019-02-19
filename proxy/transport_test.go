@@ -64,10 +64,10 @@ func TestTransport(t *testing.T) {
 	//log.Println(86400 * 2)
 	CountQueueMinuteCap = 86400 * 3 * 200 / (60 * 10)
 	for i := 0; i < CountQueueSecondCap; i++ {
-		t1.AddAccess("sfdsfsdf")
-		t1.AddAccess("sfdsfsdf")
-		t1.AddAccess("sfdsfsdf")
-		t1.AddFailure("sfdsfsdf")
+		t1.AddAccess()
+		t1.AddAccess()
+		t1.AddAccess()
+		t1.AddFailure()
 		//t1.AddFailure("sfdsfsdf")
 
 		//t1.AddAccess("sfdsfsdf")

@@ -366,8 +366,6 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		}
 	}()
 
-	spider.Transport.LoopCount++
-
 	_, summary, err := spider.Fetch(u)
 
 	//recent fetch

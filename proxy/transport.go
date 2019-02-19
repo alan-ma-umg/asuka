@@ -34,8 +34,6 @@ type Transport struct {
 	AccessCountHistory  int
 	FailureCountHistory int
 
-	LoopCount int
-
 	//traffic size
 	TrafficIn  uint64
 	TrafficOut uint64
@@ -47,7 +45,7 @@ type Transport struct {
 }
 
 func NewTransport(ssAddr *SsAddr) (*Transport, error) {
-	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr), LoopCount: 0}
+	instance := &Transport{S: ssAddr, t: createHttpTransport(ssAddr)}
 	return instance, nil
 }
 
@@ -98,12 +96,12 @@ func createHttpTransport(SockInfo *SsAddr) *http.Transport {
 }
 
 // AddAccess 每次调用请求时增加一次记录, 无论是否成功
-func (transport *Transport) AddAccess(link string) {
+func (transport *Transport) AddAccess() {
 	transport.AccessCountHistory++
 }
 
 // AddFailure 每次调用请求并失败时增加一次失败记录
-func (transport *Transport) AddFailure(link string) {
+func (transport *Transport) AddFailure() {
 	transport.FailureCountHistory++
 }
 
