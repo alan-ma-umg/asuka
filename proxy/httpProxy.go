@@ -28,7 +28,10 @@ func HttpProxyParse(str string) (servers []*SsAddr) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
 	str = strings.Replace(str, "\r", "\n", len(str))
 	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
-		line = strings.ToLower(line)
+		line = strings.ToLower(strings.TrimSpace(line))
+		if line == "" {
+			continue
+		}
 		if !strings.HasPrefix(line, "http") {
 			line = "http://" + line
 		}
