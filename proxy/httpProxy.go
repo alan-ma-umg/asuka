@@ -9,11 +9,11 @@ import (
 func HttpProxyHandler() (ssAddr []*SsAddr) {
 	for _, server := range helper.Env().HttpProxyServers {
 		ss := &SsAddr{
-			Enable:     server.Enable,
-			EnablePing: server.EnablePing,
-			Interval:   server.Interval,
-			Name:       server.Name,
-			Group:      server.Group,
+			Enable: server.Enable,
+			//EnablePing: server.EnablePing,
+			Interval: server.Interval,
+			Name:     server.Name,
+			//Group:      server.Group,
 			Type:       strings.ToLower(server.Type),
 			ServerAddr: strings.ToLower(server.Server + ":" + server.ServerPort),
 			openChan:   make(chan bool),
@@ -44,10 +44,10 @@ func HttpProxyParse(str string) (servers []*SsAddr) {
 		}
 
 		servers = append(servers, &SsAddr{
-			Enable:     true,
-			Interval:   1,
-			Name:       urlAddr.Hostname(),
-			Group:      "new",
+			Enable:   true,
+			Interval: 1,
+			Name:     urlAddr.Hostname(),
+			//Group:      "new",
 			Type:       strings.ToLower(urlAddr.Scheme),
 			ServerAddr: strings.ToLower(serverAddr + urlAddr.Hostname() + ":" + urlAddr.Port()),
 		})

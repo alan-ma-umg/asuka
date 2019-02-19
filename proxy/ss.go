@@ -14,12 +14,12 @@ import (
 )
 
 type SsAddr struct {
-	Enable     bool
-	EnablePing bool
-	Interval   float64
-	Type       string
-	Name       string
-	Group      string
+	Enable bool
+	//EnablePing bool
+	Interval float64
+	Type     string
+	Name     string
+	//Group      string
 	ServerAddr string
 	ClientAddr string
 	//TrafficIn   uint64
@@ -49,11 +49,11 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 		if server.Obfs != "" || server.ObfsParam != "" || server.ProtocolParam != "" || server.Protocol != "" {
 
 			ss := &SsAddr{
-				Enable:     server.Enable,
-				EnablePing: server.EnablePing,
-				Interval:   server.Interval,
-				Name:       server.Name,
-				Group:      server.Group,
+				Enable: server.Enable,
+				//EnablePing: server.EnablePing,
+				Interval: server.Interval,
+				Name:     server.Name,
+				//Group:      server.Group,
 				Type:       "ssr",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),
@@ -87,11 +87,11 @@ func SSLocalHandler() (ssAddr []*SsAddr) {
 			}
 
 			ss := &SsAddr{
-				Enable:     server.Enable,
-				EnablePing: server.EnablePing,
-				Interval:   server.Interval,
-				Name:       server.Name,
-				Group:      server.Group,
+				Enable: server.Enable,
+				//EnablePing: server.EnablePing,
+				Interval: server.Interval,
+				Name:     server.Name,
+				//Group:      server.Group,
 				Type:       "ss",
 				ServerAddr: server.Server + ":" + server.ServerPort,
 				openChan:   make(chan bool),

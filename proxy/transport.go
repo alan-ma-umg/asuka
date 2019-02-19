@@ -21,8 +21,8 @@ type Transport struct {
 	//TrafficIn  uint64
 	//TrafficOut uint64
 
-	Ping            time.Duration
-	PingFailureRate float64
+	//Ping            time.Duration
+	//PingFailureRate float64
 
 	RecentFewTimesResult []bool
 }

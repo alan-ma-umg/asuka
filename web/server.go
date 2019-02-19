@@ -724,14 +724,14 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		} else {
 			server["name"] = ""
 		}
-		if s.Transport.Ping == 0 {
-			server["ping"] = "-"
-		} else {
-			server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
-		}
-		server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
-		server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
-		server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
+		//if s.Transport.Ping == 0 {
+		//	server["ping"] = "-"
+		//} else {
+		//	server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
+		//}
+		//server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
+		//server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
+		//server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
 		server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
 		server["sleep"] = s.GetSleep().Truncate(time.Millisecond).String()
 		server["waiting"] = "0s"
@@ -764,9 +764,9 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		"queue_bls": make(map[int]int),
 	}
 
-	pingFailureAvg := .0
+	//pingFailureAvg := .0
 	failureLevelZeroCount := 0
-	var pingAvg time.Duration
+	//var pingAvg time.Duration
 	var sleepAvg time.Duration
 	var waitingAvg time.Duration
 	var avgTimeAvg time.Duration
@@ -811,8 +811,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 				serverEnable++
 			}
 			sleepAvg += s.GetSleep()
-			pingFailureAvg += s.Transport.PingFailureRate
-			pingAvg += s.Transport.Ping
+			//pingFailureAvg += s.Transport.PingFailureRate
+			//pingAvg += s.Transport.Ping
 
 			//NetIn += s.Transport.S.TrafficIn
 			//NetOut += s.Transport.S.TrafficOut
@@ -841,15 +841,15 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	//basic
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
-	jsonMap["basic"].(map[string]interface{})["ping_avg"] = "0s"
-	jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
+	//jsonMap["basic"].(map[string]interface{})["ping_avg"] = "0s"
+	//jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
 	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = "0s"
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = "0s"
 
 	if serverCount > 0 {
 		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
-		jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
-		jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(serverCount), 'f', 2, 64)
+		//jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
+		//jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(serverCount), 'f', 2, 64)
 		jsonMap["basic"].(map[string]interface{})["loads"] = loads
 	}
 	if failureLevelZeroCount > 0 {
