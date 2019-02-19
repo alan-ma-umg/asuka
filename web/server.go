@@ -681,7 +681,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
 
 	for index, s := range p.GetSpiders() {
-		if index > 200 {
+		if index > 100 {
 			break
 		}
 
@@ -695,23 +695,23 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 		server := map[string]interface{}{}
 
-		loads := make(map[int]float64, 9)
-		loads[5] += s.Transport.LoadRate(5)
-		loads[60] += s.Transport.LoadRate(60)
-		loads[60*15] += s.Transport.LoadRate(900)
-		loads[60*30] += s.Transport.LoadRate(1800)
-		loads[3600] += s.Transport.LoadRate(3600)
-		loads[3600*6] += s.Transport.LoadRate(3600 * 6)
-		loads[3600*12] += s.Transport.LoadRate(3600 * 12)
-		loads[86400] += s.Transport.LoadRate(86400)
-		loads[86400*2] += s.Transport.LoadRate(86400 * 2)
-		loads[86400*3] += s.Transport.LoadRate(86400 * 3)
+		//loads := make(map[int]float64, 9)
+		//loads[5] += s.Transport.LoadRate(5)
+		//loads[60] += s.Transport.LoadRate(60)
+		//loads[60*15] += s.Transport.LoadRate(900)
+		//loads[60*30] += s.Transport.LoadRate(1800)
+		//loads[3600] += s.Transport.LoadRate(3600)
+		//loads[3600*6] += s.Transport.LoadRate(3600 * 6)
+		//loads[3600*12] += s.Transport.LoadRate(3600 * 12)
+		//loads[86400] += s.Transport.LoadRate(86400)
+		//loads[86400*2] += s.Transport.LoadRate(86400 * 2)
+		//loads[86400*3] += s.Transport.LoadRate(86400 * 3)
+		//server["loads"] = loads
 
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
 		server["proxy_status"] = s.Transport.S.Status
 		server["test"] = s.Test
-		server["loads"] = loads
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
 		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
@@ -781,8 +781,21 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	var accessCount int
 	var failureCount int
 
-	loads := make(map[int]float64, 9)
+	loads := make(map[int]float64, 10)
 	for _, p := range ps {
+		loads[5] += p.LoadRate(5)
+		loads[60] += p.LoadRate(60)
+		loads[60*15] += p.LoadRate(900)
+		loads[60*30] += p.LoadRate(1800)
+		loads[3600] += p.LoadRate(3600)
+		loads[3600*6] += p.LoadRate(3600 * 6)
+		loads[3600*12] += p.LoadRate(3600 * 12)
+		loads[86400] += p.LoadRate(86400)
+		loads[86400*2] += p.LoadRate(86400 * 2)
+		loads[86400*3] += p.LoadRate(86400 * 3)
+		accessCount += p.GetAccessCount()
+		failureCount += p.GetFailureCount()
+
 		for _, s := range p.GetSpiders() {
 			if s.FailureLevel == 0 && !s.Stop {
 				failureLevelZeroCount++
@@ -791,17 +804,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 				}
 				avgTimeAvg += s.GetAvgTime()
 			}
-
-			loads[5] += s.Transport.LoadRate(5)
-			loads[60] += s.Transport.LoadRate(60)
-			loads[60*15] += s.Transport.LoadRate(900)
-			loads[60*30] += s.Transport.LoadRate(1800)
-			loads[3600] += s.Transport.LoadRate(3600)
-			loads[3600*6] += s.Transport.LoadRate(3600 * 6)
-			loads[3600*12] += s.Transport.LoadRate(3600 * 12)
-			loads[86400] += s.Transport.LoadRate(86400)
-			loads[86400*2] += s.Transport.LoadRate(86400 * 2)
-			loads[86400*3] += s.Transport.LoadRate(86400 * 3)
 
 			serverCount++
 			if !s.Stop {
@@ -814,8 +816,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			TrafficOut += s.Transport.TrafficOut
 			NetIn += s.Transport.S.TrafficIn
 			NetOut += s.Transport.S.TrafficOut
-			accessCount += s.Transport.GetAccessCount()
-			failureCount += s.Transport.GetFailureCount()
 		}
 
 		if len(p.GetSpiders()) > 0 {
