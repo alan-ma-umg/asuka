@@ -742,11 +742,15 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
 
-	for index, s := range p.GetSpiders() {
-		if index > 100 {
-			break
+	spiders := p.GetSpiders()
+	if len(spiders) > 1 {
+		if spiders[len(spiders)-1].Transport.S.Scheme == "direct" {
+			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(101, len(spiders))-1]...)
+		} else {
+			spiders = spiders[0:helper.MinInt(100, len(spiders))]
 		}
-
+	}
+	for index, s := range spiders {
 		avgTime := s.GetAvgTime()
 
 		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
