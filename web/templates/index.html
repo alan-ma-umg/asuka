@@ -150,7 +150,7 @@
                 <th>Failure recent/all</th>
                 <th>Dispatch</th>
                 <th>Load 60s/15m</th>
-                <th>Pass/Sleep</th>
+                {{/*<th>Pass/Sleep</th>*/}}
                 <th>Traffic I/O</th>
                 <th></th>
             </tr>
@@ -171,7 +171,7 @@
                     / {{"{{item.failure_count}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
                     / {{"{{item.loads['900']|numberFormat}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>
+                {{/*<td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>*/}}
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="right ctl">
