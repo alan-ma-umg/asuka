@@ -572,7 +572,7 @@ func indexJson(check bool) []byte {
 	for _, p := range dispatchers {
 		projectMap := map[string]interface{}{}
 
-		loads := make(map[int]float64, 9)
+		loads := make(map[int]float64, 10)
 
 		failureRatePeriodValue := 0.0
 		failureRateAllValue := .0
@@ -588,24 +588,26 @@ func indexJson(check bool) []byte {
 		var serverCount int
 		var serverRun int
 		var serverEnable int
+
+		loads[5] += p.LoadRate(5)
+		loads[60] += p.LoadRate(60)
+		loads[60*15] += p.LoadRate(900)
+		loads[60*30] += p.LoadRate(1800)
+		loads[3600] += p.LoadRate(3600)
+		loads[3600*6] += p.LoadRate(3600 * 6)
+		loads[3600*12] += p.LoadRate(3600 * 12)
+		loads[86400] += p.LoadRate(86400)
+		loads[86400*2] += p.LoadRate(86400 * 2)
+		loads[86400*3] += p.LoadRate(86400 * 3)
+
+		failureRatePeriodValue += helper.SpiderFailureRate(p.AccessCount(periodOfFailureSecond))
+		if p.GetAccessCount() > 0 {
+			failureRateAllValue += float64(p.GetFailureCount()) / float64(p.GetAccessCount()) * 100
+		}
+		accessCount += p.GetAccessCount()
+		failureCount += p.GetFailureCount()
+
 		for _, s := range p.GetSpiders() {
-
-			failureRatePeriodValue += helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
-			if s.Transport.GetAccessCount() > 0 {
-				failureRateAllValue += float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
-			}
-
-			loads[5] += s.Transport.LoadRate(5)
-			loads[60] += s.Transport.LoadRate(60)
-			loads[60*15] += s.Transport.LoadRate(900)
-			loads[60*30] += s.Transport.LoadRate(1800)
-			loads[3600] += s.Transport.LoadRate(3600)
-			loads[3600*6] += s.Transport.LoadRate(3600 * 6)
-			loads[3600*12] += s.Transport.LoadRate(3600 * 12)
-			loads[86400] += s.Transport.LoadRate(86400)
-			loads[86400*2] += s.Transport.LoadRate(86400 * 2)
-			loads[86400*3] += s.Transport.LoadRate(86400 * 3)
-
 			sleepDuration += s.GetSleep()
 
 			if !s.RequestStartTime.IsZero() {
@@ -625,8 +627,6 @@ func indexJson(check bool) []byte {
 			NetIn += s.Transport.S.TrafficIn
 			NetOut += s.Transport.S.TrafficOut
 			connections += s.Transport.S.Connections
-			accessCount += s.Transport.GetAccessCount()
-			failureCount += s.Transport.GetFailureCount()
 		}
 
 		projectMap["stop"] = p.Stop

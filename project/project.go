@@ -78,6 +78,7 @@ const RecentFetchCount = 50
 
 type Dispatcher struct {
 	IProject
+	*helper.Counting
 	queue                *queue.Queue
 	Spiders              []*spider.Spider //make public for GOB
 	Stop                 bool
@@ -88,7 +89,7 @@ type Dispatcher struct {
 }
 
 func New(project IProject) *Dispatcher {
-	d := &Dispatcher{IProject: project}
+	d := &Dispatcher{IProject: project, Counting: &helper.Counting{}}
 	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
 	d.Init()
@@ -284,21 +285,28 @@ func (my *Dispatcher) Run() *Dispatcher {
 	}
 
 	go func() {
-		s := time.NewTicker(time.Second * helper.SecondInterval)
-		defer s.Stop()
+		t := time.NewTicker(time.Second * helper.SecondInterval)
+		defer t.Stop()
 		for {
-			<-s.C
-			spiders := my.GetSpiders()
-			if len(spiders) == 0 {
-				break
-			}
-			for _, s := range spiders {
+			<-t.C
+			for _, s := range my.GetSpiders() {
 				if s != nil {
 					s.Transport.CountSliceCursor++
 					s.Transport.RecordAccessSecondCount()
 					s.Transport.RecordFailureSecondCount()
 				}
 			}
+		}
+	}()
+
+	go func() {
+		t := time.NewTicker(time.Second * helper.SecondInterval)
+		defer t.Stop()
+		for {
+			<-t.C
+			my.CountSliceCursor++
+			my.RecordAccessSecondCount()
+			my.RecordFailureSecondCount()
 		}
 	}()
 
@@ -366,7 +374,11 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		}
 	}()
 
+	project.AddAccess()
 	_, summary, err := spider.Fetch(u)
+	if err != nil || summary.StatusCode != 200 {
+		project.AddFailure()
+	}
 
 	//recent fetch
 	project.recentFetchMutex.Lock()
