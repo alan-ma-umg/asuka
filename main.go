@@ -34,14 +34,14 @@ func asuka() {
 	log.Println(web.Server([]*project.Dispatcher{
 		//project.New(&project.DouBan{}).Run(),
 		//project.New(&project.Test{}).Run(),
-		//project.New(&project.Test2{}).Run(),
+		project.New(&project.Test2{}).Run(),
 		//project.New(&project.ZhiHu{}).Run(),
 		//project.New(&project.JianShu{}).Run(),
 		//project.New(&project.Www{}).Run(),
 
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
-		project.New(&project.Test2{}).CleanUp().Run(),
+		//project.New(&project.Test2{}).CleanUp().Run(),
 		//project.New(&project.ZhiHu{}).CleanUp().Run(),
 		//project.New(&project.JianShu{}).CleanUp().Run(),
 		//project.New(&project.Www{}).CleanUp().Run(),

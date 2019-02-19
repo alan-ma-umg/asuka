@@ -86,13 +86,13 @@ type Dispatcher struct {
 	spiderSliceMutex     sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
-	//traffic size
-	TrafficIn  uint64
-	TrafficOut uint64
+	TrafficIn            uint64
+	TrafficOut           uint64
+	StartTime            time.Time
 }
 
 func New(project IProject) *Dispatcher {
-	d := &Dispatcher{IProject: project, Counting: &helper.Counting{}}
+	d := &Dispatcher{IProject: project, Counting: &helper.Counting{}, StartTime: time.Now()}
 	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
 	d.Init()

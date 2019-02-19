@@ -78,10 +78,8 @@ func Server(d []*project.Dispatcher, address string) error {
 	//init start time
 	go func() {
 		for _, d := range dispatchers {
-			for _, sp := range d.GetSpiders() {
-				if StartTime.Unix() > sp.StartTime.Unix() {
-					StartTime = sp.StartTime
-				}
+			if StartTime.Unix() > d.StartTime.Unix() {
+				StartTime = d.StartTime
 			}
 		}
 	}()
@@ -711,7 +709,6 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
 		server["proxy_status"] = s.Transport.S.Status
-		server["test"] = s.Test
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
 		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)

@@ -201,7 +201,6 @@
             </tr>
             </thead>
             <tbody>
-            {{/*<tr v-for="server in home.servers" :class="{warning:server.failure_level,stop: server.stop,orange:server.test===10}">*/}}
             <tr v-for="server in home.servers" :class="{warning:server.failure_level,stop: server.stop}">
                 {{if .Check}}
                     <td class="center">
