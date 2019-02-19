@@ -19,14 +19,14 @@ type AddrInfo struct {
 	Name     string
 	//Group      string
 	ServerAddr string
-	ClientAddr string
+	//ClientAddr string
 	//TrafficIn   uint64
 	//TrafficOut  uint64
 	//Connections int
-	listener  net.Listener
-	openChan  chan bool
-	closeChan chan bool
-	Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
+	//listener  net.Listener
+	openChan chan bool
+	//closeChan chan bool
+	//Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
 }
 
 type Transport struct {
@@ -97,10 +97,6 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 
 func (transport *Transport) Close() {
 	if !transport.transportClosed {
-		if transport.S.Type == "socks5" {
-			transport.S.Close()
-		}
-
 		transport.t.(*http.Transport).DisableKeepAlives = true
 		transport.t.(*http.Transport).CloseIdleConnections()
 		transport.transportClosed = true

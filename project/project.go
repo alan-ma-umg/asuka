@@ -174,7 +174,7 @@ func (my *Dispatcher) initSpider() {
 		name := s.Transport.S.Name
 		enable := s.Transport.S.Enable
 		interval := s.Transport.S.Interval
-		clientAddr := s.Transport.S.ClientAddr
+		//clientAddr := s.Transport.S.ClientAddr
 
 		//recover from
 		if recoverSpider, ok := recoverSpiders[s.Transport.S.ServerAddr]; ok {
@@ -188,7 +188,7 @@ func (my *Dispatcher) initSpider() {
 		s.Transport.S.Name = name
 		s.Transport.S.Enable = enable
 		s.Transport.S.Interval = interval
-		s.Transport.S.ClientAddr = clientAddr
+		//s.Transport.S.ClientAddr = clientAddr
 
 		my.spiders = append(my.spiders, s)
 	}
@@ -222,19 +222,20 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 		transports = append(transports, t)
 	}
 
-	for _, ssAddr := range proxy.SSLocalHandler() {
-		if helper.Contains(repeat, ssAddr.ServerAddr) {
-			log.Println("DUPLICATE: " + ssAddr.ServerAddr)
-		}
-		repeat = append(repeat, ssAddr.ServerAddr)
-
-		t, err := proxy.NewTransport(ssAddr)
-		if err != nil {
-			log.Println("proxy error: ", err)
-			continue
-		}
-		transports = append(transports, t)
-	}
+	//
+	//for _, ssAddr := range proxy.SSLocalHandler() {
+	//	if helper.Contains(repeat, ssAddr.ServerAddr) {
+	//		log.Println("DUPLICATE: " + ssAddr.ServerAddr)
+	//	}
+	//	repeat = append(repeat, ssAddr.ServerAddr)
+	//
+	//	t, err := proxy.NewTransport(ssAddr)
+	//	if err != nil {
+	//		log.Println("proxy error: ", err)
+	//		continue
+	//	}
+	//	transports = append(transports, t)
+	//}
 
 	return
 }
