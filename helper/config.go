@@ -13,7 +13,9 @@ type LocalTransport struct {
 }
 
 type Redis struct {
-	Server      string
+	Network     string
+	Addr        string
+	Password    string
 	DB          int
 	URLQueueKey string
 }
