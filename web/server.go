@@ -646,7 +646,6 @@ func indexJson(check bool) []byte {
 		loads := make(map[int]float64, 10)
 
 		failureRatePeriodValue := 0.0
-		failureRateAllValue := .0
 		var sleepDuration time.Duration
 		var waiting time.Duration
 		var TrafficIn uint64
@@ -672,9 +671,6 @@ func indexJson(check bool) []byte {
 		loads[86400*3] += p.LoadRate(86400 * 3)
 
 		failureRatePeriodValue += helper.SpiderFailureRate(p.AccessCount(periodOfFailureSecond))
-		if p.GetAccessCount() > 0 {
-			failureRateAllValue += float64(p.GetFailureCount()) / float64(p.GetAccessCount()) * 100
-		}
 		accessCount += p.GetAccessCount()
 		failureCount += p.GetFailureCount()
 		TrafficIn += p.TrafficIn
@@ -714,12 +710,10 @@ func indexJson(check bool) []byte {
 			}
 		}
 
-		if serverCount > 0 {
-			projectMap["failure_period"] = failureRatePeriodValue / float64(serverCount)
-			projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue/float64(serverCount)))
-			projectMap["failure_all"] = strconv.FormatFloat(failureRateAllValue/float64(serverCount), 'f', 2, 64)
-			projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue/float64(serverCount)))
-		}
+		projectMap["failure_period"] = failureRatePeriodValue
+		projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
+		projectMap["failure_all"] = strconv.FormatFloat(float64(p.GetFailureCount())/float64(p.GetAccessCount())*100, 'f', 2, 64)
+		projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - float64(p.GetFailureCount())/float64(p.GetAccessCount())*100))
 
 		projectMap["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 		projectMap["traffic_out"] = helper.ByteCountBinary(TrafficOut)
