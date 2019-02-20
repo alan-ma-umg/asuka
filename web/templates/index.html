@@ -110,13 +110,13 @@
                         Request
                     </td>
                     <td>
-                        <strong>{{"{{accessSum|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.access_count|numberFormat}}"}}</strong>
                     </td>
                     <td>
                         Failed
                     </td>
                     <td>
-                        <strong>{{"{{failureSum|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.failure_count|numberFormat}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -124,13 +124,15 @@
                         Failure Recent
                     </td>
                     <td>
-                        <strong>{{"{{failurePeriodAvg}}"}}%</strong>
+                        <strong>{{"{{ projects.length?(basic.failure_period/projects.length):0 |numberFormat }}"}}
+                            %</strong>
                     </td>
                     <td>
                         Failure All
                     </td>
                     <td>
-                        <strong>{{"{{failureAllAvg}}"}}%</strong>
+                        <strong>{{"{{ basic.access_count?(basic.failure_count/basic.access_count)*100:0 |numberFormat }}"}}
+                            %</strong>
                     </td>
                 </tr>
                 </tbody>
@@ -146,6 +148,7 @@
             <tr>
                 <th style="width: 1px"></th>
                 <th>Project</th>
+                <th>Servers</th>
                 <th>Offline</th>
                 <th>Failure recent/all</th>
                 <th>Dispatch</th>
@@ -160,6 +163,9 @@
                 :class="{ stop: item.stop}">
                 <td class="center" v-on:click="goTo(item.name)">{{"{{index+1}}"}}</td>
                 <td class="center" v-on:click="goTo(item.name)"><a :href="item.name">{{"{{item.name}}"}}</a></td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.server_run}}"}}
+                    / {{"{{item.server_enable}}"}}
+                </td>
                 <td class="center"
                     v-on:click="goTo(item.name)">{{"{{item.server_enable?((item.server_enable-item.server_run)/item.server_enable*100).toFixed(2):0}}"}}
                     %
@@ -235,26 +241,6 @@
             }
         },
         computed: {
-            accessSum: function () {
-                return total(this.projects, "access_count");
-            },
-            failureSum: function () {
-                return total(this.projects, "failure_count");
-            },
-            failurePeriodAvg: function () {
-                if (this.projects.length) {
-                    return (total(this.projects, "failure_period") / this.projects.length).toFixed(2)
-                } else {
-                    return 0
-                }
-            },
-            failureAllAvg: function () {
-                if (this.projects.length) {
-                    return (total(this.projects, "failure_all") / this.projects.length).toFixed(2)
-                } else {
-                    return 0
-                }
-            },
             retries: function () {
                 let str = "", k;
                 for (k in this.basic.queue_bls) {
@@ -271,12 +257,6 @@
                     return "0"
                 }
                 return new Intl.NumberFormat().format(v)
-            },
-            urlTruncate: function (str) {
-                if (str.length > 40) {
-                    return str.substring(0, 40) + "..(" + str.length + ")"
-                }
-                return str
             }
         },
         mounted: function () {
@@ -284,17 +264,6 @@
             handlerSocket();
         }
     });
-
-
-    function total(data, field) {
-        let total = 0;
-        for (item of data) {
-            if (item[field] !== "undefined") {
-                total += parseFloat(item[field], 10)
-            }
-        }
-        return total;
-    }
 
     document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {

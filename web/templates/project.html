@@ -122,7 +122,7 @@
                         Failure Recent
                     </td>
                     <td>
-                        <strong>{{"{{failurePeriodAvg}}"}}%</strong>
+                        <strong>{{"{{basic.failure_period}}"}}%</strong>
                     </td>
                     <td>
                         Failure All
@@ -314,35 +314,6 @@
             }
         },
         computed: {
-            // accessSum: function () {
-            //     return total(this.home.servers, "access_count");
-            // },
-            // failureSum: function () {
-            //     return total(this.home.servers, "failure_count");
-            // },
-            failurePeriodAvg: function () {
-                return (total(this.home.servers, "failure_period") / this.home.servers.length).toFixed(2)
-            },
-            // failureAllAvg: function () {
-            //     return (total(this.home.servers, "failure_all") / this.home.servers.length).toFixed(2)
-            // },
-            statusAvg: function () {
-                return (total(this.home.servers, "failure_level") / this.home.servers.length).toFixed(2)
-            },
-            connectionSum: function () {
-                return total(this.home.servers, "connections")
-            },
-            established: function () {
-
-                let total = 0;
-                for (let item of this.home.servers) {
-                    if (item["proxy_status"] !== "undefined" && item["proxy_status"] === 30) {
-                        total++
-                    }
-                }
-                return total;
-
-            },
             retries: function () {
                 let str = "", k;
                 for (k in this.basic.queue_bls) {
@@ -351,15 +322,6 @@
                     }
                 }
                 return str ? str.substring(0, str.length - 2) : str
-            },
-            serverRunning: function () {
-                let count = 0;
-                for (item of this.home.servers) {
-                    if (item["failure_level"] === 0) {
-                        count++
-                    }
-                }
-                return count
             }
         },
         filters: {
@@ -393,16 +355,6 @@
             }
         }
     });
-
-    function total(data, field) {
-        let total = 0;
-        for (item of data) {
-            if (item[field] !== "undefined") {
-                total += parseFloat(item[field], 10)
-            }
-        }
-        return total;
-    }
 
     document.getElementById("send-value").onkeypress = function (evt) {
         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {

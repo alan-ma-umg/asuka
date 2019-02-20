@@ -840,6 +840,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		"queue_bls": make(map[int]int),
 	}
 
+	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
 	//pingFailureAvg := .0
 	failureLevelZeroCount := 0
 	//var pingAvg time.Duration
@@ -856,6 +857,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	var serverEnable int
 	var accessCount int
 	var failureCount int
+	failureRatePeriodValue := 0.0
 
 	loads := make(map[int]float64, 10)
 	for _, p := range ps {
@@ -869,6 +871,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		loads[86400] += p.LoadRate(86400)
 		loads[86400*2] += p.LoadRate(86400 * 2)
 		loads[86400*3] += p.LoadRate(86400 * 3)
+		failureRatePeriodValue += helper.SpiderFailureRate(p.AccessCount(periodOfFailureSecond))
 		accessCount += p.GetAccessCount()
 		failureCount += p.GetFailureCount()
 		TrafficIn += p.TrafficIn
@@ -916,10 +919,11 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	runtime.ReadMemStats(&mem)
 
 	//basic
+	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
 	//jsonMap["basic"].(map[string]interface{})["ping_avg"] = "0s"
 	//jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
-	jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = "0s"
+	//jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = "0s"
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = "0s"
 
 	if serverCount > 0 {
