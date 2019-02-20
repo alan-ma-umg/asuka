@@ -265,13 +265,6 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
-			case "clear":
-				for _, d := range dispatchers {
-					for _, s := range d.GetSpiders() {
-						s.Queue.BlCleanUp()
-					}
-				}
-				fmt.Println("bloomFilter clearAll")
 			case "stop":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
@@ -344,11 +337,20 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
-			//case "reconnect":
-			//	for _, s := range dispatcherObj.GetSpiders() {
-			//		s.Transport.Reconnect()
-			//	}
-			//	fmt.Println("reconnect")
+			case "enqueue":
+				for _, s := range p.GetSpiders() {
+					for _, l := range p.EntryUrl() {
+						s.Queue.Enqueue(l)
+					}
+					break
+				}
+				fmt.Println("enqueue")
+			case "clear":
+				for _, s := range p.GetSpiders() {
+					s.Queue.BlCleanUp()
+					break
+				}
+				fmt.Println("bloomFilter clearAll")
 			case "stop":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
