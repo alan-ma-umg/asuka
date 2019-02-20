@@ -260,7 +260,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
-		if messageType == 1 {
+		if messageType == 1 && check {
 			switch strings.TrimSpace(string(b)) {
 			case "free":
 				debug.FreeOSMemory()
@@ -338,30 +338,38 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
 			case "enqueue":
-				for _, s := range p.GetSpiders() {
-					for _, l := range p.EntryUrl() {
-						s.Queue.Enqueue(l)
+				if check {
+					for _, s := range p.GetSpiders() {
+						for _, l := range p.EntryUrl() {
+							s.Queue.Enqueue(l)
+						}
+						break
 					}
-					break
 				}
 				fmt.Println("enqueue")
 			case "clear":
-				for _, s := range p.GetSpiders() {
-					s.Queue.BlCleanUp()
-					break
+				if check {
+					for _, s := range p.GetSpiders() {
+						s.Queue.BlCleanUp()
+						break
+					}
 				}
 				fmt.Println("bloomFilter clearAll")
 			case "stop":
-				for _, d := range dispatchers {
-					for _, s := range d.GetSpiders() {
-						s.Stop = true
+				if check {
+					for _, d := range dispatchers {
+						for _, s := range d.GetSpiders() {
+							s.Stop = true
+						}
 					}
 				}
 				fmt.Println("spider stop")
 			case "start":
-				for _, d := range dispatchers {
-					for _, s := range d.GetSpiders() {
-						s.Stop = false
+				if check {
+					for _, d := range dispatchers {
+						for _, s := range d.GetSpiders() {
+							s.Stop = false
+						}
 					}
 				}
 				fmt.Println("spider start")
