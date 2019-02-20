@@ -5,7 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -17,13 +16,10 @@ import (
 	"log"
 	"math"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
-	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -51,36 +47,36 @@ func Env() *EnvConfig {
 			log.Fatal(err)
 		}
 
-		file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
-		if err == nil {
-			decoder := json.NewDecoder(file)
-			err = decoder.Decode(&envConfig.HttpProxyServers)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		//strings.TrimSpace for each type of string
-		for _, s := range envConfig.SsServers {
-			s := reflect.ValueOf(s).Elem()
-			for i := 0; i < s.NumField(); i++ {
-				f := s.Field(i)
-				if f.Kind() == reflect.String && f.CanSet() {
-					f.SetString(strings.TrimSpace(f.Interface().(string)))
-				}
-			}
-		}
-
-		//strings.TrimSpace for each type of string
-		for _, s := range envConfig.HttpProxyServers {
-			s := reflect.ValueOf(s).Elem()
-			for i := 0; i < s.NumField(); i++ {
-				f := s.Field(i)
-				if f.Kind() == reflect.String && f.CanSet() {
-					f.SetString(strings.TrimSpace(f.Interface().(string)))
-				}
-			}
-		}
+		//file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
+		//if err == nil {
+		//	decoder := json.NewDecoder(file)
+		//	err = decoder.Decode(&envConfig.HttpProxyServers)
+		//	if err != nil {
+		//		log.Fatal(err)
+		//	}
+		//}
+		//
+		////strings.TrimSpace for each type of string
+		//for _, s := range envConfig.SsServers {
+		//	s := reflect.ValueOf(s).Elem()
+		//	for i := 0; i < s.NumField(); i++ {
+		//		f := s.Field(i)
+		//		if f.Kind() == reflect.String && f.CanSet() {
+		//			f.SetString(strings.TrimSpace(f.Interface().(string)))
+		//		}
+		//	}
+		//}
+		//
+		////strings.TrimSpace for each type of string
+		//for _, s := range envConfig.HttpProxyServers {
+		//	s := reflect.ValueOf(s).Elem()
+		//	for i := 0; i < s.NumField(); i++ {
+		//		f := s.Field(i)
+		//		if f.Kind() == reflect.String && f.CanSet() {
+		//			f.SetString(strings.TrimSpace(f.Interface().(string)))
+		//		}
+		//	}
+		//}
 	})
 
 	return envConfig
@@ -270,111 +266,6 @@ func MaxInt64(a, b int64) int64 {
 		return b
 	}
 	return a
-}
-
-func SSSubscriptionParse(rawUrl string) {
-	resp, err := http.Get(rawUrl)
-	if err != nil {
-
-		return
-	}
-	defer resp.Body.Close()
-
-	res, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	bStr, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(res))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var SSServerArr []SsServer
-	for _, line := range strings.Split(string(bStr), "\n") {
-		if strings.HasPrefix(line, "ssr://") {
-			//line=strings.Replace(line,"_","+",0)
-			line = strings.Replace(line, "_", "+", len(line))
-
-			if strings.Contains(line[6:], "/") || strings.Contains(line, "_") || strings.Contains(line, "-") {
-				log.Println(line)
-			}
-			dec, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(line[6:])
-			if err != nil {
-				log.Println(line[6:])
-				log.Println(err)
-				return
-			}
-			s := strings.Split(string(dec), ":")
-
-			part5 := strings.Split(s[5], "/")
-
-			password, _ := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(part5[0])
-			//fmt.Println(password)
-
-			u, err := url.Parse(strings.Replace(strings.TrimSpace(s[5]), "/>", "/?", len(s[5]))) //fix typo
-			if err != nil {
-				log.Println(string(dec))
-				log.Println(err)
-				return
-			}
-			queryMap := u.Query()
-
-			ssServer := SsServer{
-				Enable:     true,
-				Name:       s[0],
-				Server:     s[0],
-				ServerPort: s[1],
-				Password:   string(password),
-				Method:     s[3],
-				//	ssr only
-				Obfs: s[4],
-				//ObfsParam     string
-				//ProtocolParam string
-				Protocol: s[2],
-			}
-
-			if v, ok := queryMap["obfsparam"]; ok {
-				obfsparam, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(v[0]))
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				ssServer.ObfsParam = string(obfsparam)
-			}
-
-			if v, ok := queryMap["protoparam"]; ok {
-				protoparam, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(string(v[0]))
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				ssServer.ProtocolParam = string(protoparam)
-			}
-			if ssServer.Protocol != "" && ssServer.ProtocolParam == "" {
-				log.Println(queryMap)
-				log.Println(string(dec))
-			}
-
-			if strings.ToLower(ssServer.Method) == "chacha20" {
-				log.Println("chacha20: Not support yet.")
-				continue
-			}
-			SSServerArr = append(SSServerArr, ssServer)
-		}
-
-		if strings.HasPrefix(line, "ss://") {
-			//todo
-		}
-	}
-
-	b, err := json.Marshal(SSServerArr)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(string(b))
 }
 
 func Ping(ip *net.IPAddr, times int) (avgRtt time.Duration, failureTimes int) {

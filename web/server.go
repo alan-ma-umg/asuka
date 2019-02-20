@@ -265,6 +265,13 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
+			case "clear":
+				for _, d := range dispatchers {
+					for _, s := range d.GetSpiders() {
+						s.Queue.BlCleanUp()
+					}
+				}
+				fmt.Println("bloomFilter clearAll")
 			case "stop":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {

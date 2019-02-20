@@ -22,7 +22,7 @@ type Queue struct {
 
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, BlsTestCount: make(map[int]int)}
-	q.bloomFilterInstance = bloom.NewWithEstimates(50000000, 0.001)
+	q.bloomFilterInstance = bloom.NewWithEstimates(50000000, 0.003)
 	f, _ := os.Open(q.GetBlKey())
 	q.bloomFilterInstance.ReadFrom(f)
 	f.Close()
@@ -30,6 +30,9 @@ func NewQueue(name string) (q *Queue) {
 }
 
 func (my *Queue) BlCleanUp() {
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+
 	for i := 0; i < helper.MaxInt(10, len(my.bls)); i++ {
 		os.Remove(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 	}
