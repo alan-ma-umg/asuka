@@ -57,6 +57,12 @@ func (my *Test2) DownloadFilter(spider *spider.Spider, response *http.Response) 
 
 	return true, nil
 }
+func (my *Test2) ResponseAfter(spider *spider.Spider) {
+	spider.ResetRequest()
+	spider.Transport.Close()
+
+	spider.ResponseByte = []byte{} //free memory
+}
 
 // queue
 func (my *Test2) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {

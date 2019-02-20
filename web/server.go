@@ -760,7 +760,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		}
 	}
 	for index, s := range spiders {
-		avgTime := s.GetAvgTime()
+		//avgTime := s.GetAvgTime()
 
 		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
 		failureRateAllValue := .0
@@ -806,7 +806,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		//server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
 		//server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
 		//server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
-		server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
+		//server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
 		server["sleep"] = s.GetSleep().Truncate(time.Millisecond).String()
 		server["waiting"] = "0s"
 		if !s.RequestStartTime.IsZero() {
@@ -843,7 +843,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	//var pingAvg time.Duration
 	var sleepAvg time.Duration
 	var waitingAvg time.Duration
-	var avgTimeAvg time.Duration
+	//var avgTimeAvg time.Duration
 	var TrafficIn uint64
 	var TrafficOut uint64
 	//var NetIn uint64
@@ -877,7 +877,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 				if !s.RequestStartTime.IsZero() {
 					waitingAvg += time.Since(s.RequestStartTime)
 				}
-				avgTimeAvg += s.GetAvgTime()
+				//avgTimeAvg += s.GetAvgTime()
 			}
 
 			serverCount++
@@ -927,7 +927,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		jsonMap["basic"].(map[string]interface{})["loads"] = loads
 	}
 	if failureLevelZeroCount > 0 {
-		jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
+		//jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = (avgTimeAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
 		jsonMap["basic"].(map[string]interface{})["waiting_avg"] = (waitingAvg / time.Duration(failureLevelZeroCount)).Truncate(time.Millisecond).String()
 	}
 	jsonMap["basic"].(map[string]interface{})["servers"] = serverCount

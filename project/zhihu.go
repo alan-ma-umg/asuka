@@ -224,6 +224,13 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 	}
 }
 
+func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
+	spider.ResetRequest()
+	spider.Transport.Close()
+
+	spider.ResponseByte = []byte{} //free memory
+}
+
 // queue
 func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if my.queueUrlLen > 20000 {

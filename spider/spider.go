@@ -51,11 +51,11 @@ type Spider struct {
 	requestsMap    map[string]*http.Request
 	currentRequest *http.Request
 
-	ResponseStr  string
+	//ResponseStr  string
 	ResponseByte []byte
 
-	TimeSlice    []time.Duration
-	TimeLenLimit int
+	//TimeSlice    []time.Duration
+	//TimeLenLimit int
 
 	FailureLevel int
 
@@ -74,7 +74,7 @@ type Spider struct {
 }
 
 func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, TimeLenLimit: 5, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+	spider := &Spider{Queue: queue, Transport: t, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
 	spider.ResetRequest()
 	//spider.updateClient()
 	return spider
@@ -234,7 +234,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 		spider.RequestBefore(spider)
 	}
 
-	spider.ResponseStr = ""
 	spider.ResponseByte = []byte{}
 
 	//time
@@ -257,7 +256,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 		//A few times result of http request
 		spider.Transport.RecentFewTimesResult = append(spider.Transport.RecentFewTimesResult, spider.FailureLevel == 0)
 
-		spider.TimeSlice = append(spider.TimeSlice[helper.MaxInt(len(spider.TimeSlice)-spider.TimeLenLimit, 0):], time.Since(spider.RequestStartTime))
+		//spider.TimeSlice = append(spider.TimeSlice[helper.MaxInt(len(spider.TimeSlice)-spider.TimeLenLimit, 0):], time.Since(spider.RequestStartTime))
 
 		//recover
 		if r := recover(); r != nil {
@@ -343,7 +342,6 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 		spider.Transport.AddFailure()
 	}
 
-	spider.ResponseStr = string(res[:])
 	spider.ResponseByte = res
 	return resp, summary, err
 }
@@ -503,17 +501,17 @@ func (spider *Spider) responseErrorHandler(err error) string {
 	}
 }
 
-func (spider *Spider) GetAvgTime() (t time.Duration) {
-	for _, tt := range spider.TimeSlice {
-		t += tt
-	}
-
-	if len(spider.TimeSlice) == 0 {
-		return
-	}
-	t /= time.Duration(len(spider.TimeSlice))
-	return
-}
+//func (spider *Spider) GetAvgTime() (t time.Duration) {
+//	for _, tt := range spider.TimeSlice {
+//		t += tt
+//	}
+//
+//	if len(spider.TimeSlice) == 0 {
+//		return
+//	}
+//	t /= time.Duration(len(spider.TimeSlice))
+//	return
+//}
 
 func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 	token := html.NewTokenizer(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))

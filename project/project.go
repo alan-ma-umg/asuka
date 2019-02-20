@@ -104,7 +104,7 @@ func New(project IProject) *Dispatcher {
 		}
 
 		for _, sp := range d.GetSpiders() {
-			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && sp.ResponseStr == "" {
+			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && len(sp.ResponseByte) == 0 {
 				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
 				//fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
 			}

@@ -35,8 +35,11 @@ func (my *Test) EntryUrl() []string {
 
 	return links
 }
-
 func (my *Test) ResponseAfter(spider *spider.Spider) {
+	spider.ResetRequest()
+	spider.Transport.Close()
+
+	spider.ResponseByte = []byte{} //free memory
 }
 func (my *Test) Throttle(spider *spider.Spider) {
 }

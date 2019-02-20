@@ -161,4 +161,6 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl stri
 func (my *Www) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
+
+	spider.ResponseByte = []byte{} //free memory
 }

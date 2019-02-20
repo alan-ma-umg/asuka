@@ -80,6 +80,10 @@ func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
+	spider.ResetRequest()
+	spider.Transport.Close()
+
+	spider.ResponseByte = []byte{} //free memory
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
