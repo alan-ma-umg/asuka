@@ -74,6 +74,15 @@ func (my *DouBan) Showing() (str string) {
 }
 
 func (my *DouBan) Init() {
+	//create table
+	err := database.Mysql().CreateTables(&AsukaDouBan{})
+	if err != nil {
+		panic(err)
+	}
+	database.Mysql().CreateIndexes(&AsukaDouBan{})
+
+	database.Mysql().Desc("id").Limit(1).Cols("id").Get(&my.lastInsertId)
+
 	go func() {
 		s := time.NewTicker(time.Second)
 		dbSpeedPoint := my.dbSpeedNum
@@ -83,13 +92,6 @@ func (my *DouBan) Init() {
 			dbSpeedPoint = my.dbSpeedNum
 		}
 	}()
-
-	//create table
-	err := database.Mysql().CreateTables(&AsukaDouBan{})
-	if err != nil {
-		panic(err)
-	}
-	database.Mysql().CreateIndexes(&AsukaDouBan{})
 }
 
 func (my *DouBan) EntryUrl() []string {
