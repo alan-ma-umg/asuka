@@ -81,7 +81,7 @@ func (my *DouBan) Init() {
 	}
 	database.Mysql().CreateIndexes(&AsukaDouBan{})
 
-	database.Mysql().Desc("id").Limit(1).Cols("id").Get(&my.lastInsertId)
+	database.Mysql().Table(&AsukaDouBan{}).Desc("id").Limit(1).Cols("id").Get(&my.lastInsertId)
 
 	go func() {
 		s := time.NewTicker(time.Second)
