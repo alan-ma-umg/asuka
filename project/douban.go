@@ -395,15 +395,16 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 							if v, ok := v.(string); ok {
 								model.DateStr = strings.TrimSpace(v)
 								if model.DateStr != "" {
-									if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
-										model.Date = t.Unix()
-									} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
-										model.Date = t.Unix()
-									} else if t, err := time.Parse("2006", model.DateStr); err == nil {
-										model.Date = t.Unix()
-									} else {
-										log.Println(err, model.Url, model.Title, model.DateStr)
-									}
+									doubanParseDate(model)
+									//if t, err := time.Parse("2006-1-2", model.DateStr); err == nil {
+									//	model.Date = t.Unix()
+									//} else if t, err := time.Parse("2006-1", model.DateStr); err == nil {
+									//	model.Date = t.Unix()
+									//} else if t, err := time.Parse("2006", model.DateStr); err == nil {
+									//	model.Date = t.Unix()
+									//} else {
+									//	log.Println(err, model.Url, model.Title, model.DateStr)
+									//}
 								}
 							} else {
 								log.Println(err, model.Url, model.Title, n.FirstChild.Data)
