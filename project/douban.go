@@ -619,24 +619,30 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		Url:      model.Url,
 	}
 
-	my.dbSpeedNum++
-	if ok, err := database.Mysql().Get(existsModel); ok && err == nil {
-		//update
-		model.Version = existsModel.Version
-		if _, err = database.Mysql().Id(existsModel.Id).Update(model); err != nil {
-			my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
-			log.Println(spider.CurrentRequest().URL.String(), err)
+	if ok, err := database.Mysql().Get(existsModel); err == nil {
+		my.dbSpeedNum++
+		if ok {
+			//update
+			model.Version = existsModel.Version
+			if _, err = database.Mysql().Id(existsModel.Id).Update(model); err != nil {
+				my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
+				log.Println(spider.CurrentRequest().URL.String(), err)
+			}
+		} else {
+			//insert
+			_, err = database.Mysql().Insert(model)
+			my.lastInsertId = model.Id
+			if err != nil {
+				my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
+				database.MysqlDelayInsertTillSuccess(model)
+				log.Println(spider.CurrentRequest().URL.String(), err)
+			}
 		}
 	} else {
-		//insert
-		_, err = database.Mysql().Insert(model)
-		my.lastInsertId = model.Id
-		if err != nil {
-			my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
-			database.MysqlDelayInsertTillSuccess(model)
-			log.Println(spider.CurrentRequest().URL.String(), err)
-		}
+		my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
+		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
+
 }
 
 // queue
