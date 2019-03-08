@@ -253,7 +253,7 @@
         },
         filters: {
             numberFormat: function (v) {
-                if (v === undefined) {
+                if (v === undefined || isNaN(v)) {
                     return "0"
                 }
                 return new Intl.NumberFormat().format(v)
