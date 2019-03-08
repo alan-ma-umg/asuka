@@ -57,11 +57,10 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 40e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
 
-	if spider.FailureLevel > 1 {
-		spider.ResetRequest()
-		spider.Transport.Close()
+	if spider.FailureLevel > 40 {
+		spider.Delete = true
 	}
 }
 
@@ -76,7 +75,7 @@ func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest().Header.Set("Referer", my.lastRequestUrl)
 	}
 
-	spider.Client().Timeout = 20 * time.Second
+	spider.Client().Timeout = time.Minute
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
