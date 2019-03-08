@@ -33,6 +33,7 @@ func asuka() {
 
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}).Run(),
+		project.New(&project.Pixiv{}).Run(),
 		//project.New(&project.Test{}).Run(),
 		//project.New(&project.Test2{}).Run(),
 		//project.New(&project.ZhiHu{}).Run(),
