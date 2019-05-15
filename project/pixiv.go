@@ -1,6 +1,7 @@
 package project
 
 import (
+	"encoding/json"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
@@ -126,4 +127,11 @@ func (my *Pixiv) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 
 	return l.String()
 	//return l.Scheme + "://" + l.Host + l.Path
+}
+
+func (my *Pixiv) HttpExportResult(w http.ResponseWriter, r *http.Request) {
+	if byteJson, err := json.Marshal(my.EntryUrl()); err == nil {
+		w.Header().Set("Content-type", "application/json")
+		w.Write(byteJson)
+	}
 }

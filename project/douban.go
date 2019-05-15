@@ -676,28 +676,21 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 	return l.Scheme + "://" + l.Host + l.Path
 }
 
-func (my *DouBan) ExportResult(w http.ResponseWriter, r *http.Request) {
-	var asukaDouBan []*AsukaDouBan
-	cols := []string{"Name", "Id", "Rating", "Votes", "Date", "Img", "Url"}
-
-	builder := database.Mysql().Limit(100) //todo test
-	for _, v := range cols {
-		builder.Cols(v)
+func (my *DouBan) HttpExportResult(w http.ResponseWriter, r *http.Request) {
+	var result []*struct {
+		//Id       int64
+		DouBanId int64
+		Name     string
+		Date     int64
+		//DateStr  string
+		Rating float64
+		Votes  int64
+		Img    string
+		Url    string
 	}
+	database.Mysql().Table("asuka_dou_ban").Limit(100).Find(&result)
 
-	builder.Find(&asukaDouBan)
-
-	onlyCols := make([]map[string]interface{}, len(asukaDouBan))
-
-	for index := range onlyCols {
-		r := reflect.ValueOf(asukaDouBan[index])
-		onlyCols[index] = map[string]interface{}{}
-		for _, val := range cols {
-			onlyCols[index][val] = reflect.Indirect(r).FieldByName(val).Interface()
-		}
-	}
-
-	if byteJson, err := json.Marshal(onlyCols); err == nil {
+	if byteJson, err := json.Marshal(result); err == nil {
 		w.Header().Set("Content-type", "application/json")
 		w.Write(byteJson)
 	}

@@ -426,7 +426,7 @@ func downloadResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.ExportResult(w, r)
+	p.HttpExportResult(w, r)
 }
 
 func getServer(w http.ResponseWriter, r *http.Request) {
