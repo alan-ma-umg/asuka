@@ -408,7 +408,25 @@ func getDispatcher(name string) *project.Dispatcher {
 }
 
 func downloadResult(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+		http.Error(w, "Login Required", 401)
+		return
+	}
 
+	ps := strings.Split(r.URL.Path, "/")
+	if len(ps) != 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(ps[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	p.ExportResult(w, r)
 }
 
 func getServer(w http.ResponseWriter, r *http.Request) {

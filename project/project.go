@@ -56,23 +56,21 @@ type IProject interface {
 	//Showing 在web监控上展示信息
 	Showing() string
 	Name() string
+	ExportResult(w http.ResponseWriter, r *http.Request)
 }
 
-type Implement struct {
-}
+type Implement struct{}
 
-func (my *Implement) Init() {
-}
+func (my *Implement) Init() {}
 func (my *Implement) Showing() string {
 	return "Have a nice day !"
 }
-func (my *Implement) ResponseSuccess(spider *spider.Spider) {
-}
-func (my *Implement) ResponseAfter(spider *spider.Spider) {
-}
+func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
+func (my *Implement) ResponseAfter(spider *spider.Spider)   {}
 func (my *Implement) Name() string {
 	return ""
 }
+func (my *Implement) ExportResult(w http.ResponseWriter, r *http.Request) {}
 
 const RecentFetchCount = 50
 
