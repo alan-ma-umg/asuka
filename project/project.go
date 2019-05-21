@@ -195,7 +195,7 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	u, _ := url.Parse("direct://localhost")
 	dt, _ := proxy.NewTransport(&proxy.AddrInfo{URL: u})
-	dt.S.Stop = !helper.Env().LocalTransport.Enable
+	dt.S.Stop = !helper.Env().LocalTransport
 	transports = append(transports, dt)
 	//var repeat []string
 

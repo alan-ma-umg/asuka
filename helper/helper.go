@@ -6,14 +6,12 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/tatsushid/go-fastping"
 	"golang.org/x/net/publicsuffix"
 	"io"
 	"io/ioutil"
-	"log"
 	"math"
 	"net"
 	"net/url"
@@ -24,62 +22,62 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 )
 
 // env config
 
-var envParseOnce sync.Once
-var envConfig *EnvConfig
-var PathToEnvFile string
+//var envParseOnce sync.Once
+var GlobalEnvConfig *EnvConfig
+
+//var PathToEnvFile string
 
 func Env() *EnvConfig {
-	envParseOnce.Do(func() {
-		file, err := os.Open(PathToEnvFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		decoder := json.NewDecoder(file)
-		err = decoder.Decode(&envConfig)
-		if err != nil {
-			log.Fatal(err)
-		}
+	//envParseOnce.Do(func() {
+	//	file, err := os.Open(PathToEnvFile)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	decoder := json.NewDecoder(file)
+	//	err = decoder.Decode(&envConfig)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
 
-		//file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
-		//if err == nil {
-		//	decoder := json.NewDecoder(file)
-		//	err = decoder.Decode(&envConfig.HttpProxyServers)
-		//	if err != nil {
-		//		log.Fatal(err)
-		//	}
-		//}
-		//
-		////strings.TrimSpace for each type of string
-		//for _, s := range envConfig.SsServers {
-		//	s := reflect.ValueOf(s).Elem()
-		//	for i := 0; i < s.NumField(); i++ {
-		//		f := s.Field(i)
-		//		if f.Kind() == reflect.String && f.CanSet() {
-		//			f.SetString(strings.TrimSpace(f.Interface().(string)))
-		//		}
-		//	}
-		//}
-		//
-		////strings.TrimSpace for each type of string
-		//for _, s := range envConfig.HttpProxyServers {
-		//	s := reflect.ValueOf(s).Elem()
-		//	for i := 0; i < s.NumField(); i++ {
-		//		f := s.Field(i)
-		//		if f.Kind() == reflect.String && f.CanSet() {
-		//			f.SetString(strings.TrimSpace(f.Interface().(string)))
-		//		}
-		//	}
-		//}
-	})
+	//file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
+	//if err == nil {
+	//	decoder := json.NewDecoder(file)
+	//	err = decoder.Decode(&envConfig.HttpProxyServers)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
+	//
+	////strings.TrimSpace for each type of string
+	//for _, s := range envConfig.SsServers {
+	//	s := reflect.ValueOf(s).Elem()
+	//	for i := 0; i < s.NumField(); i++ {
+	//		f := s.Field(i)
+	//		if f.Kind() == reflect.String && f.CanSet() {
+	//			f.SetString(strings.TrimSpace(f.Interface().(string)))
+	//		}
+	//	}
+	//}
+	//
+	////strings.TrimSpace for each type of string
+	//for _, s := range envConfig.HttpProxyServers {
+	//	s := reflect.ValueOf(s).Elem()
+	//	for i := 0; i < s.NumField(); i++ {
+	//		f := s.Field(i)
+	//		if f.Kind() == reflect.String && f.CanSet() {
+	//			f.SetString(strings.TrimSpace(f.Interface().(string)))
+	//		}
+	//	}
+	//}
+	//})
 
-	return envConfig
+	return GlobalEnvConfig
 }
 
 var ExitHandleFuncSlice []func()

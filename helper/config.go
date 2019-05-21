@@ -3,13 +3,9 @@ package helper
 type EnvConfig struct {
 	BloomFilterPath string
 	WEBPassword     string
-	LocalTransport  LocalTransport //using http.DefaultTransport
+	LocalTransport  bool
 	Redis           Redis
 	MysqlDSN        string
-}
-
-type LocalTransport struct {
-	Enable bool
 }
 
 type Redis struct {
