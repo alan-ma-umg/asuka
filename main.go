@@ -17,7 +17,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	redis := flag.String("redis", "tcp://127.0.0.1:6379/10", "Redis connection url, default: tcp://127.0.0.1:6379/10")
-	mysql := flag.String("mysql", "root:11111111@(10.0.0.2:3306)/asuka?charset=utf8mb4", "Mysql DSN, default: root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4")
+	mysql := flag.String("mysql", "root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4", "Mysql DSN, default: root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4")
 	webPassword := flag.String("webPassword", "", "WEB login password, default random")
 	bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path, default:.")
 	localTransport := flag.Bool("localTransport", false, "Enable http.DefaultTransport, default: false")
