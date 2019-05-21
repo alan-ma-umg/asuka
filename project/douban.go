@@ -64,9 +64,9 @@ func (my *DouBan) Name() string {
 
 func (my *DouBan) Showing() (str string) {
 	str = "ID: " + strconv.Itoa(int(my.lastInsertId)) + " : " + strconv.Itoa(my.dbSpeed) + "/s"
-	if len(database.MysqlDelayInsertQueue) > 0 {
-		str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertQueue))
-	}
+	//if len(database.MysqlDelayInsertQueue) > 0 {
+	//	str += " delay: " + strconv.Itoa(len(database.MysqlDelayInsertQueue))
+	//}
 	if my.lastInsertError != "" {
 		str += " Error: " + my.lastInsertError
 	}
@@ -75,13 +75,13 @@ func (my *DouBan) Showing() (str string) {
 
 func (my *DouBan) Init() {
 	//create table
-	err := database.Mysql().CreateTables(&AsukaDouBan{})
+	err := database.Sqlite().CreateTables(&AsukaDouBan{})
 	if err != nil {
 		panic(err)
 	}
-	database.Mysql().CreateIndexes(&AsukaDouBan{})
+	database.Sqlite().CreateIndexes(&AsukaDouBan{})
 
-	database.Mysql().Table(&AsukaDouBan{}).Desc("id").Limit(1).Cols("id").Get(&my.lastInsertId)
+	database.Sqlite().Table(&AsukaDouBan{}).Desc("id").Limit(1).Cols("id").Get(&my.lastInsertId)
 
 	go func() {
 		s := time.NewTicker(time.Second)
@@ -621,22 +621,22 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 		Url:      model.Url,
 	}
 
-	if ok, err := database.Mysql().Get(existsModel); err == nil {
+	if ok, err := database.Sqlite().Get(existsModel); err == nil {
 		my.dbSpeedNum++
 		if ok {
 			//update
 			model.Version = existsModel.Version
-			if _, err = database.Mysql().Id(existsModel.Id).Update(model); err != nil {
+			if _, err = database.Sqlite().Id(existsModel.Id).Update(model); err != nil {
 				my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
 				log.Println(spider.CurrentRequest().URL.String(), err)
 			}
 		} else {
 			//insert
-			_, err = database.Mysql().Insert(model)
+			_, err = database.Sqlite().Insert(model)
 			my.lastInsertId = model.Id
 			if err != nil {
 				my.lastInsertError = time.Now().Format(time.RFC3339) + ":" + err.Error()
-				database.MysqlDelayInsertTillSuccess(model)
+				//database.MysqlDelayInsertTillSuccess(model)
 				log.Println(spider.CurrentRequest().URL.String(), err)
 			}
 		}
@@ -688,7 +688,7 @@ func (my *DouBan) HttpExportResult(w http.ResponseWriter, r *http.Request) {
 		Img    string
 		Url    string
 	}
-	database.Mysql().Table("asuka_dou_ban").Limit(100).Find(&result)
+	database.Sqlite().Table("asuka_dou_ban").Limit(100).Find(&result)
 
 	if byteJson, err := json.Marshal(result); err == nil {
 		w.Header().Set("Content-type", "application/json")
