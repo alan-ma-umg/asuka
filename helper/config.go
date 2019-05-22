@@ -3,6 +3,7 @@ package helper
 type EnvConfig struct {
 	BloomFilterPath string
 	WEBPassword     string
+	WEBListen       string
 	LocalTransport  bool
 	Redis           Redis
 	MysqlDSN        string

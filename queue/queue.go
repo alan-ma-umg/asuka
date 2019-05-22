@@ -23,7 +23,7 @@ type Queue struct {
 func NewQueue(name string) (q *Queue) {
 	q = &Queue{name: name, BlsTestCount: make(map[int]int)}
 	q.bloomFilterInstance = bloom.NewWithEstimates(50000000, 0.003)
-	f, _ := os.Open(q.GetBlKey())
+	f, _ := os.Open(helper.Env().BloomFilterPath + q.GetBlKey())
 	q.bloomFilterInstance.ReadFrom(f)
 	f.Close()
 	return
@@ -106,7 +106,7 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 }
 
 func (my *Queue) BlSave() {
-	f, _ := os.Create(my.GetBlKey())
+	f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
 	my.bloomFilterInstance.WriteTo(f)
 	f.Close()
 

@@ -7,11 +7,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"flag"
 	"fmt"
 	"github.com/tatsushid/go-fastping"
 	"golang.org/x/net/publicsuffix"
 	"io"
 	"io/ioutil"
+	"log"
 	"math"
 	"net"
 	"net/url"
@@ -22,62 +24,46 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
 
-// env config
-
-//var envParseOnce sync.Once
-var GlobalEnvConfig *EnvConfig
-
-//var PathToEnvFile string
+var envParseOnce sync.Once
+var envConfig *EnvConfig
 
 func Env() *EnvConfig {
-	//envParseOnce.Do(func() {
-	//	file, err := os.Open(PathToEnvFile)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	decoder := json.NewDecoder(file)
-	//	err = decoder.Decode(&envConfig)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
+	envParseOnce.Do(func() {
+		redis := flag.String("redis", "tcp://127.0.0.1:6379/10", "Redis connection url")
+		mysql := flag.String("mysql", "root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4", "Mysql DSN")
+		webPassword := flag.String("webPassword", "", "WEB login password")
+		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path")
+		localTransport := flag.Bool("localTransport", false, "Enable http.DefaultTransport")
+		listen := flag.String("listen", "127.0.0.1:666", "WEB monitor listen address")
+		flag.Parse()
 
-	//file, err = os.Open(filepath.Dir(PathToEnvFile) + "/" + "httpProxy.json")
-	//if err == nil {
-	//	decoder := json.NewDecoder(file)
-	//	err = decoder.Decode(&envConfig.HttpProxyServers)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//}
-	//
-	////strings.TrimSpace for each type of string
-	//for _, s := range envConfig.SsServers {
-	//	s := reflect.ValueOf(s).Elem()
-	//	for i := 0; i < s.NumField(); i++ {
-	//		f := s.Field(i)
-	//		if f.Kind() == reflect.String && f.CanSet() {
-	//			f.SetString(strings.TrimSpace(f.Interface().(string)))
-	//		}
-	//	}
-	//}
-	//
-	////strings.TrimSpace for each type of string
-	//for _, s := range envConfig.HttpProxyServers {
-	//	s := reflect.ValueOf(s).Elem()
-	//	for i := 0; i < s.NumField(); i++ {
-	//		f := s.Field(i)
-	//		if f.Kind() == reflect.String && f.CanSet() {
-	//			f.SetString(strings.TrimSpace(f.Interface().(string)))
-	//		}
-	//	}
-	//}
-	//})
-
-	return GlobalEnvConfig
+		u, err := url.Parse(*redis)
+		if err != nil {
+			log.Fatal(err)
+		}
+		redisDB, _ := strconv.Atoi(strings.TrimLeft(u.Path, "/"))
+		redisPassword, _ := u.User.Password()
+		envConfig = &EnvConfig{
+			BloomFilterPath: strings.TrimRight(*bloomFilterPath, "/") + "/",
+			WEBPassword:     *webPassword,
+			WEBListen:       *listen,
+			LocalTransport:  *localTransport,
+			MysqlDSN:        *mysql,
+			Redis: Redis{
+				Network:     u.Scheme,
+				Addr:        u.Host,
+				Password:    redisPassword,
+				DB:          redisDB,
+				URLQueueKey: "url_queue_key",
+			},
+		}
+	})
+	return envConfig
 }
 
 var ExitHandleFuncSlice []func()
