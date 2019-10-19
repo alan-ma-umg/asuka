@@ -40,6 +40,7 @@ func Env() *EnvConfig {
 		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path")
 		localTransport := flag.Bool("localTransport", true, "Enable http.DefaultTransport")
 		listen := flag.String("listen", "0.0.0.0:666", "WEB monitor listen address")
+		wechatSendMessagePassword := flag.String("wechatSendMessagePassword", "", "Ignore it")
 		flag.Parse()
 
 		u, err := url.Parse(*redis)
@@ -49,11 +50,12 @@ func Env() *EnvConfig {
 		redisDB, _ := strconv.Atoi(strings.TrimLeft(u.Path, "/"))
 		redisPassword, _ := u.User.Password()
 		envConfig = &EnvConfig{
-			BloomFilterPath: strings.TrimRight(*bloomFilterPath, "/") + "/",
-			WEBPassword:     *webPassword,
-			WEBListen:       *listen,
-			LocalTransport:  *localTransport,
-			MysqlDSN:        *mysql,
+			BloomFilterPath:           strings.TrimRight(*bloomFilterPath, "/") + "/",
+			WEBPassword:               *webPassword,
+			WEBListen:                 *listen,
+			LocalTransport:            *localTransport,
+			MysqlDSN:                  *mysql,
+			WechatSendMessagePassword: *wechatSendMessagePassword,
 			Redis: Redis{
 				Network:     u.Scheme,
 				Addr:        u.Host,
@@ -346,4 +348,17 @@ func TimeSince(t time.Duration) (str string) {
 		str += t.String()
 	}
 	return
+}
+
+var DoOnceDurationHourInstance = &sync.Once{}
+
+// DoOnceDurationHour global do once with reset in duration
+func DoOnceDurationHour(fun func()) {
+	DoOnceDurationHourInstance.Do(func() {
+		fun()
+		go func() {
+			time.Sleep(time.Hour)
+			DoOnceDurationHourInstance = &sync.Once{} //reset
+		}()
+	})
 }
