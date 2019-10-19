@@ -38,7 +38,7 @@ func Env() *EnvConfig {
 		mysql := flag.String("mysql", "root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4", "Mysql DSN")
 		webPassword := flag.String("webPassword", "", "WEB login password")
 		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path")
-		localTransport := flag.Bool("localTransport", false, "Enable http.DefaultTransport")
+		localTransport := flag.Bool("localTransport", true, "Enable http.DefaultTransport")
 		listen := flag.String("listen", "0.0.0.0:666", "WEB monitor listen address")
 		flag.Parse()
 

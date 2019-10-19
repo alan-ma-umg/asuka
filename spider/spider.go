@@ -227,14 +227,14 @@ func (spider *Spider) ResetRequest() {
 	spider.requestsMap = map[string]*http.Request{}
 }
 
-func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, err error) {
+func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	spider.SetRequest(u, nil) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
 		spider.RequestBefore(spider)
 	}
 
-	spider.ResponseByte = []byte{}
+	spider.ResponseByte = nil
 
 	//time
 	spider.RequestStartTime = time.Now()
@@ -274,12 +274,13 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 	//	spider.Transport.S.TrafficOut += uint64(len(dump))
 	//}
 
-	resp, err = spider.client.Do(spider.currentRequest)
+	resp, err := spider.client.Do(spider.currentRequest)
 	if err != nil {
 		summary.ErrType = spider.requestErrorHandler(err)
-		return resp, summary, err
+		return summary, err
 	}
 	defer resp.Body.Close()
+
 	summary.StatusCode = resp.StatusCode
 	summary.ContentType = resp.Header.Get("Content-type")
 
@@ -298,11 +299,11 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 
 			if err != nil {
 				summary.ErrType = "project.Filtered"
-				return nil, summary, errors.New(summary.ErrType)
+				return summary, errors.New(summary.ErrType)
 			}
 
 			if !filter {
-				return nil, summary, nil
+				return summary, nil
 			}
 		}
 	}
@@ -310,7 +311,7 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 	resByte, err := ioutil.ReadAll(resp.Body)
 	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
-		return resp, summary, err
+		return summary, err
 	}
 
 	//traffic
@@ -334,16 +335,16 @@ func (spider *Spider) Fetch(u *url.URL) (resp *http.Response, summary *Summary, 
 	res, err := ioutil.ReadAll(reader)
 	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
-		return resp, summary, err
+		return summary, err
 	}
 
 	//http status
-	if resp.StatusCode != 200 && err == nil {
+	if resp.StatusCode != 200 {
 		spider.Transport.AddFailure()
 	}
 
 	spider.ResponseByte = res
-	return resp, summary, err
+	return summary, err
 }
 
 func (spider *Spider) requestErrorHandler(err error) string {

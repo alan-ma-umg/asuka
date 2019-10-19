@@ -228,7 +228,7 @@ func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
 
-	spider.ResponseByte = []byte{} //free memory
+	spider.ResponseByte = nil //free memory
 }
 
 // queue

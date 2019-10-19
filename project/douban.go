@@ -148,7 +148,7 @@ func (my *DouBan) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
 
-	spider.ResponseByte = []byte{} //free memory
+	spider.ResponseByte = nil //free memory
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
@@ -539,9 +539,7 @@ func DouBanPageHtml(n *html.Node, model *AsukaDouBan) {
 func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	//movie json handle
 	if strings.HasPrefix(spider.CurrentRequest().URL.String(), "https://movie.douban.com/j/new_search_subjects") {
-		buf := &bytes.Buffer{}
-		buf.Write(spider.ResponseByte)
-		decoder := json.NewDecoder(buf)
+		decoder := json.NewDecoder(bytes.NewBuffer(spider.ResponseByte))
 		movieJson := make(map[string]interface{})
 		if err := decoder.Decode(&movieJson); err != nil {
 			return
