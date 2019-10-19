@@ -21,6 +21,11 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//init: 106/201 NAS mem usage
+	//restart: 202/333 NAS mem usage
+
+	//todo 该系统时区
+	//todo linux open file limit
 	asuka()
 }
 
