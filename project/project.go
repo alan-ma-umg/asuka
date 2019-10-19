@@ -108,20 +108,27 @@ func New(project IProject) *Dispatcher {
 			}
 		}
 
+		//queue, write to file
+		d.queue.BlSave()
+
+		//清空前获取
+		GOBRedisKey := d.getGOBKey()
+		projectName := d.Name()
+
 		//gob
+		d.RecentFetchLastIndex = 0 //序列化前清空
+		d.RecentFetchList = nil    //序列化前清空
+		d.IProject = nil           //序列化前清空
 		encBuf := &bytes.Buffer{}
 		if err := gob.NewEncoder(encBuf).Encode(d); err != nil {
 			log.Println(err)
 		} else {
 			//spider, write to redis
-			database.Redis().Del(d.getGOBKey())
-			database.Redis().Set(d.getGOBKey(), encBuf.String(), 0)
+			database.Redis().Del(GOBRedisKey)
+			database.Redis().Set(GOBRedisKey, encBuf.String(), 0)
 		}
 
-		//queue, write to file
-		d.queue.BlSave()
-
-		fmt.Println(d.Name() + " status saved")
+		fmt.Println(projectName + " status saved")
 	})
 
 	return d
@@ -196,40 +203,7 @@ func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	u, _ := url.Parse("direct://localhost")
 	dt := proxy.NewTransport(&proxy.AddrInfo{URL: u})
 	dt.S.Stop = !helper.Env().LocalTransport
-	transports = append(transports, dt)
-	//var repeat []string
-
-	//for _, addr := range proxy.HttpProxyHandler() {
-	//	if helper.Contains(repeat, addr.Host) {
-	//		//log.Println("DUPLICATE: " + addr.ServerAddr)
-	//		continue
-	//	}
-	//	repeat = append(repeat, addr.Host)
-	//
-	//	t, err := proxy.NewTransport(addr)
-	//	if err != nil {
-	//		log.Println("proxy error: ", err)
-	//		continue
-	//	}
-	//	transports = append(transports, t)
-	//}
-
-	//
-	//for _, addr := range proxy.SSLocalHandler() {
-	//	if helper.Contains(repeat, addr.ServerAddr) {
-	//		log.Println("DUPLICATE: " + addr.ServerAddr)
-	//	}
-	//	repeat = append(repeat, addr.ServerAddr)
-	//
-	//	t, err := proxy.NewTransport(addr)
-	//	if err != nil {
-	//		log.Println("proxy error: ", err)
-	//		continue
-	//	}
-	//	transports = append(transports, t)
-	//}
-
-	return
+	return append(transports, dt)
 }
 
 func (my *Dispatcher) AddSpider(addr *proxy.AddrInfo) {
