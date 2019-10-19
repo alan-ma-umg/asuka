@@ -328,3 +328,22 @@ func Dec(encData string, nonce []byte) (plain []byte, err error) {
 
 	return gcm.Open(nil, nonce, encString, nil)
 }
+
+func TimeSince(t time.Duration) (str string) {
+	num := int(t.Seconds())
+	if num/3600/24 > 0 {
+		str += strconv.Itoa(num/3600/24) + "d"
+	}
+	if num/3600%24 > 0 {
+		str += strconv.Itoa(num/3600%24) + "h"
+	}
+	if num/60%60 > 0 {
+		str += strconv.Itoa(num/60%60) + "m"
+	}
+	if num%60 > 0 {
+		str += strconv.Itoa(num%60) + "s"
+	} else {
+		str += t.String()
+	}
+	return
+}

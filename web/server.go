@@ -979,7 +979,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
 
 	jsonMap["basic"].(map[string]interface{})["date"] = time.Now().Format(time.RFC3339)
-	jsonMap["basic"].(map[string]interface{})["uptime"] = time.Since(StartTime).Truncate(time.Second).String()
+	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
 }
 
 func getProjectByName(name string) *project.Dispatcher {
