@@ -16,47 +16,17 @@ type AddrInfo struct {
 	Stop bool
 }
 
-//func (addr *AddrInfo) String() string {
-//}
-
-//type AddrInfo struct {
-//	Enable bool
-//	//EnablePing bool
-//	Interval float64
-//	Type     string
-//	Name     string
-//	//Group      string
-//	ServerAddr string
-//	//ClientAddr string
-//	//TrafficIn   uint64
-//	//TrafficOut  uint64
-//	//Connections int
-//	//listener  net.Listener
-//	//openChan chan bool
-//	//closeChan chan bool
-//	//Status    int //0 init, 10 close, 20 socks connected|waiting, 30 remote established
-//}
-
 type Transport struct {
 	*helper.Counting
 	S               *AddrInfo
 	t               http.RoundTripper
 	transportClosed bool
 
-	//traffic size
-	//TrafficIn  uint64
-	//TrafficOut uint64
-
-	//Ping            time.Duration
-	//PingFailureRate float64
-
 	RecentFewTimesResult []bool
 }
 
-func NewTransport(addr *AddrInfo) (*Transport, error) {
-	instance := &Transport{S: addr, t: createHttpTransport(addr), Counting: &helper.Counting{}}
-	//addr.
-	return instance, nil
+func NewTransport(addr *AddrInfo) *Transport {
+	return &Transport{S: addr, t: createHttpTransport(addr), Counting: &helper.Counting{}}
 }
 
 func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
@@ -65,7 +35,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   20 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
+		ExpectContinueTimeout: 10 * time.Second,
 	}
 
 	switch SockInfo.Scheme {
@@ -74,7 +44,8 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 		t.DialContext = (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
-			DualStack: true,
+			//DualStack: true,
+			FallbackDelay: time.Second,
 		}).DialContext
 	case "http", "https":
 		t.Proxy = http.ProxyURL(SockInfo.URL) // with http proxy
@@ -82,7 +53,8 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 		t.DialContext = (&net.Dialer{
 			Timeout:   time.Minute,
 			KeepAlive: time.Minute,
-			DualStack: true,
+			//DualStack: true,
+			FallbackDelay: time.Second,
 		}).DialContext
 	case "socks5":
 		dialer, err := proxy.SOCKS5("tcp", SockInfo.Host, nil, proxy.Direct)

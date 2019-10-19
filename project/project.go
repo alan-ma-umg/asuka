@@ -194,7 +194,7 @@ func (my *Dispatcher) initSpider() {
 func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	u, _ := url.Parse("direct://localhost")
-	dt, _ := proxy.NewTransport(&proxy.AddrInfo{URL: u})
+	dt := proxy.NewTransport(&proxy.AddrInfo{URL: u})
 	dt.S.Stop = !helper.Env().LocalTransport
 	transports = append(transports, dt)
 	//var repeat []string
@@ -242,7 +242,7 @@ func (my *Dispatcher) AddSpider(addr *proxy.AddrInfo) {
 		}
 	}
 
-	t, _ := proxy.NewTransport(addr)
+	t := proxy.NewTransport(addr)
 	s := spider.New(t, my.queue)
 	my.spiders = append([]*spider.Spider{s}, my.spiders...)
 	my.runSpider(s)

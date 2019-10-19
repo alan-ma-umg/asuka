@@ -58,7 +58,7 @@ func TestHTTPProxyTransport(t *testing.T) {
 }
 
 func TestTransport(t *testing.T) {
-	t1, _ := NewTransport(&AddrInfo{})
+	t1 := NewTransport(&AddrInfo{})
 
 	//t1.LoadRate(86400 * 2)
 	//log.Println(86400 * 2)

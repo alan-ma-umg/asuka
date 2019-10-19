@@ -54,9 +54,6 @@ type Spider struct {
 	//ResponseStr  string
 	ResponseByte []byte
 
-	//TimeSlice    []time.Duration
-	//TimeLenLimit int
-
 	FailureLevel int
 
 	StartTime        time.Time
@@ -216,7 +213,7 @@ func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
 	}
 
 	if spider.currentRequest.UserAgent() == "" {
-		spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/71.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
+		spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 	}
 
 	//spider.currentRequest = spider.currentRequest.WithContext(httptrace.WithClientTrace(spider.currentRequest.Context(), spider.httpTrace))
@@ -265,15 +262,12 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 		}
 	}()
 
-	//traffic
+	//traffic out
 	dump, err := httputil.DumpRequestOut(spider.currentRequest, true)
 	summary.ErrType = spider.requestErrorHandler(err)
 	summary.TrafficOut = uint64(len(dump))
-	//for localhost
-	//if spider.Transport.S.Type == "" {
-	//	spider.Transport.S.TrafficOut += uint64(len(dump))
-	//}
 
+	// HTTP request
 	resp, err := spider.client.Do(spider.currentRequest)
 	if err != nil {
 		summary.ErrType = spider.requestErrorHandler(err)
@@ -292,10 +286,6 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 			dump, _ = httputil.DumpResponse(resp, false)
 			summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump)))
 			summary.TrafficIn = uint64(len(dump))
-			//for localhost
-			//if spider.Transport.S.Type == "" {
-			//	spider.Transport.S.TrafficIn += uint64(len(dump))
-			//}
 
 			if err != nil {
 				summary.ErrType = "project.Filtered"
@@ -314,15 +304,11 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 		return summary, err
 	}
 
-	//traffic
+	//traffic in
 	dump, err = httputil.DumpResponse(resp, false)
 	summary.ErrType = spider.responseErrorHandler(err)
 	summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
 	summary.TrafficIn = uint64(len(dump) + len(resByte))
-	//for localhost
-	//if spider.Transport.S.Type == "" {
-	//	spider.Transport.S.TrafficIn += uint64(len(dump) + len(resByte))
-	//}
 
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))
@@ -501,18 +487,6 @@ func (spider *Spider) responseErrorHandler(err error) string {
 		return "unknown"
 	}
 }
-
-//func (spider *Spider) GetAvgTime() (t time.Duration) {
-//	for _, tt := range spider.TimeSlice {
-//		t += tt
-//	}
-//
-//	if len(spider.TimeSlice) == 0 {
-//		return
-//	}
-//	t /= time.Duration(len(spider.TimeSlice))
-//	return
-//}
 
 func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 	token := html.NewTokenizer(ioutil.NopCloser(bytes.NewBuffer(spider.ResponseByte)))
