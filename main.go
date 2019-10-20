@@ -28,7 +28,7 @@ func asuka() {
 	fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}).Run(),
-		//project.New(&project.Pixiv{}).Run(),
+		project.New(&project.Pixiv{}).Run(),
 		//project.New(&project.Test{}).Run(),
 		//project.New(&project.Test2{}).Run(),
 		//project.New(&project.ZhiHu{}).Run(),

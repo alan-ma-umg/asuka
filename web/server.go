@@ -932,8 +932,9 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		}
 
 		if len(p.GetSpiders()) > 0 {
-			for i, v := range p.GetSpiders()[0].Queue.BlsTestCount {
-				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[i] += v
+			indexSlice, valueSlice := p.GetSpiders()[0].Queue.GetBlsTestCount()
+			for i, v := range indexSlice {
+				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[v] += valueSlice[i]
 			}
 		}
 

@@ -34,7 +34,7 @@ type Www struct {
 	queueUrlLen int64
 }
 
-func (my *Www) Init() {
+func (my *Www) Init(d *Dispatcher) {
 	tldFilter = bloom.NewWithEstimates(5000000, 0.01)
 	err := database.Mysql().CreateTables(&AsukaWww{})
 	if err != nil {

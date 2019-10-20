@@ -55,7 +55,7 @@ func (my *ZhiHu) Showing() (str string) {
 	}
 	return
 }
-func (my *ZhiHu) Init() {
+func (my *ZhiHu) Init(d *Dispatcher) {
 	err := database.Mysql().CreateTables(&AsukaZhiHu{})
 	if err != nil {
 		panic(err)

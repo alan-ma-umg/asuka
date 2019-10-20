@@ -72,7 +72,7 @@ func (my *DouBan) Showing() (str string) {
 	return
 }
 
-func (my *DouBan) Init() {
+func (my *DouBan) Init(d *Dispatcher) {
 	//create table
 	//err := database.Sqlite().CreateTables(&AsukaDouBan{})
 	//if err != nil {

@@ -20,7 +20,7 @@ import (
 
 type IProject interface {
 	// Init DoOnce func
-	Init()
+	Init(my *Dispatcher)
 
 	// EntryUrl 万恶的起源
 	// Firstly
@@ -243,7 +243,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 
 func (my *Dispatcher) Run() *Dispatcher {
 	my.initSpider()
-	my.Init()
+	my.Init(my)
 
 	for _, l := range my.EntryUrl() {
 		if !my.queue.BlTestString(l) {
@@ -365,6 +365,8 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	if project != nil {
 		project.ResponseSuccess(spider)
 	}
+
+	//todo if not html/text type , skip !!!!!!!!!!!!!!!!!!!!!!!!!
 
 	for _, l := range spider.GetLinksByTokenizer() {
 		enqueueUrl := ""

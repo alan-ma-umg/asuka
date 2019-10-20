@@ -16,7 +16,7 @@ type Test struct {
 	queueUrlLen int64
 }
 
-func (my *Test) Init() {
+func (my *Test) Init(d *Dispatcher) {
 	go func() {
 		t := time.NewTicker(time.Second * 5)
 		for {

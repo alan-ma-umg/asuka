@@ -55,7 +55,7 @@ func (my *JianShu) Showing() (str string) {
 	}
 	return
 }
-func (my *JianShu) Init() {
+func (my *JianShu) Init(d *Dispatcher) {
 	err := database.Mysql().CreateTables(&AsukaJianShu{})
 	if err != nil {
 		panic(err)

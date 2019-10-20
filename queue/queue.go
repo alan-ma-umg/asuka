@@ -44,12 +44,14 @@ func (my *Queue) BlCleanUp() {
 	my.bloomFilterInstance.ClearAll()
 }
 
+//BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) bool {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 	return my.bloomFilterInstance.TestAndAddString(s)
 }
 
+//BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
@@ -70,6 +72,17 @@ func (my *Queue) Enqueue(rawUrl string) {
 
 func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
+}
+
+func (my *Queue) GetBlsTestCount() (index, value []int) {
+	//lock
+	my.enqueueForFailureMutex.Lock()
+	defer my.enqueueForFailureMutex.Unlock()
+
+	for i, v := range my.BlsTestCount {
+		index = append(index, i)
+		value = append(value, v)
+	}
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {

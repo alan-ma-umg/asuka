@@ -411,6 +411,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 
 		spider.Queue.EnqueueForFailure(spider.currentRequest.URL.String(), 3)
 		spider.FailureLevel = 10
+		// 2019/10/19 19:15:47 spider.go:414: Request Error 182.23.2.100:49833 *errors.errorString:  net/http: invalid header field value "https://book.douban.com/tag/to?                                                         start=160&type=S\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf6\x05\x00\x00\x00\x00\x00\x00\xfa\x05\x00\x00\x00\x00\x00\x00\xfc\x05" for key Referer https://book.douban.com/subject/          26328539/
 		log.Println("Request Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	}
