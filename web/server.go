@@ -87,7 +87,7 @@ func Server(d []*project.Dispatcher, address string) error {
 
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
 	http.HandleFunc("/get/", commonHandleFunc(getServer))
-	http.HandleFunc("/download/", commonHandleFunc(downloadResult))
+	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
 	http.HandleFunc("/queue/", commonHandleFunc(queue))
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
@@ -407,7 +407,7 @@ func getDispatcher(name string) *project.Dispatcher {
 	return nil
 }
 
-func downloadResult(w http.ResponseWriter, r *http.Request) {
+func projectWebsite(w http.ResponseWriter, r *http.Request) {
 	//login check
 	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
 		http.Error(w, "Login Required", 401)
@@ -426,7 +426,7 @@ func downloadResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.HttpExportResult(w, r)
+	p.WEBSite(w, r)
 }
 
 func getServer(w http.ResponseWriter, r *http.Request) {

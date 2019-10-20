@@ -9,6 +9,7 @@ import (
 	"github.com/chenset/asuka/proxy"
 	"github.com/chenset/asuka/queue"
 	"github.com/chenset/asuka/spider"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -59,7 +60,7 @@ type IProject interface {
 	//Showing 在web监控上展示信息
 	Showing() string
 	Name() string
-	HttpExportResult(w http.ResponseWriter, r *http.Request)
+	WEBSite(w http.ResponseWriter, r *http.Request)
 }
 
 type Implement struct{}
@@ -84,7 +85,10 @@ func (my *Implement) ResponseAfter(spider *spider.Spider) {
 func (my *Implement) Name() string {
 	return ""
 }
-func (my *Implement) HttpExportResult(w http.ResponseWriter, r *http.Request) {}
+func (my *Implement) WEBSite(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "text/html; charset=UTF-8")
+	io.WriteString(w, my.Name())
+}
 
 const RecentFetchCount = 50
 

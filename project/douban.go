@@ -672,7 +672,7 @@ func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl s
 	return l.Scheme + "://" + l.Host + l.Path
 }
 
-func (my *DouBan) HttpExportResult(w http.ResponseWriter, r *http.Request) {
+func (my *DouBan) WEBSite(w http.ResponseWriter, r *http.Request) {
 	var result []*struct {
 		//Id       int64
 		DouBanId int64

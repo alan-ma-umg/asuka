@@ -232,7 +232,7 @@ func (my *Pixiv) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 	return l.String()
 }
 
-func (my *Pixiv) HttpExportResult(w http.ResponseWriter, r *http.Request) {
+func (my *Pixiv) WEBSite(w http.ResponseWriter, r *http.Request) {
 	htmlStr := `
 <pre>
 (function () {
