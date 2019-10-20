@@ -44,7 +44,7 @@ func (my *Pixiv) Name() string {
 }
 
 func (my *Pixiv) Showing() (str string) {
-	return "<a href=\"/download/" + my.Name() + "\">" + my.showingString + "</a>"
+	return "<a href=\"/website/" + my.Name() + "\">" + my.showingString + "</a>"
 }
 
 func (my *Pixiv) Init(d *Dispatcher) {
