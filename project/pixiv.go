@@ -254,7 +254,7 @@ func (my *Pixiv) WEBSite(w http.ResponseWriter, r *http.Request) {
 	if files, err := filepath.Glob("project/pixiv/*"); err == nil {
 		for _, f := range files[:helper.MinInt(100, len(files))] {
 			//fmt.Println(e)
-			htmlStr += "<img src='/project/pixiv/images/" + strings.TrimLeft(f, "project\\pixiv\\") + "'/>"
+			htmlStr += "<img src='/project/pixiv/images/" + filepath.Base(f) + "'/>"
 		}
 	}
 
