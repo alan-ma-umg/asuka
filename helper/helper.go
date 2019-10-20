@@ -35,7 +35,7 @@ var envConfig *EnvConfig
 
 func Env() *EnvConfig {
 	envParseOnce.Do(func() {
-		redis := flag.String("redis", "tcp://10.0.0.2:6379/10", "Redis connection url")
+		redis := flag.String("redis", "tcp://10.0.0.2:6379/9", "Redis connection url")
 		mysql := flag.String("mysql", "root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4", "Mysql DSN")
 		webPassword := flag.String("webPassword", "", "WEB login password")
 		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path")
