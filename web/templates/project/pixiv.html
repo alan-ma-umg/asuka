@@ -36,7 +36,7 @@
     <div style="float:right;" id="speed-num">STOP</div>
 </div>
 
-{{range $file := .Files}}<img data-echo="/project/pixiv/images/{{$file | FilePathBase}}"/><br>{{end}}
+{{range $file := .Files}}<img data-echo="/project/pixiv/images/{{$file | FilePathBase}}">{{end}}
 
 <script>
     // setTimeout(function () {
