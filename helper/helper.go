@@ -42,6 +42,7 @@ func Env() *EnvConfig {
 		localTransport := flag.Bool("localTransport", true, "Enable http.DefaultTransport")
 		listen := flag.String("listen", "0.0.0.0:666", "WEB monitor listen address")
 		wechatSendMessagePassword := flag.String("wechatSendMessagePassword", "", "Ignore it")
+		singleProject := flag.String("singleProject", "", "Run only specific project")
 		flag.Parse()
 
 		u, err := url.Parse(*redis)
@@ -57,6 +58,7 @@ func Env() *EnvConfig {
 			LocalTransport:            *localTransport,
 			MysqlDSN:                  *mysql,
 			WechatSendMessagePassword: *wechatSendMessagePassword,
+			SingleProject:             *singleProject,
 			Redis: Redis{
 				Network:     u.Scheme,
 				Addr:        u.Host,

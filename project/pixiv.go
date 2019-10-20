@@ -202,8 +202,6 @@ func (my *Pixiv) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 
-	//todo 写入文件需要排重!!!!!!!!!!!!!!!!!!!!!!!!!
-
 	//write file
 	if err := ioutil.WriteFile(filename, spider.ResponseByte, 0); err != nil {
 		my.showingString = time.Now().Format("2006-01-02 15:04:05") + err.Error()
