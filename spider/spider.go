@@ -404,9 +404,17 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
 			return "reset by peer"
 		}
-		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
 		// Get ..... :read ...
-		//log.Println("Request net.Error  "+spider.Transport.S.Name+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		if strings.Contains(strings.ToLower(err.Error()), "proxyconnectt") {
+			spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 4)
+			return "proxyconnectt failed"
+		}
+		if _, ok := err.(*url.Error); ok {
+			spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
+			return "net.Error => url.Error"
+		}
+		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
+		log.Println("Request net.Error  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())

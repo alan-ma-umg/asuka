@@ -36,7 +36,7 @@ function pixivHenTaiStart_(domain) {
             if (bottomTimes++ > 300) {
                 clearInterval(fsdfsdfgdfg);
                 hentaiStart();
-                window.scrollTo(0, 0); //to top
+                // window.scrollTo(0, 0); //to top
             }
         } else {
             window.scrollTo(0, document.body.scrollHeight); //to bottom
@@ -59,6 +59,9 @@ function pixivHenTaiStart_(domain) {
             method: "POST",
             url: domain + "/project/pixiv/crawl/upload",
             data: JSON.stringify(postJson),
+            success: function (res) {
+                console.log(res.response)
+            }
         });
     }
 }

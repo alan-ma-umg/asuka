@@ -95,7 +95,7 @@ func (my *Pixiv) Init(d *Dispatcher) {
 
 		w.Header().Set("Content-type", "application/json")
 		jsonMap := map[string]interface{}{}
-		jsonMap["error"] = false
+		jsonMap["success"] = true
 		b, _ := json.Marshal(jsonMap)
 		w.Write(b)
 	})
@@ -189,6 +189,11 @@ func (my *Pixiv) ResponseSuccess(spider *spider.Spider) {
 	h.Write(spider.ResponseByte)
 
 	filePath := "project/pixiv/"
+	filename := filePath + hex.EncodeToString(h.Sum(nil)) + filepath.Ext(spider.CurrentRequest().URL.String())
+
+	if _, err := os.Stat(filename); os.IsExist(err) {
+		return
+	}
 
 	//create dir
 	if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
@@ -200,7 +205,7 @@ func (my *Pixiv) ResponseSuccess(spider *spider.Spider) {
 	//todo 写入文件需要排重!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	//write file
-	if err := ioutil.WriteFile(filePath+hex.EncodeToString(h.Sum(nil))+filepath.Ext(spider.CurrentRequest().URL.String()), spider.ResponseByte, 0); err != nil {
+	if err := ioutil.WriteFile(filename, spider.ResponseByte, 0); err != nil {
 		my.showingString = time.Now().Format("2006-01-02 15:04:05") + err.Error()
 		log.Println(err)
 		return
