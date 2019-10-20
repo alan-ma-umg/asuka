@@ -36,14 +36,14 @@
 <script>document.getElementById('link-append').innerHTML = location.origin</script>
 <br>
 
-<div style="position:fixed;color:#00af4c;top:0;right:0;z-index: 9999" id="speed-num">STOP</div>
+<div style="position:fixed;color:#00af4c;top:0;right:0;z-index: 9999" id="speed-num"></div>
 
-{{range $file := .Files}}<img data-echo="/project/pixiv/images/{{$file | FilePathBase}}">{{end}}
+{{range $file := .Files}}<img data-echo="/project/pixiv/images/{{$file | FilePathBase}}"/><br>{{end}}
 
 <script>
-    // setTimeout(function () {
-    echo.init({throttle: 10, offset: 500,});
-    // },1000);
+    setTimeout(function () {
+        echo.init({throttle: 10, offset: 500,});
+    }, 100);
 
     let scrollDownIntervalTimer = 0;
 
@@ -54,19 +54,10 @@
 
 
     document.body.addEventListener("click", function () {
-        if (flag) {
-            speed += base
-        } else {
-            speed -= base
+        speed -= base;
+        if (speed === 0) {
+            speed = topSpeed
         }
-
-        if (speed === base) {
-            flag = true
-        }
-        if (speed === topSpeed) {
-            flag = false
-        }
-
         clearInterval(scrollDownIntervalTimer);
         if (speed !== topSpeed) {
             scrollDownIntervalTimer = setInterval(function () {
@@ -74,7 +65,7 @@
             }, speed);
         }
         document.getElementById('speed-num').innerText = topSpeed / base - speed / base;
-        // console.log(speed);
+
     })
 </script>
 </body>
