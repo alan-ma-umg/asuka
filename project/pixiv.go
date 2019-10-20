@@ -7,7 +7,7 @@ import (
 	"errors"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"io"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -234,29 +234,14 @@ func (my *Pixiv) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 }
 
 func (my *Pixiv) WEBSite(w http.ResponseWriter, r *http.Request) {
-	htmlStr := `
-<pre>
-(function () {
-    let script = document.createElement('script');
-    let domain = "<span id='link-append'></span>";
-    script.src = domain + "/static/pixiv2asuka.js";
-    script.onload = function () {
-        script = null;
-        pixivHenTaiStart_(domain);
-    };
-    document.body.appendChild(script);
-})();
-</pre>
-<script>document.getElementById('link-append').innerHTML = location.origin</script>
-`
-	w.Header().Set("Content-type", "text/html; charset=UTF-8")
-
-	if files, err := filepath.Glob("project/pixiv/*"); err == nil {
-		for _, f := range files[:helper.MinInt(100, len(files))] {
-			//fmt.Println(e)
-			htmlStr += "<img src='/project/pixiv/images/" + filepath.Base(f) + "'/>"
-		}
-	}
-
-	io.WriteString(w, htmlStr)
+	files, _ := filepath.Glob("project/pixiv/*")
+	template.Must(template.New("pixiv.html").Funcs(template.FuncMap{
+		"FilePathBase": filepath.Base,
+	}).ParseFiles("web/templates/project/pixiv.html")).Execute(w, struct {
+		ProjectName string
+		Files       []string
+	}{
+		ProjectName: my.Name(),
+		Files:       files,
+	})
 }
