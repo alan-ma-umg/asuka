@@ -414,7 +414,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 			return "net.Error => url.Error"
 		}
 		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
-		log.Println("Request net.Error  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		//log.Println("Request net.Error  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	case *url.Error:
 		log.Println("Request Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
