@@ -4,7 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
 	"io"
@@ -50,10 +50,7 @@ func (my *Pixiv) Showing() (str string) {
 func (my *Pixiv) Init(d *Dispatcher) {
 	my.showingString = "快, 我要营养快线 !!!"
 
-	urlConvertRegex := regexp.MustCompile(`(?i)/img/[^.]+(_master1200|_square1200|_custom1200)(\.(jpg|png|jpeg|git))`)
-
-	//http://127.0.0.1:666/project/pixiv/crawl/upload
-	fmt.Println("pixiv upload server: http://127.0.0.1:666/project/pixiv/crawl/upload")
+	urlConvertRegex := regexp.MustCompile(`(?i)/img/[^.]+(_master1200|_square1200|_custom1200)(\.(jpg|png|jpeg|git|webp))`)
 
 	http.HandleFunc("/project/pixiv/crawl/upload", func(w http.ResponseWriter, r *http.Request) {
 
@@ -66,10 +63,6 @@ func (my *Pixiv) Init(d *Dispatcher) {
 			return
 		}
 
-		//https://px.flysay.com/https://i.pximg.net/img-original/img/2019/10/12/19/46/40/77248012_p0.jpg
-		//https://px.flysay.com/https://i.pximg.net/img-original/img/2019/10/12/19/46/40/77248012_p0.png // todo png !!  retry
-		//https://px.flysay.com/https://i.pximg.net/img-original/img/2019/10/12/19/46/40/77248012_p0.jpg
-
 		var post []*Illusts
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&post)
@@ -79,14 +72,11 @@ func (my *Pixiv) Init(d *Dispatcher) {
 			return
 		}
 
-		my.showingString = time.Now().Format("2006-01-02 15:04:05") + " upload succeed , len: " + strconv.Itoa(len(post))
-
+		addCount := 0
 		for _, item := range post {
 
 			rawUrl := item.Url
 
-			//todo if 404 need to try again with .png
-			//"https://i.pximg.net/c/360x360_70/img-master/img/2019/06/14/09/00/01/75214268_p0_square1200.jpg"
 			if re := urlConvertRegex.FindStringSubmatch(item.Url); len(re) >= 4 {
 				rawUrl = "https://i.pximg.net/img-original" + strings.TrimSuffix(re[0], re[1]+re[2]) + re[2]
 			} else {
@@ -97,24 +87,11 @@ func (my *Pixiv) Init(d *Dispatcher) {
 			if d.queue.BlTestAndAddString(rawUrl) {
 				continue
 			}
+			addCount++
 			d.queue.Enqueue(rawUrl)
-
-			//img.onerror = function () {
-			//	if (img.src.endsWith(".jpg")) {
-			//		img.src = img.src.replace('.jpg', '.png');
-			//	} else {
-			//		console.log(img.src);
-			//		nextImgGet();
-			//	}
-			//};
-			//
-			//try {
-
-			//	img.src = "https://px.flysay.com/https://i.pximg.net/img-original" + (originImg.src.match(/\/img\/.*/)[0].replace('_master1200', '').replace('_square1200', ''))
-
-			//todo change
-			//https://i.pximg.net/c/360x360_70/img-master/img/2019/06/14/09/00/01/75214268_p0_square1200.jpg //todo if 404 enqueue again
 		}
+
+		my.showingString = time.Now().Format("2006-01-02 15:04:05") + " upload succeed , len: " + strconv.Itoa(len(post)) + " added: " + strconv.Itoa(addCount)
 
 		w.Header().Set("Content-type", "application/json")
 		jsonMap := map[string]interface{}{}
@@ -144,22 +121,56 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 	rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
 	spider.CurrentRequest().Header.Set("Referer", "https://www.pixiv.net/artworks/"+strconv.Itoa(rand.Intn(71245413)))
-	spider.Client().Timeout = time.Minute * 5
+	spider.Client().Timeout = time.Minute * 10
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	//spider.ResetRequest() //todo !!!!!!!!!!!!!!! ???????????
 	//spider.Transport.Close() //todo !!!!!!!!!!!!!!! ???????????
 
-	spider.ResponseByte = nil //free memory
+	my.Implement.ResponseAfter(spider)
+}
+
+// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
+func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
+
+	//没有响应直接入正常的队列, fixme 如果一直没有响应意味着会无限下去
+	if spider.CurrentResponse() == nil || spider.CurrentResponse().StatusCode == 0 {
+		spider.Queue.Enqueue(rawUrl)
+		return
+	}
+
+	//响应状态200,但是读取body失败. 这种情况一般时代理超时/错误之类的情况直接无限重试下去
+	if spider.CurrentResponse().StatusCode == 200 && err != nil && strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
+		spider.Queue.Enqueue(rawUrl)
+		return
+	}
+
+	//404丢弃原链接,Retries.F不会增加.插入新格式的链接
+	if spider.CurrentResponse().StatusCode == 404 {
+		newUrl := regexp.MustCompile(`(?i)\.[^\.]{2,5}$`).ReplaceAllString(rawUrl, ".png")
+		if spider.Queue.BlTestAndAddString(newUrl) {
+			return
+		}
+		spider.Queue.Enqueue(newUrl)
+		return
+	}
+
+	//常规加入失败队列
+	my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
 func (my *Pixiv) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
-	if !strings.Contains(response.Header.Get("Content-type"), "image") {
-		log.Println("not image: got " + response.Header.Get("Content-type") + " HTTP code: " + response.Status)
-		return false, nil
+
+	if response.StatusCode == 403 {
+		helper.SendTextToWXDoOnceDurationHour(response.Status + ": " + spider.Transport.S.Host + " => " + spider.CurrentRequest().URL.String())
+	}
+
+	if response.StatusCode != 403 && response.StatusCode != 404 && !strings.Contains(response.Header.Get("Content-type"), "image") {
+		helper.SendTextToWXDoOnceDurationHour("not image: got " + response.Header.Get("Content-type") + " => " + response.Status + ": " + spider.Transport.S.Host + " => " + spider.CurrentRequest().URL.String())
+		return false, errors.New("not image")
 	}
 	return true, nil
 }

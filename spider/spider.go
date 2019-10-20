@@ -48,8 +48,9 @@ type Spider struct {
 	client    *http.Client
 	Queue     *queue.Queue
 
-	requestsMap    map[string]*http.Request
-	currentRequest *http.Request
+	requestsMap     map[string]*http.Request
+	currentRequest  *http.Request
+	currentResponse *http.Response
 
 	//ResponseStr  string
 	ResponseByte []byte
@@ -81,6 +82,14 @@ func New(t *proxy.Transport, queue *queue.Queue) *Spider {
 
 func (spider *Spider) CurrentRequest() *http.Request {
 	return spider.currentRequest
+}
+
+func (spider *Spider) CurrentResponse() *http.Response {
+	return spider.currentResponse
+}
+
+func (spider *Spider) ResetResponse() {
+	spider.currentResponse = nil
 }
 
 func (spider *Spider) Client() *http.Client {
@@ -270,27 +279,27 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	summary.TrafficOut = uint64(len(dump))
 
 	// HTTP request
-	resp, err := spider.client.Do(spider.currentRequest)
+	spider.currentResponse, err = spider.client.Do(spider.currentRequest)
 	if err != nil {
 		summary.ErrType = spider.requestErrorHandler(err)
 		return summary, err
 	}
-	defer resp.Body.Close()
+	defer spider.currentResponse.Body.Close()
 
-	summary.StatusCode = resp.StatusCode
-	summary.ContentType = resp.Header.Get("Content-type")
+	summary.StatusCode = spider.currentResponse.StatusCode
+	summary.ContentType = spider.currentResponse.Header.Get("Content-type")
 
 	if spider.DownloadFilter != nil {
-		filter, err := spider.DownloadFilter(spider, resp)
+		filter, err := spider.DownloadFilter(spider, spider.currentResponse)
 
 		if err != nil || !filter {
 			//traffic  response header only
-			dump, _ = httputil.DumpResponse(resp, false)
+			dump, _ = httputil.DumpResponse(spider.currentResponse, false)
 			summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump)))
 			summary.TrafficIn = uint64(len(dump))
 
 			if err != nil {
-				summary.ErrType = "project.Filtered"
+				summary.ErrType = "project.Filtered: " + err.Error()
 				return summary, errors.New(summary.ErrType)
 			}
 
@@ -300,14 +309,14 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 		}
 	}
 
-	resByte, err := ioutil.ReadAll(resp.Body)
+	resByte, err := ioutil.ReadAll(spider.currentResponse.Body)
 	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
 		return summary, err
 	}
 
 	//traffic in
-	dump, err = httputil.DumpResponse(resp, false)
+	dump, err = httputil.DumpResponse(spider.currentResponse, false)
 	summary.ErrType = spider.responseErrorHandler(err)
 	summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dump) + len(resByte)))
 	summary.TrafficIn = uint64(len(dump) + len(resByte))
@@ -315,7 +324,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))
 	defer reader.Close()
-	if strings.ToLower(resp.Header.Get("Content-Encoding")) == "gzip" {
+	if strings.ToLower(spider.currentResponse.Header.Get("Content-Encoding")) == "gzip" {
 		reader, err = gzip.NewReader(reader)
 		summary.ErrType = spider.responseErrorHandler(err)
 	}
@@ -327,7 +336,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	}
 
 	//http status
-	if resp.StatusCode != 200 {
+	if spider.currentResponse.StatusCode != 200 {
 		spider.Transport.AddFailure()
 	}
 

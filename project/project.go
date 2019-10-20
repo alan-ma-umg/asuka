@@ -68,11 +68,19 @@ func (my *Implement) Init() {}
 func (my *Implement) Showing() string {
 	return "Have a nice day !"
 }
+
+// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
 func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
 	spider.Queue.EnqueueForFailure(rawUrl, retryTimes)
 }
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
-func (my *Implement) ResponseAfter(spider *spider.Spider)   {}
+
+// ResponseAfter HTTP请求失败/成功之后
+// At Last
+func (my *Implement) ResponseAfter(spider *spider.Spider) {
+	spider.ResponseByte = nil //free memory
+	spider.ResetResponse()
+}
 func (my *Implement) Name() string {
 	return ""
 }
@@ -373,24 +381,25 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		project.ResponseSuccess(spider)
 	}
 
-	//todo if not html/text type , skip !!!!!!!!!!!!!!!!!!!!!!!!!
+	//非图片才抓取links, todo 还需要处理为更准确的类型
+	if !strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
+		for _, l := range spider.GetLinksByTokenizer() {
+			enqueueUrl := ""
+			if project != nil {
+				enqueueUrl = project.EnqueueFilter(spider, l)
+			} else {
+				enqueueUrl = l.String()
+			}
 
-	for _, l := range spider.GetLinksByTokenizer() {
-		enqueueUrl := ""
-		if project != nil {
-			enqueueUrl = project.EnqueueFilter(spider, l)
-		} else {
-			enqueueUrl = l.String()
+			if enqueueUrl == "" {
+				continue
+			}
+
+			if spider.Queue.BlTestAndAddString(enqueueUrl) {
+				continue
+			}
+
+			spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
 		}
-
-		if enqueueUrl == "" {
-			continue
-		}
-
-		if spider.Queue.BlTestAndAddString(enqueueUrl) {
-			continue
-		}
-
-		spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
 	}
 }

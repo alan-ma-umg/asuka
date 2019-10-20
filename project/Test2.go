@@ -61,7 +61,7 @@ func (my *Test2) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
 
-	spider.ResponseByte = []byte{} //free memory
+	my.Implement.ResponseAfter(spider)
 }
 
 // queue

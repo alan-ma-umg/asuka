@@ -162,5 +162,5 @@ func (my *Www) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
 
-	spider.ResponseByte = nil //free memory
+	my.Implement.ResponseAfter(spider)
 }

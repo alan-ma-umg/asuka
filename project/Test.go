@@ -39,7 +39,7 @@ func (my *Test) ResponseAfter(spider *spider.Spider) {
 	spider.ResetRequest()
 	spider.Transport.Close()
 
-	spider.ResponseByte = nil //free memory
+	my.Implement.ResponseAfter(spider)
 }
 func (my *Test) Throttle(spider *spider.Spider) {
 }
