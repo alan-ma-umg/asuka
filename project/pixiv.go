@@ -52,6 +52,9 @@ func (my *Pixiv) Init(d *Dispatcher) {
 
 	urlConvertRegex := regexp.MustCompile(`(?i)/img/[^.]+(_master1200|_square1200|_custom1200)(\.(jpg|png|jpeg|git|webp))`)
 
+	//images http index , todo 以后要删除掉 !!!!!!!!!!!!!!!
+	http.Handle("/project/pixiv/images/", http.StripPrefix("/project/pixiv/images/", http.FileServer(http.Dir("project/pixiv"))))
+
 	http.HandleFunc("/project/pixiv/crawl/upload", func(w http.ResponseWriter, r *http.Request) {
 
 		//fixme CORS policy 理解一下 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -247,5 +250,13 @@ func (my *Pixiv) WEBSite(w http.ResponseWriter, r *http.Request) {
 <script>document.getElementById('link-append').innerHTML = location.origin</script>
 `
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
+
+	if files, err := filepath.Glob("project/pixiv/*"); err == nil {
+		for _, f := range files[:helper.MinInt(100, len(files))] {
+			//fmt.Println(e)
+			htmlStr += "<img src='/project/pixiv/images/" + strings.TrimLeft(f, "project\\pixiv\\") + "'/>"
+		}
+	}
+
 	io.WriteString(w, htmlStr)
 }
