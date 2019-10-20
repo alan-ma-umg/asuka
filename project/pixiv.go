@@ -91,13 +91,7 @@ func (my *Pixiv) Init(d *Dispatcher) {
 				rawUrl = "https://i.pximg.net/img-original" + strings.TrimSuffix(re[0], re[1]+re[2]) + re[2]
 			} else {
 				//send message to wx
-				go func() {
-					if helper.Env().WechatSendMessagePassword != "" {
-						helper.DoOnceDurationHour(func() {
-							http.Get("https://wx.flysay.com/send?password=" + helper.Env().WechatSendMessagePassword + "&touser=chen&content=" + url.QueryEscape("url convert failed: https://px.flysay.com/"+item.Url+" \nIllustId: "+item.IllustId))
-						})
-					}
-				}()
+				helper.SendTextToWXDoOnceDurationHour("url convert failed: https://px.flysay.com/" + item.Url + " \nIllustId: " + item.IllustId)
 			}
 
 			if d.queue.BlTestAndAddString(rawUrl) {
@@ -140,7 +134,7 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 10e9))
 
 	if spider.FailureLevel > 40 {
 		spider.Delete = true
@@ -148,8 +142,9 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 }
 
 func (my *Pixiv) RequestBefore(spider *spider.Spider) {
-	spider.CurrentRequest().Header.Set("Referer", "https://www.pixiv.net/artworks/77274818") //todo 动态 !!!!!!!!!!!!!!!!!
-	spider.Client().Timeout = time.Minute
+	rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
+	spider.CurrentRequest().Header.Set("Referer", "https://www.pixiv.net/artworks/"+strconv.Itoa(rand.Intn(71245413)))
+	spider.Client().Timeout = time.Minute * 5
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {

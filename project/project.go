@@ -35,6 +35,9 @@ type IProject interface {
 	// Thirdly
 	RequestBefore(spider *spider.Spider)
 
+	// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
+	EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int)
+
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
 	// Fourth
@@ -64,6 +67,9 @@ type Implement struct{}
 func (my *Implement) Init() {}
 func (my *Implement) Showing() string {
 	return "Have a nice day !"
+}
+func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
+	spider.Queue.EnqueueForFailure(rawUrl, retryTimes)
 }
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 func (my *Implement) ResponseAfter(spider *spider.Spider)   {}
@@ -319,6 +325,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		spider.RequestBefore = project.RequestBefore
 		spider.DownloadFilter = project.DownloadFilter
 		spider.ProjectThrottle = project.Throttle
+		spider.EnqueueForFailure = project.EnqueueForFailure
 	}
 	spider.Throttle(dispatcherCallback)
 

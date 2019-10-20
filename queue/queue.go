@@ -83,6 +83,7 @@ func (my *Queue) GetBlsTestCount() (index, value []int) {
 		index = append(index, i)
 		value = append(value, v)
 	}
+	return
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {

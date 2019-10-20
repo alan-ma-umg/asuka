@@ -16,7 +16,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -586,14 +585,7 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 
 		//send message to wx
-		go func() {
-			if helper.Env().WechatSendMessagePassword != "" {
-				helper.DoOnceDurationHour(func() {
-					http.Get("https://wx.flysay.com/send?password=" + helper.Env().WechatSendMessagePassword + "&touser=chen&content=" + url.QueryEscape("Asuka login: "+r.RemoteAddr+" "+"\n"+r.UserAgent()+"\n"+time.Now().Format("2006-01-02 15:04:05")))
-				})
-			}
-		}()
-
+		helper.SendTextToWXDoOnceDurationHour("Asuka login: " + r.RemoteAddr + " " + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
 	} else {
 		jsonMap["success"] = false
 		jsonMap["message"] = "Password incorrect"

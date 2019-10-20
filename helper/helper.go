@@ -16,6 +16,7 @@ import (
 	"log"
 	"math"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -361,4 +362,14 @@ func DoOnceDurationHour(fun func()) {
 			DoOnceDurationHourInstance = &sync.Once{} //reset
 		}()
 	})
+}
+
+func SendTextToWXDoOnceDurationHour(content string) {
+	if Env().WechatSendMessagePassword != "" {
+		go func() {
+			DoOnceDurationHour(func() {
+				http.Get("https://wx.flysay.com/send?password=" + Env().WechatSendMessagePassword + "&touser=chen&content=" + url.QueryEscape(content))
+			})
+		}()
+	}
 }
