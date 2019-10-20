@@ -345,7 +345,9 @@ func TimeSince(t time.Duration) (str string) {
 	}
 	if num%60 > 0 {
 		str += strconv.Itoa(num%60) + "s"
-	} else {
+	}
+
+	if num == 0 {
 		str += t.String()
 	}
 	return
