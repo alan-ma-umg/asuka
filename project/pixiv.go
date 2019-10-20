@@ -44,7 +44,7 @@ func (my *Pixiv) Name() string {
 }
 
 func (my *Pixiv) Showing() (str string) {
-	return "<a href=\"/download/\"" + my.Name() + ">" + my.showingString + "</a>"
+	return "<a href=\"/download/" + my.Name() + "\">" + my.showingString + "</a>"
 }
 
 func (my *Pixiv) Init(d *Dispatcher) {
@@ -253,25 +253,38 @@ func (my *Pixiv) HttpExportResult(w http.ResponseWriter, r *http.Request) {
     }
 
     (function () {
-        let url = "https://www.pixiv.net/ajax/illust/recommend/illusts?";
-        Array.from(document.body.querySelectorAll('div[data-gtm-recommend-illust-id]:not([data-gtm-recommend-illust-id=""])')).forEach(function (element) {
-            url += "illust_ids%5B%5D=" + element.getAttribute("data-gtm-recommend-illust-id") + "&"
-        });
-        ajaxDo_({
-            method: "GET", url: url, success: function (res) {
-                let jsonRes = JSON.parse(res.response);
-                if (jsonRes.error) {
-                    console.log(res.responseText);
-                    return;
+        let bottomTimes = 0;
+        let fsdfsdfgdfg = setInterval(function () {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                if (bottomTimes++ > 300) {
+                    clearInterval(fsdfsdfgdfg);
+                    window.scrollTo(0, 0); //to top
+                    hentaiStart();
                 }
-                ajaxDo_({
-                    method: "POST",
-                    url: "http://127.0.0.1:666/project/pixiv/crawl/upload",
-                    data: JSON.stringify(jsonRes.body.illusts),
-                });
+            } else {
+                window.scrollTo(0, document.body.scrollHeight); //to bottom
+                bottomTimes = 0;
             }
-        });
-    })();
+        }, 10);
+
+        function hentaiStart() {
+            let postJson = [];
+            let urlParams = new URLSearchParams(window.location.search);
+            let IllustId = urlParams.get('id');
+            Array.from(document.body.querySelectorAll('img[src*="1200.jpg"]')).forEach(function (element) {
+                postJson.push({
+                    url: element.src,
+                    illustId: IllustId,
+                });
+            });
+
+            postJson.length && ajaxDo_({
+                method: "POST",
+                url: "http://127.0.0.1:666/project/pixiv/crawl/upload",
+                data: JSON.stringify(postJson),
+            });
+        }
+    })()
 </pre>`
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
 	io.WriteString(w, htmlStr)
