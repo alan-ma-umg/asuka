@@ -323,7 +323,6 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 
 	//gzip decompression
 	reader := ioutil.NopCloser(bytes.NewBuffer(resByte))
-	defer reader.Close()
 	if strings.ToLower(spider.currentResponse.Header.Get("Content-Encoding")) == "gzip" {
 		reader, err = gzip.NewReader(reader)
 		summary.ErrType = spider.responseErrorHandler(err)

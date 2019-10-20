@@ -306,10 +306,11 @@ func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
 		if e != s {
 			newSpiders = append(newSpiders, e)
 		}
-		//todo  try to set spider = nil !!!!!!!!!!!!!!!
 	}
 
 	my.spiders = newSpiders
+	//log.Println(s.Transport.S.Host + " set spider = nil ")
+	s = nil
 }
 
 //func (my *Dispatcher) SearchSpider(serverName string) *spider.Spider {
@@ -330,6 +331,13 @@ func (my *Dispatcher) CleanUp() *Dispatcher {
 }
 
 func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(spider *spider.Spider)) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r.(error))
+			//panic: runtime error: invalid memory address or nil pointer dereference
+		}
+	}()
+
 	if project != nil {
 		spider.RequestBefore = project.RequestBefore
 		spider.DownloadFilter = project.DownloadFilter
