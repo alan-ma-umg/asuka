@@ -306,6 +306,7 @@ func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
 		if e != s {
 			newSpiders = append(newSpiders, e)
 		}
+		//todo  try to set spider = nil !!!!!!!!!!!!!!!
 	}
 
 	my.spiders = newSpiders

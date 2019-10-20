@@ -128,6 +128,12 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	//spider.ResetRequest() //todo !!!!!!!!!!!!!!! ???????????
 	//spider.Transport.Close() //todo !!!!!!!!!!!!!!! ???????????
 
+	//下载或者耗时过长的删除掉
+	if time.Now().Second()-spider.RequestStartTime.Second() > 180 {
+		spider.Delete = true
+		spider.FailureLevel = 100
+	}
+
 	my.Implement.ResponseAfter(spider)
 }
 
@@ -191,6 +197,8 @@ func (my *Pixiv) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 
+	//todo 写入文件需要排重!!!!!!!!!!!!!!!!!!!!!!!!!
+
 	//write file
 	if err := ioutil.WriteFile(filePath+hex.EncodeToString(h.Sum(nil))+filepath.Ext(spider.CurrentRequest().URL.String()), spider.ResponseByte, 0); err != nil {
 		my.showingString = time.Now().Format("2006-01-02 15:04:05") + err.Error()
@@ -220,72 +228,21 @@ func (my *Pixiv) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 }
 
 func (my *Pixiv) HttpExportResult(w http.ResponseWriter, r *http.Request) {
-	htmlStr := `<pre>
-    function ajaxDo_(option) {
-        let url = option.url || '',
-            data = option.data,
-            method = option.method || 'get',
-            headers = option.headers || {},
-            success = option.success,
-            timeout = option.timeout || 10000,
-            error = option.error;
-
-        let xhr = new XMLHttpRequest();
-        xhr.timeout = timeout;
-        xhr.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                if (this.status === 200 || this.status === 304) {
-                    success && success(this);
-                } else {
-                    error && error(this);
-                }
-            }
-        };
-        xhr.open(method, url, true);
-        for (let k in headers) {
-            xhr.setRequestHeader(k, headers[k]);
-        }
-        if (data) {
-            xhr.send(data);
-        } else {
-            xhr.send();
-        }
-    }
-
-    (function () {
-        let bottomTimes = 0;
-        let fsdfsdfgdfg = setInterval(function () {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-                if (bottomTimes++ > 300) {
-                    clearInterval(fsdfsdfgdfg);
-                    window.scrollTo(0, 0); //to top
-                    hentaiStart();
-                }
-            } else {
-                window.scrollTo(0, document.body.scrollHeight); //to bottom
-                bottomTimes = 0;
-            }
-        }, 10);
-
-        function hentaiStart() {
-            let postJson = [];
-            let urlParams = new URLSearchParams(window.location.search);
-            let IllustId = urlParams.get('id');
-            Array.from(document.body.querySelectorAll('img[src*="1200.jpg"]')).forEach(function (element) {
-                postJson.push({
-                    url: element.src,
-                    illustId: IllustId,
-                });
-            });
-
-            postJson.length && ajaxDo_({
-                method: "POST",
-                url: "http://127.0.0.1:666/project/pixiv/crawl/upload",
-                data: JSON.stringify(postJson),
-            });
-        }
-    })()
-</pre>`
+	htmlStr := `
+<pre>
+(function () {
+    let script = document.createElement('script');
+    let domain = "<span id='link-append'></span>";
+    script.src = domain + "/static/pixiv2asuka.js";
+    script.onload = function () {
+        script = null;
+        pixivHenTaiStart_(domain);
+    };
+    document.body.appendChild(script);
+})();
+</pre>
+<script>document.getElementById('link-append').innerHTML = location.origin</script>
+`
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
 	io.WriteString(w, htmlStr)
 }
