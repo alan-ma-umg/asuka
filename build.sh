@@ -10,7 +10,7 @@ echo 'Welcome! Asuka'
 #fi
 
 echo 'Rebuild Asuka!'
-go build
+go build -ldflags "-s -w"
 
 sleep 2
 echo 'Now, Asuka is alive .'
