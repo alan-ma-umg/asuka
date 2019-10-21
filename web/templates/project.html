@@ -255,8 +255,11 @@
         </table>
     </div>
     <br>
-    <div class="right" style="color: #dadada">
-        {{"{{basic.date}}"}}
+    <div style="color: #dadada;padding: 0 20px 15px">
+        <span v-show="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
+        <span v-show="basic.sys_mem">Avail/Total: {{"{{basic.sys_mem}}"}}</span>
+        <span v-show="basic.sys_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
+        <span style="float: right">UPTIME: {{"{{basic.uptime}}"}}  DATE: {{"{{basic.date}}"}}</span>
     </div>
 
 

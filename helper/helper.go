@@ -178,54 +178,6 @@ func TruncateStr(str []rune, length int, postfix string) string {
 	return string(cut) + postfix
 }
 
-var GetSocketEstablishedCountLazyTicker = false
-var GetSocketEstablishedCountLazyCacheCount = 0
-
-func GetSocketEstablishedCountLazy() int {
-
-	if GetSocketEstablishedCountLazyTicker {
-		return GetSocketEstablishedCountLazyCacheCount
-	}
-
-	GetSocketEstablishedCountLazyTicker = true
-	ticker := time.After(time.Second * 5)
-	go func() {
-		defer func() {
-			<-ticker
-			GetSocketEstablishedCountLazyTicker = false
-		}()
-		GetSocketEstablishedCountLazyCacheCount = 0
-
-		if runtime.GOOS == "windows" {
-			out, err := exec.Command("netstat", "-ano", "-p", "tcp").Output() //slower
-			if err != nil {
-				GetSocketEstablishedCountLazyCacheCount = 0
-				return
-			}
-			pid := strconv.Itoa(os.Getpid())
-			for _, s := range strings.Split(string(out), "\r\n") {
-				if strings.Contains(s, "ESTABLISHED") && strings.Contains(s, pid) {
-					GetSocketEstablishedCountLazyCacheCount++
-				}
-			}
-		} else {
-			pid := strconv.Itoa(os.Getpid())
-			files, err := ioutil.ReadDir("/proc/" + pid + "/fd/") // faster than netstat
-			if err != nil {
-				GetSocketEstablishedCountLazyCacheCount = 0
-				return
-			}
-
-			GetSocketEstablishedCountLazyCacheCount = len(files) - 5
-			if GetSocketEstablishedCountLazyCacheCount < 0 {
-				GetSocketEstablishedCountLazyCacheCount = 0
-			}
-		}
-	}()
-
-	return GetSocketEstablishedCountLazyCacheCount
-}
-
 func SpiderFailureRate(accessCount, failureCount int) float64 {
 	if accessCount == 0 {
 		if failureCount > 0 {
@@ -355,6 +307,27 @@ func TimeSince(t time.Duration) (str string) {
 	return
 }
 
+type DoOnceInDuration struct {
+	duration time.Duration
+	once     *sync.Once
+}
+
+func NewDoOnceInDuration(duration time.Duration) *DoOnceInDuration {
+	return &DoOnceInDuration{duration: duration, once: new(sync.Once)}
+}
+func (my *DoOnceInDuration) Do(f func()) (isRun bool) {
+	my.once.Do(func() {
+		f()
+		isRun = true
+		go func() {
+			time.Sleep(my.duration)
+			my.once = new(sync.Once)
+		}()
+	})
+
+	return
+}
+
 var DoOnceDurationHourInstance = &sync.Once{}
 
 // DoOnceDurationHour global do once with reset in duration
@@ -363,7 +336,7 @@ func DoOnceDurationHour(fun func()) {
 		fun()
 		go func() {
 			time.Sleep(time.Hour)
-			DoOnceDurationHourInstance = &sync.Once{} //reset
+			DoOnceDurationHourInstance = new(sync.Once)
 		}()
 	})
 }
@@ -376,4 +349,131 @@ func SendTextToWXDoOnceDurationHour(content string) {
 			})
 		}()
 	}
+}
+
+var intRex = regexp.MustCompile("[0-9]+")
+
+func GetMemInfoFromProc() (available, total uint64) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+
+	// system mem info
+	if dat, err := ioutil.ReadFile("/proc/meminfo"); err == nil {
+		for index, line := range strings.SplitN(string(dat), "\n", 6) {
+
+			if strings.Contains(strings.ToLower(line), "memtotal") {
+				if res := intRex.FindAllString(line, 1); len(res) == 1 {
+					if kb, err := strconv.ParseUint(res[0], 10, 64); err == nil {
+						total = kb * 1024
+					}
+				}
+			}
+			if strings.Contains(strings.ToLower(line), "memavailable") {
+				if res := intRex.FindAllString(line, 1); len(res) == 1 {
+					if kb, err := strconv.ParseUint(res[0], 10, 64); err == nil {
+						available = kb * 1024
+						//linuxSysMem = HumanitySize(kb*1024) + "/" + HumanitySize(linuxMemTotal*1024) + "   " + strconv.FormatFloat(float64(kb)/float64(linuxMemTotal)*100, 'f', 2, 64) + "%"
+					}
+				}
+			}
+			if index > 4 {
+				break
+			}
+		}
+	}
+
+	return
+}
+
+var taskListDoOnceInDuration = NewDoOnceInDuration(time.Second * 10)
+var getProgramRssWindowsCache uint64
+
+func GetProgramRss() (rss uint64) {
+	if runtime.GOOS == "windows" {
+		taskListDoOnceInDuration.Do(func() {
+			go func() {
+				if out, err := exec.Command("tasklist", "/fi", "pid  eq "+strconv.Itoa(os.Getpid()), "/FO", "LIST").Output(); err == nil { //slow
+					for _, line := range strings.Split(string(out), "\n") {
+						if strings.Contains(strings.ToLower(line), "mem usage") {
+							if res := regexp.MustCompile("[\\d,]+").FindAllString(line, 1); len(res) == 1 {
+								if kb, err := strconv.ParseFloat(strings.ReplaceAll(res[0], ",", ""), 64); err == nil {
+									getProgramRssWindowsCache = uint64(kb) * 1024
+								}
+							}
+						}
+					}
+				}
+			}()
+		})
+
+		return getProgramRssWindowsCache
+	}
+
+	// program mem info
+	if dat, err := ioutil.ReadFile("/proc/" + strconv.Itoa(os.Getpid()) + "/status"); err == nil {
+		for _, line := range strings.Split(string(dat), "\n") {
+			if strings.Contains(strings.ToLower(line), "vmrss") {
+				if res := intRex.FindAllString(line, 1); len(res) == 1 {
+					if kb, err := strconv.ParseUint(res[0], 10, 64); err == nil {
+						rss = kb * 1024
+					}
+				}
+				break
+			}
+		}
+	}
+	return
+}
+
+func GetSystemLoadFromProc() (loadStr string) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+
+	if dat, err := ioutil.ReadFile("/proc/loadavg"); err == nil {
+		for index, str := range strings.SplitN(string(dat), " ", 4) {
+			loadStr += str + " "
+			if index == 2 {
+				break
+			}
+		}
+	}
+	return
+}
+
+var getSocketEstablishedCountLazyCacheCount = 0
+var getSocketEstablishedCountLazyCacheCountDoOnceInDuration = NewDoOnceInDuration(time.Second*12 + time.Millisecond*200) //时间错开
+
+func GetSocketEstablishedCountLazy() int {
+	getSocketEstablishedCountLazyCacheCountDoOnceInDuration.Do(func() {
+		go func() {
+			if runtime.GOOS == "windows" {
+				out, err := exec.Command("netstat", "-ano", "-p", "tcp").Output() //slower
+				if err != nil {
+					getSocketEstablishedCountLazyCacheCount = 0
+					return
+				}
+				pid := strconv.Itoa(os.Getpid())
+				for _, s := range strings.Split(string(out), "\r\n") {
+					if strings.Contains(s, "ESTABLISHED") && strings.Contains(s, pid) {
+						getSocketEstablishedCountLazyCacheCount++
+					}
+				}
+			} else {
+				pid := strconv.Itoa(os.Getpid())
+				files, err := ioutil.ReadDir("/proc/" + pid + "/fd/") // faster than netstat
+				if err != nil {
+					getSocketEstablishedCountLazyCacheCount = 0
+					return
+				}
+
+				getSocketEstablishedCountLazyCacheCount = len(files) - 5
+				if getSocketEstablishedCountLazyCacheCount < 0 {
+					getSocketEstablishedCountLazyCacheCount = 0
+				}
+			}
+		}()
+	})
+	return getSocketEstablishedCountLazyCacheCount
 }

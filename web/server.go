@@ -945,6 +945,15 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 
+	//_, memAvailable := helper.GetMemInfoFromProc()
+
+	sysLoad := ""
+	sysMemInfo := ""
+	if check && runtime.GOOS != "windows" {
+		sysLoad = helper.GetSystemLoadFromProc()
+		availableMemByte, totalMemByte := helper.GetMemInfoFromProc()
+		sysMemInfo = helper.ByteCountBinary(availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte) + "   " + strconv.FormatFloat(float64(availableMemByte)/float64(totalMemByte)*100, 'f', 2, 64) + "%"
+	}
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
@@ -974,7 +983,10 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	//jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
 	//jsonMap["basic"].(map[string]interface{})["net_in_int"] = NetIn
 	//jsonMap["basic"].(map[string]interface{})["net_out_int"] = NetOut
-	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(mem.Sys)
+	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(helper.GetProgramRss())
+	jsonMap["basic"].(map[string]interface{})["sys_load"] = sysLoad
+	jsonMap["basic"].(map[string]interface{})["sys_mem"] = sysMemInfo
+	jsonMap["basic"].(map[string]interface{})["runtime_mem"] = helper.ByteCountBinary(mem.Sys) + "/" + helper.ByteCountBinary(mem.Alloc)
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
