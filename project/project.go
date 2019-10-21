@@ -337,7 +337,7 @@ func (my *Dispatcher) CleanUp() *Dispatcher {
 func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(spider *spider.Spider)) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println(r.(error))
+			log.Println(r.(error)) //project.go:340: runtime error: invalid memory address or nil pointer dereference
 			//panic: runtime error: invalid memory address or nil pointer dereference
 		}
 	}()

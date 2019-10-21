@@ -952,7 +952,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	if check && runtime.GOOS != "windows" {
 		sysLoad = helper.GetSystemLoadFromProc()
 		availableMemByte, totalMemByte := helper.GetMemInfoFromProc()
-		sysMemInfo = helper.ByteCountBinary(availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte) + "   " + strconv.FormatFloat(float64(availableMemByte)/float64(totalMemByte)*100, 'f', 2, 64) + "%"
+		sysMemInfo = helper.ByteCountBinary(totalMemByte-availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte) + "   " + strconv.FormatFloat(float64(totalMemByte-availableMemByte)/float64(totalMemByte)*100, 'f', 2, 64) + "%"
 	}
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
