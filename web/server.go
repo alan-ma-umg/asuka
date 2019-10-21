@@ -237,6 +237,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			//程序退出保存和清理数据时这里还未完全断开继续执行会有几率读取空指针
+			log.Println(r.(error)) //project.go:340: runtime error: invalid memory address or nil pointer dereference
+			//panic: runtime error: invalid memory address or nil pointer dereference
+		}
+	}()
 	c, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -293,6 +300,14 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 
 }
 func projectIO(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			//程序退出保存和清理数据时这里还未完全断开继续执行会有几率读取空指针
+			log.Println(r.(error)) //project.go:340: runtime error: invalid memory address or nil pointer dereference
+			//panic: runtime error: invalid memory address or nil pointer dereference
+		}
+	}()
+
 	c, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
