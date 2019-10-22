@@ -106,8 +106,8 @@ type Dispatcher struct {
 	StartTime            time.Time
 }
 
-func New(project IProject) *Dispatcher {
-	d := &Dispatcher{IProject: project, Counting: &helper.Counting{}, StartTime: time.Now()}
+func New(project IProject, stop bool) *Dispatcher {
+	d := &Dispatcher{IProject: project, Stop: stop, Counting: &helper.Counting{}, StartTime: time.Now()}
 	gob.Register(project)
 	d.queue = queue.NewQueue(d.Name())
 
@@ -171,7 +171,7 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 	return my.spiders
 }
 
-func (my *Dispatcher) initSpider() {
+func (my *Dispatcher) initSpider() { //todo 这个需要重构
 	defer database.Redis().Del(my.getGOBKey())
 
 	// recover Dispatcher
@@ -227,20 +227,35 @@ func (my *Dispatcher) initSpider() {
 //return append(transports, dt)
 //}
 
-func (my *Dispatcher) AddSpider(addr *url.URL) {
+func (my *Dispatcher) AddSpider(addr *url.URL) (s *spider.Spider) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 
 	for _, oldSpider := range my.spiders {
 		if oldSpider.TransportUrl.Host == addr.Host {
-			return
+			return nil
 		}
 	}
 
-	//t := proxy.NewTransport(addr)
-	s := spider.New(addr, my.queue)
-	my.spiders = append([]*spider.Spider{s}, my.spiders...)
-	my.runSpider(s)
+	s = spider.New(addr, my.queue)
+	//my.spiders = append([]*spider.Spider{s}, my.spiders...) // 为了让localhost在最前
+	my.spiders = append(my.spiders, s)
+	return
+}
+
+func (my *Dispatcher) RunNewSpiders(spiders []*spider.Spider) {
+	go func() {
+		for {
+			if !my.Stop {
+				break
+			}
+			time.Sleep(time.Second * 5)
+		}
+
+		for _, s := range spiders {
+			my.runSpider(s)
+		}
+	}()
 }
 
 func (my *Dispatcher) runSpider(s *spider.Spider) {
@@ -249,7 +264,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 		for {
 			for {
 				if spider.Delete {
-					return
+					return //会执行 defer my.RemoveSpider(spider)
 				}
 				if !my.Stop {
 					break
@@ -317,6 +332,7 @@ func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
 
 	my.spiders = newSpiders
 	//log.Println(s.Transport.S.Host + " set spider = nil ")
+	s.ResetSpider()
 	s = nil
 }
 
