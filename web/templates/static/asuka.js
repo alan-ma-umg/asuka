@@ -128,6 +128,7 @@ function handlerSocket() {
     try {
         ws = new WebSocket(wsUrl);
     } catch (e) {
+        console.log(e);
         reconnectSocket();
         return
     }

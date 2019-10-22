@@ -128,8 +128,8 @@ func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
-	//spider.ResetRequest() //todo !!!!!!!!!!!!!!! ???????????
-	//spider.Transport.Close() //todo !!!!!!!!!!!!!!! ???????????
+	spider.ResetRequest()
+	spider.Transport.Close()
 
 	//下载或者耗时过长的删除掉, 无论成功失败都删除
 	if !spider.RequestStartTime.IsZero() && time.Since(spider.RequestStartTime).Seconds() > 180 {

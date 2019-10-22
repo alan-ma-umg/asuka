@@ -328,16 +328,12 @@ func (my *DoOnceInDuration) Do(f func()) (isRun bool) {
 	return
 }
 
-var DoOnceDurationHourInstance = &sync.Once{}
+var DoOnceDurationHourInstance = NewDoOnceInDuration(time.Hour + (123 * time.Millisecond))
 
 // DoOnceDurationHour global do once with reset in duration
 func DoOnceDurationHour(fun func()) {
 	DoOnceDurationHourInstance.Do(func() {
 		fun()
-		go func() {
-			time.Sleep(time.Hour)
-			DoOnceDurationHourInstance = new(sync.Once)
-		}()
 	})
 }
 
@@ -373,7 +369,6 @@ func GetMemInfoFromProc() (available, total uint64) {
 				if res := intRex.FindAllString(line, 1); len(res) == 1 {
 					if kb, err := strconv.ParseUint(res[0], 10, 64); err == nil {
 						available = kb * 1024
-						//linuxSysMem = HumanitySize(kb*1024) + "/" + HumanitySize(linuxMemTotal*1024) + "   " + strconv.FormatFloat(float64(kb)/float64(linuxMemTotal)*100, 'f', 2, 64) + "%"
 					}
 				}
 			}
@@ -386,8 +381,9 @@ func GetMemInfoFromProc() (available, total uint64) {
 	return
 }
 
-var taskListDoOnceInDuration = NewDoOnceInDuration(time.Second * 10)
+var taskListDoOnceInDuration = NewDoOnceInDuration(time.Second*9 + (323 * time.Millisecond))
 var getProgramRssWindowsCache uint64
+var windowsFindRssRex = regexp.MustCompile("(?i)([\\d,]+)\\s?K$")
 
 func GetProgramRss() (rss uint64) {
 	if runtime.GOOS == "windows" {
@@ -395,11 +391,9 @@ func GetProgramRss() (rss uint64) {
 			go func() {
 				if out, err := exec.Command("tasklist", "/fi", "pid  eq "+strconv.Itoa(os.Getpid()), "/FO", "LIST").Output(); err == nil { //slow
 					for _, line := range strings.Split(string(out), "\n") {
-						if strings.Contains(strings.ToLower(line), "mem usage") {
-							if res := regexp.MustCompile("[\\d,]+").FindAllString(line, 1); len(res) == 1 {
-								if kb, err := strconv.ParseFloat(strings.ReplaceAll(res[0], ",", ""), 64); err == nil {
-									getProgramRssWindowsCache = uint64(kb) * 1024
-								}
+						if res := windowsFindRssRex.FindStringSubmatch(strings.TrimSpace(line)); len(res) == 2 {
+							if kb, err := strconv.ParseFloat(strings.ReplaceAll(res[1], ",", ""), 64); err == nil {
+								getProgramRssWindowsCache = uint64(kb) * 1024
 							}
 						}
 					}
