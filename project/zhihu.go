@@ -97,7 +97,7 @@ func (my *ZhiHu) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 50e9))
+	spider.AddSleep(time.Duration(rand.Float64() * 100e9))
 
 	if spider.FailureLevel > 1 {
 		zhiHuResetSpider(spider)

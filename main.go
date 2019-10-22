@@ -21,6 +21,12 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo url filter & queue按需初始化或释放
+	//todo url filter支持远程
+	//todo mysql/oracle 数据库写入支持
+	//todo chrome 插件 => pixiv.net js自动抓取报送
+	//todo douban web page.
+
 	asuka()
 }
 
@@ -29,11 +35,11 @@ func asuka() {
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}, true).Run(),
 		project.New(&project.Pixiv{}, true).Run(),
-		//project.New(&project.Test{}).Run(),
-		//project.New(&project.Test2{}).Run(),
-		//project.New(&project.ZhiHu{}).Run(),
-		//project.New(&project.JianShu{}).Run(),
-		//project.New(&project.Www{}).Run(),
+		project.New(&project.Test{}, true).Run(),
+		project.New(&project.Test2{}, true).Run(),
+		project.New(&project.ZhiHu{}, true).Run(),
+		project.New(&project.JianShu{}, true).Run(),
+		project.New(&project.Www{}, true).Run(),
 
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),

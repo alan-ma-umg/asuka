@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/html"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -64,6 +65,8 @@ func (my *Www) Throttle(spider *spider.Spider) {
 	if spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(60e9)
 	}
+
+	spider.AddSleep(time.Duration(rand.Float64() * 100e9))
 }
 
 func (my *Www) RequestBefore(spider *spider.Spider) {

@@ -4,6 +4,7 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -36,6 +37,7 @@ func (my *Test) EntryUrl() []string {
 	return links
 }
 func (my *Test) Throttle(spider *spider.Spider) {
+	spider.AddSleep(time.Duration(rand.Float64() * 30e9))
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {
