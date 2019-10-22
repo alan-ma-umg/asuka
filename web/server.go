@@ -279,14 +279,18 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			case "stop":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
-						s.Stop = true
+						if s != nil {
+							s.Stop = true
+						}
 					}
 				}
 				fmt.Println("spider stop")
 			case "start":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
-						s.Stop = false
+						if s != nil {
+							s.Stop = false
+						}
 					}
 				}
 				fmt.Println("spider start")
@@ -351,18 +355,22 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			case "enqueue":
 				if check {
 					for _, s := range p.GetSpiders() {
-						for _, l := range p.EntryUrl() {
-							s.Queue.Enqueue(l)
+						if s != nil {
+							for _, l := range p.EntryUrl() {
+								s.Queue.Enqueue(l)
+							}
+							break
 						}
-						break
 					}
 				}
 				fmt.Println("enqueue")
 			case "clear":
 				if check {
 					for _, s := range p.GetSpiders() {
-						s.Queue.BlCleanUp()
-						break
+						if s != nil {
+							s.Queue.BlCleanUp()
+							break
+						}
 					}
 				}
 				fmt.Println("bloomFilter clearAll")
@@ -370,7 +378,9 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				if check {
 					for _, d := range dispatchers {
 						for _, s := range d.GetSpiders() {
-							s.Stop = true
+							if s != nil {
+								s.Stop = true
+							}
 						}
 					}
 				}
@@ -379,7 +389,9 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				if check {
 					for _, d := range dispatchers {
 						for _, s := range d.GetSpiders() {
-							s.Stop = false
+							if s != nil {
+								s.Stop = false
+							}
 						}
 					}
 				}
@@ -461,8 +473,10 @@ func getServer(w http.ResponseWriter, r *http.Request) {
 	//string.jo
 	buf := &bytes.Buffer{}
 	for _, e := range p.GetSpiders() {
-		buf.WriteString(e.TransportUrl.String())
-		buf.WriteString("<br>")
+		if e != nil {
+			buf.WriteString(e.TransportUrl.String())
+			buf.WriteString("<br>")
+		}
 	}
 	w.Write(buf.Bytes())
 }
@@ -729,23 +743,24 @@ func indexJson(check bool) []byte {
 		TrafficOut += p.TrafficOut
 
 		for _, s := range p.GetSpiders() {
-			sleepDuration += s.GetSleep()
+			if s != nil {
+				sleepDuration += s.GetSleep()
 
-			if !s.RequestStartTime.IsZero() {
-				waiting += time.Since(s.RequestStartTime)
-			}
-			serverCount++
-			if !s.Stop {
-				serverEnable++
-
-				if s.FailureLevel == 0 {
-					serverRun++
+				if !s.RequestStartTime.IsZero() {
+					waiting += time.Since(s.RequestStartTime)
 				}
-			}
+				serverCount++
+				if !s.Stop {
+					serverEnable++
 
-			//NetIn += s.Transport.S.TrafficIn
-			//NetOut += s.Transport.S.TrafficOut
-			//connections += s.Transport.S.Connections
+					if s.FailureLevel == 0 {
+						serverRun++
+					}
+				}
+				//NetIn += s.Transport.S.TrafficIn
+				//NetOut += s.Transport.S.TrafficOut
+				//connections += s.Transport.S.Connections
+			}
 		}
 
 		projectMap["stop"] = p.Stop
@@ -928,24 +943,26 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		TrafficIn += p.TrafficIn
 		TrafficOut += p.TrafficOut
 		for _, s := range p.GetSpiders() {
-			if s.FailureLevel == 0 && !s.Stop {
-				failureLevelZeroCount++
-				if !s.RequestStartTime.IsZero() {
-					waitingAvg += time.Since(s.RequestStartTime)
+			if s != nil {
+				if s.FailureLevel == 0 && !s.Stop {
+					failureLevelZeroCount++
+					if !s.RequestStartTime.IsZero() {
+						waitingAvg += time.Since(s.RequestStartTime)
+					}
+					//avgTimeAvg += s.GetAvgTime()
 				}
-				//avgTimeAvg += s.GetAvgTime()
-			}
 
-			serverCount++
-			if !s.Stop {
-				serverEnable++
-			}
-			sleepAvg += s.GetSleep()
-			//pingFailureAvg += s.Transport.PingFailureRate
-			//pingAvg += s.Transport.Ping
+				serverCount++
+				if !s.Stop {
+					serverEnable++
+				}
+				sleepAvg += s.GetSleep()
+				//pingFailureAvg += s.Transport.PingFailureRate
+				//pingAvg += s.Transport.Ping
 
-			//NetIn += s.Transport.S.TrafficIn
-			//NetOut += s.Transport.S.TrafficOut
+				//NetIn += s.Transport.S.TrafficIn
+				//NetOut += s.Transport.S.TrafficOut
+			}
 		}
 
 		if len(p.GetSpiders()) > 0 {
@@ -1036,7 +1053,7 @@ func searchSpider(projectName string, serverName string) *spider.Spider {
 	for _, e := range dispatchers {
 		if e.Name() == projectName {
 			for _, e := range e.GetSpiders() {
-				if e.TransportUrl.Host == serverName {
+				if e != nil && e.TransportUrl.Host == serverName {
 					return e
 				}
 			}
