@@ -544,10 +544,10 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 					if rawUrl, ok := m["url"]; ok {
 						u, _ := url.Parse(rawUrl.(string))
 						if enqueueUrl := my.EnqueueFilter(spider, u); enqueueUrl != "" {
-							if spider.Queue.BlTestAndAddString(enqueueUrl) {
+							if spider.GetQueue().BlTestAndAddString(enqueueUrl) {
 								continue
 							}
-							spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
+							spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 						}
 					}
 				}
@@ -597,7 +597,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	}
 
 	if model.Title == "页面不存在" && model.Name == "" {
-		spider.Queue.EnqueueForFailure(spider.CurrentRequest().URL.String(), 3)
+		spider.GetQueue().EnqueueForFailure(spider.CurrentRequest().URL.String(), 3)
 	}
 
 	//clear

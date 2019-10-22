@@ -87,11 +87,11 @@ func (my *Pixiv) Init(d *Dispatcher) {
 				helper.SendTextToWXDoOnceDurationHour("url convert failed: https://px.flysay.com/" + item.Url + " \nIllustId: " + item.IllustId)
 			}
 
-			if d.queue.BlTestAndAddString(rawUrl) {
+			if d.GetQueue().BlTestAndAddString(rawUrl) {
 				continue
 			}
 			addCount++
-			d.queue.Enqueue(rawUrl)
+			d.GetQueue().Enqueue(rawUrl)
 		}
 
 		my.showingString = time.Now().Format("2006-01-02 15:04:05") + " upload succeed , len: " + strconv.Itoa(len(post)) + " added: " + strconv.Itoa(addCount)
@@ -142,23 +142,23 @@ func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl stri
 
 	//没有响应直接入正常的队列, fixme 如果一直没有响应意味着会无限下去
 	if spider.CurrentResponse() == nil || spider.CurrentResponse().StatusCode == 0 {
-		spider.Queue.Enqueue(rawUrl)
+		spider.GetQueue().Enqueue(rawUrl)
 		return
 	}
 
 	//响应状态200,但是读取body失败. 这种情况一般时代理超时/错误之类的情况直接无限重试下去
 	if spider.CurrentResponse().StatusCode == 200 && err != nil && strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
-		spider.Queue.Enqueue(rawUrl)
+		spider.GetQueue().Enqueue(rawUrl)
 		return
 	}
 
 	//404丢弃原链接,Retries.F不会增加.插入新格式的链接
 	if spider.CurrentResponse().StatusCode == 404 {
 		newUrl := regexp.MustCompile(`(?i)\.[^\.]{2,5}$`).ReplaceAllString(rawUrl, ".png")
-		if spider.Queue.BlTestAndAddString(newUrl) {
+		if spider.GetQueue().BlTestAndAddString(newUrl) {
 			return
 		}
-		spider.Queue.Enqueue(newUrl)
+		spider.GetQueue().Enqueue(newUrl)
 		return
 	}
 

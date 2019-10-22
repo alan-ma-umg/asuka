@@ -71,7 +71,7 @@ func (my *Implement) Showing() string {
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
 func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
-	spider.Queue.EnqueueForFailure(rawUrl, retryTimes)
+	spider.GetQueue().EnqueueForFailure(rawUrl, retryTimes)
 }
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 
@@ -110,7 +110,6 @@ type Dispatcher struct {
 func New(project IProject, stop bool) *Dispatcher {
 	d := &Dispatcher{IProject: project, Stop: stop, Counting: &helper.Counting{}, StartTime: time.Now()}
 	gob.Register(project)
-	d.queue = queue.NewQueue(d.Name())
 
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
@@ -121,13 +120,13 @@ func New(project IProject, stop bool) *Dispatcher {
 
 		for _, sp := range d.GetSpiders() {
 			if sp != nil && sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && len(sp.ResponseByte) == 0 {
-				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
+				sp.GetQueue().Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
 				//fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
 			}
 		}
 
 		//queue, write to file
-		d.queue.BlSave()
+		d.GetQueue().BlSave()
 
 		//清空前获取
 		GOBRedisKey := d.getGOBKey()
@@ -157,7 +156,7 @@ func (my *Dispatcher) getGOBKey() string {
 }
 
 func (my *Dispatcher) GetQueueKey() string {
-	return my.queue.GetKey()
+	return my.GetQueue().GetKey()
 }
 
 func (my *Dispatcher) Name() string {
@@ -234,6 +233,13 @@ func (my *Dispatcher) initSpider() { //todo 这个需要重构
 //return append(transports, dt)
 //}
 
+func (my *Dispatcher) GetQueue() *queue.Queue {
+	if my.queue == nil {
+		my.queue = queue.NewQueue(my.Name())
+	}
+	return my.queue
+}
+
 //AddSpider 加入的spider不是直接立即执行的, 会通过addSpidersWaiting添加到spidersWaiting中等待合适时机执行
 func (my *Dispatcher) AddSpider(addr *url.URL) {
 	my.spiderSliceMutex.Lock()
@@ -245,7 +251,7 @@ func (my *Dispatcher) AddSpider(addr *url.URL) {
 		}
 	}
 
-	s := spider.New(addr, my.queue)
+	s := spider.New(addr, my.GetQueue)
 	//my.spiders = append([]*spider.Spider{s}, my.spiders...) // 为了让localhost在最前
 	my.spiders = append(my.spiders, s)
 
@@ -332,9 +338,9 @@ func (my *Dispatcher) Run() *Dispatcher {
 	my.Init(my)
 
 	for _, l := range my.EntryUrl() {
-		if !my.queue.BlTestString(l) {
-			my.queue.Enqueue(l)
-		}
+		//if !my.GetQueue().BlTestString(l) {
+		my.GetQueue().Enqueue(l)
+		//}
 	}
 
 	go func() {
@@ -378,7 +384,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")
-	my.queue.BlCleanUp()
+	my.GetQueue().BlCleanUp()
 	database.Redis().Del(my.getGOBKey())
 	database.Redis().Del(my.GetQueueKey())
 	return my
@@ -393,7 +399,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	}
 	spider.Throttle(dispatcherCallback)
 
-	link, err := spider.Queue.Dequeue()
+	link, err := spider.GetQueue().Dequeue()
 	if err != nil {
 		time.Sleep(time.Second * 5)
 		return
@@ -451,11 +457,11 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 				continue
 			}
 
-			if spider.Queue.BlTestAndAddString(enqueueUrl) {
+			if spider.GetQueue().BlTestAndAddString(enqueueUrl) {
 				continue
 			}
 
-			spider.Queue.Enqueue(strings.TrimSpace(enqueueUrl))
+			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 		}
 	}
 }

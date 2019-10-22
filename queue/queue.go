@@ -16,17 +16,24 @@ type Queue struct {
 	BlsTestCount           map[int]int
 	enqueueForFailureMutex sync.Mutex
 
-	bloomFilterMutex    sync.Mutex
-	bloomFilterInstance *bloom.BloomFilter
+	bloomFilterMutex          sync.Mutex
+	bloomFilterInstance       *bloom.BloomFilter
+	bloomFilterInstanceDoOnce *sync.Once
 }
 
 func NewQueue(name string) (q *Queue) {
-	q = &Queue{name: name, BlsTestCount: make(map[int]int)}
-	q.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
-	f, _ := os.Open(helper.Env().BloomFilterPath + q.GetBlKey())
-	q.bloomFilterInstance.ReadFrom(f)
-	f.Close()
-	return
+	return &Queue{name: name, BlsTestCount: make(map[int]int), bloomFilterInstanceDoOnce: new(sync.Once)}
+}
+
+func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
+	my.bloomFilterInstanceDoOnce.Do(func() {
+		my.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
+		f, _ := os.Open(helper.Env().BloomFilterPath + my.GetBlKey())
+		my.bloomFilterInstance.ReadFrom(f)
+		f.Close()
+		log.Println(my.GetKey() + my.GetKey() + " : do once")
+	})
+	return my.bloomFilterInstance
 }
 
 func (my *Queue) BlCleanUp() {
@@ -43,21 +50,21 @@ func (my *Queue) BlCleanUp() {
 		e.ClearAll()
 	}
 
-	my.bloomFilterInstance.ClearAll()
+	my.getBloomFilterInstance().ClearAll()
 }
 
 //BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) bool {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-	return my.bloomFilterInstance.TestAndAddString(s)
+	return my.getBloomFilterInstance().TestAndAddString(s)
 }
 
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-	return my.bloomFilterInstance.TestString(s)
+	return my.getBloomFilterInstance().TestString(s)
 }
 
 func (my *Queue) GetBlKey() string {
@@ -123,7 +130,7 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 
 func (my *Queue) BlSave() {
 	f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
-	my.bloomFilterInstance.WriteTo(f)
+	my.getBloomFilterInstance().WriteTo(f)
 	f.Close()
 
 	for i, bl := range my.bls {

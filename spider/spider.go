@@ -47,7 +47,6 @@ type Spider struct {
 	TransportUrl *url.URL
 	Transport    *proxy.Transport
 	client       *http.Client
-	Queue        *queue.Queue
 
 	//requestsMap     map[string]*http.Request
 	currentRequest  *http.Request
@@ -63,10 +62,10 @@ type Spider struct {
 	Stop             bool
 	Delete           bool
 	SleepDuration    time.Duration
-
-	RequestBefore   func(spider *Spider)
-	DownloadFilter  func(spider *Spider, response *http.Response) (bool, error)
-	ProjectThrottle func(spider *Spider)
+	GetQueue         func() *queue.Queue
+	RequestBefore    func(spider *Spider)
+	DownloadFilter   func(spider *Spider, response *http.Response) (bool, error)
+	ProjectThrottle  func(spider *Spider)
 
 	EnqueueForFailure func(spider *Spider, err error, rawUrl string, retryTimes int)
 
@@ -74,8 +73,8 @@ type Spider struct {
 	RecentSeveralTimesResultCap int
 }
 
-func New(transportUrl *url.URL, queue *queue.Queue) *Spider {
-	return &Spider{Queue: queue, TransportUrl: transportUrl, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+func New(transportUrl *url.URL, getQueue func() *queue.Queue) *Spider {
+	return &Spider{TransportUrl: transportUrl, GetQueue: getQueue, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
 	//spider.ResetRequest()
 	//spider.updateClient()
 	//return spider

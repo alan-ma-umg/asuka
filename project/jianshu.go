@@ -121,7 +121,7 @@ func (my *JianShu) EntryUrl() []string {
 
 // frequency
 func (my *JianShu) Throttle(spider *spider.Spider) {
-	if spider.Transport.LoadRate(5) > 5.0 {
+	if spider.Transport != nil && spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(60e9)
 	}
 

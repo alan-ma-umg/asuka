@@ -357,7 +357,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 					for _, s := range p.GetSpiders() {
 						if s != nil {
 							for _, l := range p.EntryUrl() {
-								s.Queue.Enqueue(l)
+								s.GetQueue().Enqueue(l)
 							}
 							break
 						}
@@ -368,7 +368,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				if check {
 					for _, s := range p.GetSpiders() {
 						if s != nil {
-							s.Queue.BlCleanUp()
+							s.GetQueue().BlCleanUp()
 							break
 						}
 					}
@@ -966,7 +966,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		}
 
 		if len(p.GetSpiders()) > 0 {
-			indexSlice, valueSlice := p.GetSpiders()[0].Queue.GetBlsTestCount()
+			indexSlice, valueSlice := p.GetSpiders()[0].GetQueue().GetBlsTestCount()
 			for i, v := range indexSlice {
 				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[v] += valueSlice[i]
 			}
