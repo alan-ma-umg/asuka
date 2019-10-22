@@ -489,7 +489,7 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 	oldSpiderCount := len(p.GetSpiders())
 
 	if r.Method == "POST" {
-		p.RunNewSpiders(addServerPost(w, r, p))
+		p.RunSpidersWaiting(addServerPost(w, r, p))
 	}
 
 	data := struct {

@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -95,7 +96,8 @@ type Dispatcher struct {
 	IProject
 	*helper.Counting
 	queue                *queue.Queue
-	spiders              []*spider.Spider //make public for GOB
+	spiders              []*spider.Spider
+	spidersWaiting       []*spider.Spider //未运行的
 	Stop                 bool
 	recentFetchMutex     sync.Mutex
 	spiderSliceMutex     sync.Mutex
@@ -119,7 +121,7 @@ func New(project IProject, stop bool) *Dispatcher {
 		}
 
 		for _, sp := range d.GetSpiders() {
-			if sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && len(sp.ResponseByte) == 0 {
+			if sp != nil && sp.CurrentRequest() != nil && sp.CurrentRequest().URL != nil && len(sp.ResponseByte) == 0 {
 				sp.Queue.Enqueue(sp.CurrentRequest().URL.String()) //check status & make improvement
 				//fmt.Println("enqueue " + sp.CurrentRequest().URL.String())
 			}
@@ -243,7 +245,7 @@ func (my *Dispatcher) AddSpider(addr *url.URL) (s *spider.Spider) {
 	return
 }
 
-func (my *Dispatcher) RunNewSpiders(spiders []*spider.Spider) {
+func (my *Dispatcher) RunSpidersWaiting(spiders []*spider.Spider) {
 	go func() {
 		for {
 			if !my.Stop {
@@ -251,7 +253,7 @@ func (my *Dispatcher) RunNewSpiders(spiders []*spider.Spider) {
 			}
 			time.Sleep(time.Second * 5)
 		}
-
+		//todo 上锁  	my.spiderSliceMutex.Lock() 这个 ???
 		for _, s := range spiders {
 			my.runSpider(s)
 		}
@@ -259,18 +261,21 @@ func (my *Dispatcher) RunNewSpiders(spiders []*spider.Spider) {
 }
 
 func (my *Dispatcher) runSpider(s *spider.Spider) {
+	//todo 未完成
+	os.Exit(211)
+
 	go func(spider *spider.Spider) {
-		defer my.RemoveSpider(spider)
 		for {
-			for {
-				if spider.Delete {
-					return //会执行 defer my.RemoveSpider(spider)
-				}
-				if !my.Stop {
-					break
-				}
+			if spider.Delete {
+				my.RemoveSpider(spider)
+				return
+			}
+			if my.Stop {
 				spider.ResetSpider()
-				time.Sleep(5e9)
+
+				//todo 上锁  	my.spiderSliceMutex.Lock() 这个 ???
+				my.spidersWaiting = append(my.spidersWaiting, spider)
+				return
 			}
 			Crawl(my, spider, nil)
 		}
