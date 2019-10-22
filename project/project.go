@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -96,8 +95,8 @@ type Dispatcher struct {
 	IProject
 	*helper.Counting
 	queue                *queue.Queue
-	spiders              []*spider.Spider
-	spidersWaiting       []*spider.Spider //未运行的
+	spiders              []*spider.Spider //write this slice need to under spiderSliceMutex.lock
+	spidersWaiting       []*spider.Spider //waiting for execute, write this slice need to under spiderSliceMutex.lock
 	Stop                 bool
 	recentFetchMutex     sync.Mutex
 	spiderSliceMutex     sync.Mutex
@@ -169,8 +168,13 @@ func (my *Dispatcher) Name() string {
 	return strings.Split(reflect.TypeOf(my.IProject).String(), ".")[1]
 }
 
+//GetSpiders need to check each item it's not nil when foreach this return value
 func (my *Dispatcher) GetSpiders() []*spider.Spider {
 	return my.spiders
+}
+
+func (my *Dispatcher) getSpidersWaiting() []*spider.Spider {
+	return my.spidersWaiting
 }
 
 func (my *Dispatcher) initSpider() { //todo 这个需要重构
@@ -182,20 +186,21 @@ func (my *Dispatcher) initSpider() { //todo 这个需要重构
 	if err == nil && gobEnc != "" {
 		decBuf := &bytes.Buffer{}
 		decBuf.WriteString(gobEnc)
-		if err = gob.NewDecoder(decBuf).Decode(my); err != nil {
-			log.Println(err)
-			//} else {
-			//	for _, item := range my.spiders {
-			//		recoverSpiders[item.Transport.S.Host] = item
-			//	}
-		}
-		my.spiders = []*spider.Spider{}
+		gob.NewDecoder(decBuf).Decode(my)
+		//log.Println(err)
+		//} else {
+		//	for _, item := range my.spiders {
+		//		recoverSpiders[item.Transport.S.Host] = item
+		//	}
+		//}
+		//my.spiders = []*spider.Spider{}
 	}
 
 	//append default transport
 	u, _ := url.Parse("direct://localhost")
-	s := spider.New(u, my.queue)
-	my.spiders = append(my.spiders, s)
+	my.AddSpider(u)
+	//s := spider.New(u, my.queue)
+	//my.spiders = append(my.spiders, s)
 
 	//for _, t := range my.initTransport() {
 
@@ -229,41 +234,83 @@ func (my *Dispatcher) initSpider() { //todo 这个需要重构
 //return append(transports, dt)
 //}
 
-func (my *Dispatcher) AddSpider(addr *url.URL) (s *spider.Spider) {
+//AddSpider 加入的spider不是直接立即执行的, 会通过addSpidersWaiting添加到spidersWaiting中等待合适时机执行
+func (my *Dispatcher) AddSpider(addr *url.URL) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 
 	for _, oldSpider := range my.spiders {
 		if oldSpider.TransportUrl.Host == addr.Host {
-			return nil
+			return
 		}
 	}
 
-	s = spider.New(addr, my.queue)
+	s := spider.New(addr, my.queue)
 	//my.spiders = append([]*spider.Spider{s}, my.spiders...) // 为了让localhost在最前
 	my.spiders = append(my.spiders, s)
+
+	my.addSpidersWaiting(s, false) //调用处已经有锁,不用再次检查
 	return
 }
 
-func (my *Dispatcher) RunSpidersWaiting(spiders []*spider.Spider) {
+func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
+	my.spiderSliceMutex.Lock()
+	defer my.spiderSliceMutex.Unlock()
+
+	var newSpiders []*spider.Spider
+	for _, e := range my.GetSpiders() {
+		if e != s {
+			newSpiders = append(newSpiders, e)
+		}
+	}
+	my.spiders = newSpiders
+
+	var newSpidersWaiting []*spider.Spider
+	for _, e := range my.getSpidersWaiting() {
+		if e != s {
+			newSpidersWaiting = append(newSpidersWaiting, e)
+		}
+	}
+	my.spidersWaiting = newSpidersWaiting
+
+	s.ResetSpider()
+	s = nil
+}
+
+//addSpidersWaiting 添加待执行的spider
+func (my *Dispatcher) addSpidersWaiting(s *spider.Spider, checkLock bool) {
+	if checkLock {
+		my.spiderSliceMutex.Lock()
+	}
+	my.spidersWaiting = append(my.spidersWaiting, s)
+	if checkLock {
+		my.spiderSliceMutex.Unlock()
+	}
+}
+
+func (my *Dispatcher) loopRunSpidersWaiting() {
 	go func() {
 		for {
-			if !my.Stop {
-				break
+			for {
+				if !my.Stop {
+					break
+				}
+				time.Sleep(time.Second * 5)
 			}
-			time.Sleep(time.Second * 5)
-		}
-		//todo 上锁  	my.spiderSliceMutex.Lock() 这个 ???
-		for _, s := range spiders {
-			my.runSpider(s)
+
+			my.spiderSliceMutex.Lock()
+			for _, s := range my.getSpidersWaiting() {
+				my.runSpider(s)
+			}
+			my.spidersWaiting = nil //nil slice
+			my.spiderSliceMutex.Unlock()
+
+			time.Sleep(10e9)
 		}
 	}()
 }
 
 func (my *Dispatcher) runSpider(s *spider.Spider) {
-	//todo 未完成
-	os.Exit(211)
-
 	go func(spider *spider.Spider) {
 		for {
 			if spider.Delete {
@@ -272,9 +319,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 			}
 			if my.Stop {
 				spider.ResetSpider()
-
-				//todo 上锁  	my.spiderSliceMutex.Lock() 这个 ???
-				my.spidersWaiting = append(my.spidersWaiting, spider)
+				my.addSpidersWaiting(spider, true) //上级调用也有锁, 这里也有所. 但是隔着一层Go Goroutine
 				return
 			}
 			Crawl(my, spider, nil)
@@ -290,10 +335,6 @@ func (my *Dispatcher) Run() *Dispatcher {
 		if !my.queue.BlTestString(l) {
 			my.queue.Enqueue(l)
 		}
-	}
-
-	for _, s := range my.GetSpiders() {
-		my.runSpider(s)
 	}
 
 	go func() {
@@ -322,23 +363,8 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}
 	}()
 
+	my.loopRunSpidersWaiting()
 	return my
-}
-
-func (my *Dispatcher) RemoveSpider(s *spider.Spider) {
-	my.spiderSliceMutex.Lock()
-	defer my.spiderSliceMutex.Unlock()
-	var newSpiders []*spider.Spider
-	for _, e := range my.GetSpiders() {
-		if e != s {
-			newSpiders = append(newSpiders, e)
-		}
-	}
-
-	my.spiders = newSpiders
-	//log.Println(s.Transport.S.Host + " set spider = nil ")
-	s.ResetSpider()
-	s = nil
 }
 
 //func (my *Dispatcher) SearchSpider(serverName string) *spider.Spider {

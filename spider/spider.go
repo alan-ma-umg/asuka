@@ -320,7 +320,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	summary.TrafficOut = uint64(len(dump))
 
 	// HTTP request
-	spider.currentResponse, err = spider.client.Do(spider.currentRequest)
+	spider.currentResponse, err = spider.Client().Do(spider.currentRequest)
 	if err != nil {
 		summary.ErrType = spider.requestErrorHandler(err)
 		return summary, err

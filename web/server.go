@@ -489,65 +489,54 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 	oldSpiderCount := len(p.GetSpiders())
 
 	if r.Method == "POST" {
-		p.RunSpidersWaiting(addServerPost(w, r, p))
+		addServerPost(w, r, p)
 	}
 
-	data := struct {
+	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, struct {
 		ProjectName     string
 		FormValueServer string
 		FormValueType   string
 		AddNum          int
+		Method          string
 	}{
 		ProjectName:     p.Name(),
 		FormValueServer: strings.TrimSpace(r.FormValue("servers")),
 		FormValueType:   strings.TrimSpace(r.FormValue("type")),
 		AddNum:          len(p.GetSpiders()) - oldSpiderCount,
-	}
-	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, data)
+		Method:          r.Method,
+	})
 }
 
-func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) (spiders []*spider.Spider) {
+func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.Dispatcher) {
 	switch r.FormValue("type") {
 	case "url":
 		for _, line := range strings.Split(strings.TrimSpace(strings.Replace(strings.Replace(r.FormValue("servers"), "\r\n", "\n", len(r.FormValue("servers"))), "\r", "\n", len(r.FormValue("servers")))), "\n") {
 			line = strings.ToLower(strings.TrimSpace(line))
 			if strings.HasPrefix(line, "http") {
 				for _, addr := range proxy.HttpProxyParse("http", line) {
-					if s := dispatcher.AddSpider(addr); s != nil {
-						spiders = append(spiders, s)
-					}
+					dispatcher.AddSpider(addr)
 				}
 			} else if strings.HasPrefix(line, "https") {
 				for _, addr := range proxy.HttpProxyParse("https", line) {
-					if s := dispatcher.AddSpider(addr); s != nil {
-						spiders = append(spiders, s)
-					}
+					dispatcher.AddSpider(addr)
 				}
 			} else if strings.HasPrefix(line, "socks5") {
 				for _, addr := range proxy.Socks5ProxyParse(line) {
-					if s := dispatcher.AddSpider(addr); s != nil {
-						spiders = append(spiders, s)
-					}
+					dispatcher.AddSpider(addr)
 				}
 			}
 		}
 	case "https":
 		for _, addr := range proxy.HttpProxyParse("https", strings.TrimSpace(r.FormValue("servers"))) {
-			if s := dispatcher.AddSpider(addr); s != nil {
-				spiders = append(spiders, s)
-			}
+			dispatcher.AddSpider(addr)
 		}
 	case "http":
 		for _, addr := range proxy.HttpProxyParse("http", strings.TrimSpace(r.FormValue("servers"))) {
-			if s := dispatcher.AddSpider(addr); s != nil {
-				spiders = append(spiders, s)
-			}
+			dispatcher.AddSpider(addr)
 		}
 	case "socks5":
 		for _, addr := range proxy.Socks5ProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
-			if s := dispatcher.AddSpider(addr); s != nil {
-				spiders = append(spiders, s)
-			}
+			dispatcher.AddSpider(addr)
 		}
 	}
 

@@ -19,7 +19,7 @@
         <br>
         <br>
         <div style="text-align: center">
-            {{if ne .AddNum 0}}
+            {{if eq .Method "POST"}}
                 <span style="margin-right: 20px">{{.AddNum}}</span>
             {{end}}
             <select name="type" class="inp-mb" style="color: #ccc;">
