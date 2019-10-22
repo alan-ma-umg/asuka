@@ -119,7 +119,7 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 		Url: spider.CurrentRequest().URL.String(),
 		Data: map[string]interface{}{
 			"title":  title,
-			"server": spider.Transport.S.Host,
+			"server": spider.TransportUrl.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 		},
 	}
@@ -156,11 +156,4 @@ func (my *Www) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl stri
 	}
 
 	return l.String()
-}
-
-func (my *Www) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
-	my.Implement.ResponseAfter(spider)
 }

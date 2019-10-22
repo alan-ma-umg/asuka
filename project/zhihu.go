@@ -209,7 +209,7 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 		Title:    title,
 		Tag:      tag,
 		Data: map[string]interface{}{
-			"server": spider.Transport.S.Host,
+			"server": spider.TransportUrl.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 			"watch":  watch,
 			"view":   view,
@@ -222,13 +222,6 @@ func (my *ZhiHu) ResponseSuccess(spider *spider.Spider) {
 		database.MysqlDelayInsertTillSuccess(model)
 		log.Println(spider.CurrentRequest().URL.String(), err)
 	}
-}
-
-func (my *ZhiHu) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
-	my.Implement.ResponseAfter(spider)
 }
 
 // queue
@@ -245,6 +238,5 @@ func (my *ZhiHu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 }
 
 func zhiHuResetSpider(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
+	spider.ResetSpider()
 }

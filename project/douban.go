@@ -113,7 +113,7 @@ func (my *DouBan) EntryUrl() []string {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
-	if spider.Transport.LoadRate(5) > 5.0 {
+	if spider.Transport != nil && spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(120e9)
 	}
 
@@ -142,13 +142,6 @@ func (my *DouBan) RequestBefore(spider *spider.Spider) {
 	}
 
 	spider.Client().Timeout = time.Minute
-}
-
-func (my *DouBan) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
-	my.Implement.ResponseAfter(spider)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

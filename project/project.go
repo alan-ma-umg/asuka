@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
-	"github.com/chenset/asuka/proxy"
 	"github.com/chenset/asuka/queue"
 	"github.com/chenset/asuka/spider"
 	"io"
@@ -79,9 +78,9 @@ func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 // ResponseAfter HTTP请求失败/成功之后
 // At Last
 func (my *Implement) ResponseAfter(spider *spider.Spider) {
-	spider.ResponseByte = nil //free memory
-	spider.ResetResponse()
+	spider.ResetSpider() //现在是每请求一次, 就重置一次. 请求代理也会重新连接
 }
+
 func (my *Implement) Name() string {
 	return ""
 }
@@ -175,67 +174,71 @@ func (my *Dispatcher) GetSpiders() []*spider.Spider {
 func (my *Dispatcher) initSpider() {
 	defer database.Redis().Del(my.getGOBKey())
 
+	// recover Dispatcher
 	gobEnc, err := database.Redis().Get(my.getGOBKey()).Result()
-	recoverSpiders := make(map[string]*spider.Spider)
+	//recoverSpiders := make(map[string]*spider.Spider)
 	if err == nil && gobEnc != "" {
 		decBuf := &bytes.Buffer{}
 		decBuf.WriteString(gobEnc)
 		if err = gob.NewDecoder(decBuf).Decode(my); err != nil {
 			log.Println(err)
-		} else {
-			for _, item := range my.spiders {
-				recoverSpiders[item.Transport.S.Host] = item
-			}
+			//} else {
+			//	for _, item := range my.spiders {
+			//		recoverSpiders[item.Transport.S.Host] = item
+			//	}
 		}
 		my.spiders = []*spider.Spider{}
 	}
 
-	for _, t := range my.initTransport() {
-		s := spider.New(t, my.queue)
-
-		//name := s.Transport.S.Name
-		//enable := s.Transport.S.Enable
-		//interval := s.Transport.S.Interval
-		//clientAddr := s.Transport.S.ClientAddr
-
-		//recover from
-		if recoverSpider, ok := recoverSpiders[s.Transport.S.Host]; ok {
-			encBuf := &bytes.Buffer{}
-			if err = gob.NewEncoder(encBuf).Encode(recoverSpider); err != nil || gob.NewDecoder(encBuf).Decode(s) != nil {
-				log.Println(err)
-			}
-		}
-
-		s.Stop = t.S.Stop
-		//s.Transport.S.Name = name
-		//s.Transport.S.Enable = enable
-		//s.Transport.S.Interval = interval
-		//s.Transport.S.ClientAddr = clientAddr
-
-		my.spiders = append(my.spiders, s)
-	}
-}
-
-func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
 	//append default transport
 	u, _ := url.Parse("direct://localhost")
-	dt := proxy.NewTransport(&proxy.AddrInfo{URL: u})
-	dt.S.Stop = !helper.Env().LocalTransport
-	return append(transports, dt)
+	s := spider.New(u, my.queue)
+	my.spiders = append(my.spiders, s)
+
+	//for _, t := range my.initTransport() {
+
+	//name := s.Transport.S.Name
+	//enable := s.Transport.S.Enable
+	//interval := s.Transport.S.Interval
+	//clientAddr := s.Transport.S.ClientAddr
+
+	//recover from
+	//if recoverSpider, ok := recoverSpiders[s.Transport.S.Host]; ok {
+	//	encBuf := &bytes.Buffer{}
+	//	if err = gob.NewEncoder(encBuf).Encode(recoverSpider); err != nil || gob.NewDecoder(encBuf).Decode(s) != nil {
+	//		log.Println(err)
+	//	}
+	//}
+
+	//s.Stop = t.S.Stop
+	//s.Transport.S.Name = name
+	//s.Transport.S.Enable = enable
+	//s.Transport.S.Interval = interval
+	//s.Transport.S.ClientAddr = clientAddr
+
+	//}
 }
 
-func (my *Dispatcher) AddSpider(addr *proxy.AddrInfo) {
+//func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
+//append default transport
+//u, _ := url.Parse("direct://localhost")
+//dt := proxy.NewTransport(&proxy.AddrInfo{URL: u})
+//dt.S.Stop = !helper.Env().LocalTransport
+//return append(transports, dt)
+//}
+
+func (my *Dispatcher) AddSpider(addr *url.URL) {
 	my.spiderSliceMutex.Lock()
 	defer my.spiderSliceMutex.Unlock()
 
 	for _, oldSpider := range my.spiders {
-		if oldSpider.Transport.S.Host == addr.Host {
+		if oldSpider.TransportUrl.Host == addr.Host {
 			return
 		}
 	}
 
-	t := proxy.NewTransport(addr)
-	s := spider.New(t, my.queue)
+	//t := proxy.NewTransport(addr)
+	s := spider.New(addr, my.queue)
 	my.spiders = append([]*spider.Spider{s}, my.spiders...)
 	my.runSpider(s)
 }
@@ -251,8 +254,8 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 				if !my.Stop {
 					break
 				}
-				spider.Transport.Close()
-				time.Sleep(3e9)
+				spider.ResetSpider()
+				time.Sleep(5e9)
 			}
 			Crawl(my, spider, nil)
 		}
@@ -279,7 +282,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 		for {
 			<-t.C
 			for _, s := range my.GetSpiders() {
-				if s != nil {
+				if s != nil && s.Transport != nil {
 					s.Transport.CountSliceCursor++
 					s.Transport.RecordAccessSecondCount()
 					s.Transport.RecordFailureSecondCount()

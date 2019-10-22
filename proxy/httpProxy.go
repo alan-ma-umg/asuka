@@ -23,7 +23,7 @@ import (
 //	return
 //}
 
-func HttpProxyParse(scheme string, str string) (servers []*AddrInfo) {
+func HttpProxyParse(scheme string, str string) (urls []*url.URL) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
 	str = strings.Replace(str, "\r", "\n", len(str))
 	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
@@ -40,7 +40,7 @@ func HttpProxyParse(scheme string, str string) (servers []*AddrInfo) {
 			continue
 		}
 
-		servers = append(servers, &AddrInfo{URL: urlAddr})
+		urls = append(urls, urlAddr)
 	}
 
 	return

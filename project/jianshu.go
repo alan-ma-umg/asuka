@@ -120,13 +120,6 @@ func (my *JianShu) RequestBefore(spider *spider.Spider) {
 	spider.Client().Timeout = 10 * time.Second
 }
 
-func (my *JianShu) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
-	my.Implement.ResponseAfter(spider)
-}
-
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 // 一般用于根据Header过滤不想继续下载的response.content_type
 func (my *JianShu) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
@@ -216,7 +209,7 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 		Title:    title,
 		Tag:      tag,
 		Data: map[string]interface{}{
-			"server": spider.Transport.S.Host,
+			"server": spider.TransportUrl.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 			"watch":  watch,
 			"view":   view,
@@ -246,6 +239,7 @@ func (my *JianShu) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl 
 }
 
 func jianShuResetSpider(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
+	spider.ResetSpider()
+	//spider.ResetRequest()
+	//spider.Transport.Close()
 }

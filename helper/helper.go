@@ -394,6 +394,7 @@ func GetProgramRss() (rss uint64) {
 						if res := windowsFindRssRex.FindStringSubmatch(strings.TrimSpace(line)); len(res) == 2 {
 							if kb, err := strconv.ParseFloat(strings.ReplaceAll(res[1], ",", ""), 64); err == nil {
 								getProgramRssWindowsCache = uint64(kb) * 1024
+								return
 							}
 						}
 					}

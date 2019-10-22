@@ -30,6 +30,39 @@ var StartTime = time.Now()
 var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
 
+func Server(d []*project.Dispatcher, address string) error {
+	dispatchers = d
+
+	//init start time
+	go func() {
+		for _, d := range dispatchers {
+			if StartTime.Unix() > d.StartTime.Unix() {
+				StartTime = d.StartTime
+			}
+		}
+	}()
+
+	http.HandleFunc("/add/", commonHandleFunc(addServer))
+	http.HandleFunc("/get/", commonHandleFunc(getServer))
+	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
+	http.HandleFunc("/queue/", commonHandleFunc(queue))
+	http.HandleFunc("/login", commonHandleFunc(login))
+	http.HandleFunc("/logout", commonHandleFunc(logout))
+	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
+	http.HandleFunc("/project.io", projectIO)
+	http.HandleFunc("/index.io", indexIO)
+	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
+	http.HandleFunc("/switchServer", commonHandleFunc(switchServer))
+	http.HandleFunc("/forever/", forever)
+	http.HandleFunc("/", commonHandleFunc(home))
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/templates/favicon.ico")
+	})
+	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir("web/templates/static")))))
+
+	return http.ListenAndServe(address, nil)
+}
+
 type gzipResponseWriter struct {
 	io.Writer
 	http.ResponseWriter
@@ -71,39 +104,6 @@ func commonHandle(h http.Handler) http.Handler {
 		gzr := gzipResponseWriter{Writer: gz, ResponseWriter: w}
 		h.ServeHTTP(gzr, r)
 	})
-}
-
-func Server(d []*project.Dispatcher, address string) error {
-	dispatchers = d
-
-	//init start time
-	go func() {
-		for _, d := range dispatchers {
-			if StartTime.Unix() > d.StartTime.Unix() {
-				StartTime = d.StartTime
-			}
-		}
-	}()
-
-	http.HandleFunc("/add/", commonHandleFunc(addServer))
-	http.HandleFunc("/get/", commonHandleFunc(getServer))
-	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
-	http.HandleFunc("/queue/", commonHandleFunc(queue))
-	http.HandleFunc("/login", commonHandleFunc(login))
-	http.HandleFunc("/logout", commonHandleFunc(logout))
-	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
-	http.HandleFunc("/project.io", projectIO)
-	http.HandleFunc("/index.io", indexIO)
-	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
-	http.HandleFunc("/switchServer", commonHandleFunc(switchServer))
-	http.HandleFunc("/forever/", forever)
-	http.HandleFunc("/", commonHandleFunc(home))
-	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "web/templates/favicon.ico")
-	})
-	http.Handle("/static/", commonHandle(http.StripPrefix("/static", http.FileServer(http.Dir("web/templates/static")))))
-
-	return http.ListenAndServe(address, nil)
 }
 
 func switchServer(w http.ResponseWriter, r *http.Request) {
@@ -461,18 +461,13 @@ func getServer(w http.ResponseWriter, r *http.Request) {
 	//string.jo
 	buf := &bytes.Buffer{}
 	for _, e := range p.GetSpiders() {
-		buf.WriteString(e.Transport.S.String())
+		buf.WriteString(e.TransportUrl.String())
 		buf.WriteString("<br>")
 	}
 	w.Write(buf.Bytes())
 }
 
 func addServer(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "POST Required", 405)
-		return
-	}
-
 	//login check
 	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
 		http.Error(w, "Login Required", 401)
@@ -801,7 +796,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 	spiders := p.GetSpiders()
 	if len(spiders) > 1 {
-		if spiders[len(spiders)-1].Transport.S.Scheme == "direct" {
+		if spiders[len(spiders)-1].TransportUrl.Scheme == "direct" {
 			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(101, len(spiders))-1]...)
 		} else {
 			spiders = spiders[0:helper.MinInt(100, len(spiders))]
@@ -810,10 +805,13 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	for index, s := range spiders {
 		//avgTime := s.GetAvgTime()
 
-		failureRatePeriodValue := helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
 		failureRateAllValue := .0
-		if s.Transport.GetAccessCount() > 0 {
-			failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
+		failureRatePeriodValue := .0
+		if s.Transport != nil {
+			failureRatePeriodValue = helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
+			if s.Transport.GetAccessCount() > 0 {
+				failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
+			}
 		}
 
 		server := map[string]interface{}{}
@@ -842,7 +840,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
 		if check {
-			server["name"] = s.Transport.S.Host
+			server["name"] = s.TransportUrl.Host
 		} else {
 			server["name"] = ""
 		}
@@ -865,8 +863,12 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		//server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
 		//server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
 		//server["connections"] = s.Transport.S.Connections
-		server["access_count"] = s.Transport.GetAccessCount()
-		server["failure_count"] = s.Transport.GetFailureCount()
+		server["access_count"] = 0
+		server["failure_count"] = 0
+		if s.Transport != nil {
+			server["access_count"] = s.Transport.GetAccessCount()
+			server["failure_count"] = s.Transport.GetFailureCount()
+		}
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
 	}
 
@@ -1031,7 +1033,7 @@ func searchSpider(projectName string, serverName string) *spider.Spider {
 	for _, e := range dispatchers {
 		if e.Name() == projectName {
 			for _, e := range e.GetSpiders() {
-				if e.Transport.S.Host == serverName {
+				if e.TransportUrl.Host == serverName {
 					return e
 				}
 			}

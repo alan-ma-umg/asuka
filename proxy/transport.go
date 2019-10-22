@@ -11,25 +11,19 @@ import (
 	"time"
 )
 
-type AddrInfo struct {
-	*url.URL
-	Stop bool
-}
-
 type Transport struct {
 	*helper.Counting
-	S               *AddrInfo
-	t               http.RoundTripper
-	transportClosed bool
-
+	u                    *url.URL
+	t                    http.RoundTripper
+	transportClosed      bool
 	RecentFewTimesResult []bool
 }
 
-func NewTransport(addr *AddrInfo) *Transport {
-	return &Transport{S: addr, t: createHttpTransport(addr), Counting: &helper.Counting{}}
+func NewTransport(u *url.URL) *Transport {
+	return &Transport{u: u, t: createHttpTransport(u), Counting: &helper.Counting{}}
 }
 
-func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
+func createHttpTransport(u *url.URL) *http.Transport {
 	t := &http.Transport{
 		MaxIdleConnsPerHost:   2,
 		MaxIdleConns:          100,
@@ -38,7 +32,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 		ExpectContinueTimeout: 10 * time.Second,
 	}
 
-	switch SockInfo.Scheme {
+	switch u.Scheme {
 	case "direct":
 		t.Proxy = nil //disable system proxy
 		t.DialContext = (&net.Dialer{
@@ -48,7 +42,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			FallbackDelay: time.Second,
 		}).DialContext
 	case "http", "https":
-		t.Proxy = http.ProxyURL(SockInfo.URL) // with http proxy
+		t.Proxy = http.ProxyURL(u) // with http proxy
 		t.TLSHandshakeTimeout = time.Minute
 		t.DialContext = (&net.Dialer{
 			Timeout:   time.Minute,
@@ -57,7 +51,7 @@ func createHttpTransport(SockInfo *AddrInfo) *http.Transport {
 			FallbackDelay: time.Second,
 		}).DialContext
 	case "socks5":
-		dialer, err := proxy.SOCKS5("tcp", SockInfo.Host, nil, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", u.Host, nil, proxy.Direct)
 		if err != nil {
 			log.Fatal(err)
 			return nil
@@ -80,7 +74,7 @@ func (transport *Transport) Close() {
 
 func (transport *Transport) Connect() *http.Transport {
 	if transport.transportClosed {
-		transport.t = createHttpTransport(transport.S)
+		transport.t = createHttpTransport(transport.u)
 		transport.transportClosed = false
 	}
 

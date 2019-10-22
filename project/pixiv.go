@@ -110,7 +110,7 @@ func (my *Pixiv) EntryUrl() []string {
 
 // frequency
 func (my *Pixiv) Throttle(spider *spider.Spider) {
-	if spider.Transport.LoadRate(5) > 5.0 {
+	if spider.Transport != nil && spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(120e9)
 	}
 
@@ -128,9 +128,6 @@ func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
 	//下载或者耗时过长的删除掉, 无论成功失败都删除
 	if !spider.RequestStartTime.IsZero() && time.Since(spider.RequestStartTime).Seconds() > 180 {
 		spider.Delete = true
@@ -174,11 +171,11 @@ func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl stri
 func (my *Pixiv) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
 
 	if response.StatusCode == 403 {
-		helper.SendTextToWXDoOnceDurationHour(response.Status + ": " + spider.Transport.S.Host + " => " + spider.CurrentRequest().URL.String())
+		helper.SendTextToWXDoOnceDurationHour(response.Status + ": " + spider.TransportUrl.Host + " => " + spider.CurrentRequest().URL.String())
 	}
 
 	if response.StatusCode != 403 && response.StatusCode != 404 && !strings.Contains(response.Header.Get("Content-type"), "image") {
-		helper.SendTextToWXDoOnceDurationHour("not image: got " + response.Header.Get("Content-type") + " => " + response.Status + ": " + spider.Transport.S.Host + " => " + spider.CurrentRequest().URL.String())
+		helper.SendTextToWXDoOnceDurationHour("not image: got " + response.Header.Get("Content-type") + " => " + response.Status + ": " + spider.TransportUrl.Host + " => " + spider.CurrentRequest().URL.String())
 		return false, errors.New("not image")
 	}
 	return true, nil

@@ -44,11 +44,12 @@ type Summary struct {
 }
 
 type Spider struct {
-	Transport *proxy.Transport
-	client    *http.Client
-	Queue     *queue.Queue
+	TransportUrl *url.URL
+	Transport    *proxy.Transport
+	client       *http.Client
+	Queue        *queue.Queue
 
-	requestsMap     map[string]*http.Request
+	//requestsMap     map[string]*http.Request
 	currentRequest  *http.Request
 	currentResponse *http.Response
 
@@ -73,11 +74,19 @@ type Spider struct {
 	RecentSeveralTimesResultCap int
 }
 
-func New(t *proxy.Transport, queue *queue.Queue) *Spider {
-	spider := &Spider{Queue: queue, Transport: t, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
-	spider.ResetRequest()
+func New(transportUrl *url.URL, queue *queue.Queue) *Spider {
+	return &Spider{Queue: queue, TransportUrl: transportUrl, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+	//spider.ResetRequest()
 	//spider.updateClient()
-	return spider
+	//return spider
+}
+
+// ResetSpider remove http.Client,http.Request,http.Client.Transport and http.Response than release memory
+func (spider *Spider) ResetSpider() {
+	spider.ResponseByte = nil
+	spider.ResetResponse()
+	spider.ResetClient()
+	spider.ResetRequest()
 }
 
 func (spider *Spider) CurrentRequest() *http.Request {
@@ -98,11 +107,27 @@ func (spider *Spider) Client() *http.Client {
 }
 
 func (spider *Spider) setClient() {
-	if spider.client == nil || spider.client.Transport.(*http.Transport) != spider.Transport.Connect() {
+	if spider.client == nil || spider.client.Transport == nil || spider.Transport == nil || spider.client.Transport.(*http.Transport) != spider.Transport.Connect() {
+		spider.ResetClient()
+
+		// new one
+		spider.Transport = proxy.NewTransport(spider.TransportUrl)
 		j, _ := cookiejar.New(nil)
 		spider.client = &http.Client{Transport: spider.Transport.Connect(), Jar: j, Timeout: time.Second * 30}
-		//fmt.Println("transport changed")
 	}
+}
+
+func (spider *Spider) ResetClient() {
+	if spider.client != nil {
+		spider.client.CloseIdleConnections()
+	}
+
+	if spider.Transport != nil {
+		spider.Transport.Close()
+	}
+
+	spider.client = nil
+	spider.Transport = nil
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
@@ -122,8 +147,9 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 		if !spider.Stop {
 			break
 		}
-		spider.Transport.Close()
-		time.Sleep(3e9)
+
+		spider.ResetSpider()
+		time.Sleep(5e9)
 	}
 
 	if spider.FailureLevel > 0 {
@@ -134,7 +160,7 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 	}
 
 	//Failure control
-	if len(spider.Transport.RecentFewTimesResult) >= spider.RecentSeveralTimesResultCap {
+	if spider.Transport != nil && len(spider.Transport.RecentFewTimesResult) >= spider.RecentSeveralTimesResultCap {
 		spider.Transport.RecentFewTimesResult = spider.Transport.RecentFewTimesResult[len(spider.Transport.RecentFewTimesResult)-spider.RecentSeveralTimesResultCap:]
 		failCount := 0
 		for _, v := range spider.Transport.RecentFewTimesResult {
@@ -189,54 +215,69 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 }
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
-func (spider *Spider) SetRequest(url *url.URL, header *http.Header) *Spider {
+func (spider *Spider) SetRequest(url *url.URL) *Spider {
 
-	tld, err := helper.TldDomain(url)
-	if err != nil {
-		tld = "DefaultRequest"
-	}
+	//todo requestsMap 还是需要做起来 !!!!!!!!!!!!!!!!
 
-	r, ok := spider.requestsMap[tld]
-	if ok {
-		r.URL = url
-		spider.currentRequest = r
-	} else {
-		r, err = http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		//Accept-Encoding: gzip
-		if r.Header.Get("Accept-Encoding") == "" {
-			r.Header.Set("Accept-Encoding", "gzip")
-		}
-
-		spider.currentRequest = r
-		spider.requestsMap[tld] = r
-	}
+	//tld, err := helper.TldDomain(url)
+	//if err != nil {
+	//	tld = "DefaultRequest"
+	//}
+	//
+	//r, ok := spider.requestsMap[tld]
+	//if ok {
+	//	r.URL = url
+	//	spider.currentRequest = r
+	//} else {
+	//	r, err = http.NewRequest("GET", url.String(), nil)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	//Accept-Encoding: gzip
+	//	if r.Header.Get("Accept-Encoding") == "" {
+	//		r.Header.Set("Accept-Encoding", "gzip")
+	//	}
+	//
+	//	spider.currentRequest = r
+	//	//spider.requestsMap[tld] = r
+	//}
 
 	//spider.currentRequest.Close = true // prevents re-use of TCP connections between requests to the same hosts
 
-	if header != nil {
-		for k := range *header {
-			spider.currentRequest.Header.Set(k, header.Get(k))
+	//if header != nil {
+	//	for k := range *header {
+	//		spider.currentRequest.Header.Set(k, header.Get(k))
+	//	}
+	//}
+
+	if spider.currentRequest == nil {
+		spider.currentRequest, _ = http.NewRequest("GET", url.String(), nil)
+
+		if spider.currentRequest.Header.Get("Accept-Encoding") == "" {
+			spider.currentRequest.Header.Set("Accept-Encoding", "gzip")
+		}
+
+		if spider.currentRequest.UserAgent() == "" {
+			spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 		}
 	}
 
-	if spider.currentRequest.UserAgent() == "" {
-		spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
-	}
+	//if r.Header.Get("Accept-Encoding") == "" {
+	//	r.Header.Set("Accept-Encoding", "gzip")
+	//}
 
 	//spider.currentRequest = spider.currentRequest.WithContext(httptrace.WithClientTrace(spider.currentRequest.Context(), spider.httpTrace))
 	return spider
 }
 
 func (spider *Spider) ResetRequest() {
-	spider.requestsMap = map[string]*http.Request{}
+	//spider.requestsMap = map[string]*http.Request{}
+	spider.currentRequest = nil
 }
 
 func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
-	spider.SetRequest(u, nil) //setting spider.currentRequest
+	spider.SetRequest(u) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
 		spider.RequestBefore(spider)
@@ -247,7 +288,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	//time
 	spider.RequestStartTime = time.Now()
 
-	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.S.Host}
+	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
 
 	spider.Transport.AddAccess()
 
@@ -368,7 +409,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 	case *net.DNSError:
 		return "net.DNSError"
 	case *net.OpError:
-		log.Println("Request *net.OpError  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Request *net.OpError  "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.OpError"
 	case net.Error:
 		if err.(net.Error).Timeout() {
@@ -417,7 +458,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 		//log.Println("Request net.Error  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	case *url.Error:
-		log.Println("Request Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Request Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "url.Error"
 	default:
 		if strings.HasPrefix(err.Error(), "invalid URL") {
@@ -430,7 +471,7 @@ func (spider *Spider) requestErrorHandler(err error) string {
 		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
 		spider.FailureLevel = 10
 		// 2019/10/19 19:15:47 spider.go:414: Request Error 182.23.2.100:49833 *errors.errorString:  net/http: invalid header field value "https://book.douban.com/tag/to?                                                         start=160&type=S\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf6\x05\x00\x00\x00\x00\x00\x00\xfa\x05\x00\x00\x00\x00\x00\x00\xfc\x05" for key Referer https://book.douban.com/subject/          26328539/
-		log.Println("Request Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Request Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	}
 }
@@ -455,18 +496,18 @@ func (spider *Spider) responseErrorHandler(err error) string {
 		if err.(net.Error).Timeout() {
 			return "net.Timeout"
 		}
-		log.Println("Response net.Error  "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Response net.Error  "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "net.Error"
 	case *url.Error:
-		log.Println("Response Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Response Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "url.Error"
 	case tls.RecordHeaderError:
 		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
-		log.Println("Response Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Response Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "tls.RecordHeaderError"
 	case flate.CorruptInputError:
 		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
-		log.Println("Response Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Response Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "flate.CorruptInputError"
 	default:
 		if strings.HasPrefix(err.Error(), "malformed chunked encoding") {
@@ -502,7 +543,7 @@ func (spider *Spider) responseErrorHandler(err error) string {
 		}
 
 		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
-		log.Println("Response Error "+spider.Transport.S.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
+		log.Println("Response Error "+spider.TransportUrl.Host+" "+reflect.TypeOf(err).String()+": ", err, spider.currentRequest.URL.String())
 		return "unknown"
 	}
 }

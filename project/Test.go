@@ -35,12 +35,6 @@ func (my *Test) EntryUrl() []string {
 
 	return links
 }
-func (my *Test) ResponseAfter(spider *spider.Spider) {
-	spider.ResetRequest()
-	spider.Transport.Close()
-
-	my.Implement.ResponseAfter(spider)
-}
 func (my *Test) Throttle(spider *spider.Spider) {
 }
 

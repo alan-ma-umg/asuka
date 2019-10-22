@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Socks5ProxyParse(str string) (servers []*AddrInfo) {
+func Socks5ProxyParse(str string) (urls []*url.URL) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
 	str = strings.Replace(str, "\r", "\n", len(str))
 	for _, line := range strings.Split(strings.TrimSpace(str), "\n") {
@@ -21,7 +21,7 @@ func Socks5ProxyParse(str string) (servers []*AddrInfo) {
 		if err != nil || urlAddr.Port() == "" {
 			continue
 		}
-		servers = append(servers, &AddrInfo{URL: urlAddr})
+		urls = append(urls, urlAddr)
 	}
 
 	return
