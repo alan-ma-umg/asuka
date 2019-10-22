@@ -6,12 +6,6 @@
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
-    {{if eq .GOOS "windows"}}
-    <script src="/static/vue.js"></script>{{/*For Development*/}}
-    {{else}}
-    <script src="/static/vue.min.js"></script>{{/*For Production*/}}
-    {{end}}
-    <script async defer src="/static/axios.min.js"></script>
 </head>
 <body>
 <div style="max-width: 1500px;margin: 20px auto;display: none"
@@ -139,9 +133,9 @@
             </table>
         </div>
     </div>
-
-    <canvas style="width: 100%;height:140px;" id="chart-legend-top"></canvas>
-
+    <div style="width: 100%;height:145px;">{{/*防止下面延迟加载成功后的抖动*/}}
+        <canvas style="width: 100%;height:140px;" id="chart-legend-top"></canvas>
+    </div>
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto">
         <table v-if='projects.length' class="table-striped">
             <thead>
@@ -194,8 +188,9 @@
     <div style="color: #dadada;padding: 0 20px 15px">
         <span v-show="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
         <span v-show="basic.sys_mem">Used/Total: {{"{{basic.sys_mem}}"}}</span>
-        <span>Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
-        <span style="float: right">UPTIME: {{"{{basic.uptime}}"}}  DATE: {{"{{basic.date}}"}}</span>
+        <span v-show="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
+        <span v-show="basic.uptime"
+              style="float: right">UPTIME: {{"{{basic.uptime}}"}}  DATE: {{"{{basic.date}}"}}</span>
     </div>
 
     <div class="ctrl-wrap">
@@ -208,63 +203,69 @@
                     style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
             </button>
         {{end}}
-        <button id="ws-open-close" class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
-            Off
-        </button>
         <input type="text" id="send-value" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
     </div>
 </div>
-<script src="/static/Chart.min.js"></script>
+<script src="/static/asuka.js"></script>
 <script>
-    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
-    vueContent = new Vue({
-        el: "#vue-content",
-        data: {
-            basic: {},
-            projects: [],
-            chart1: null,
-        },
-        methods: {
-            goTo: function (name) {
-                location.href = "/" + name
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent,
+        wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
+    loadScript("/static/vue.min.js", function () {
+        vueContent = new Vue({
+            el: "#vue-content",
+            data: {
+                basic: {},
+                projects: [],
+                chart1: null,
+                action: "a",
             },
-            switchProject: function (item) {
-                this.$set(item, '_btnDisabled', true);
-                axios.post('/switchProject', {name: item.name,}).catch(function (error) {
-                    if (error.response.status === 401) {
-                        location.href = "/login"
-                    }
-                });
-            },
-            logout: function () {
-                axios.post('/logout').then(function () {
-                    location.reload();
-                });
-            }
-        },
-        computed: {
-            retries: function () {
-                let str = "", k;
-                for (k in this.basic.queue_bls) {
-                    if (this.basic.queue_bls.hasOwnProperty(k)) {
-                        str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
-                    }
+            methods: {
+                goTo: function (name) {
+                    location.href = "/" + name
+                },
+                switchProject: function (item) {
+                    this.$set(item, '_btnDisabled', true);
+                    ajax({
+                        url: "/switchProject", data: {name: item.name}, error: function (res) {
+                            if (res.status === 401) {
+                                location.href = "/login"
+                            }
+                        }
+                    });
+                },
+                logout: function () {
+                    ajax({
+                        url: "/logout", success: function () {
+                            location.reload()
+                        }
+                    });
                 }
-                return str ? str.substring(0, str.length - 2) : str
             },
-        },
-        filters: {
-            numberFormat: function (v) {
-                if (v === undefined || isNaN(v)) {
-                    return "0"
+            computed: {
+                retries: function () {
+                    let str = "", k;
+                    for (k in this.basic.queue_bls) {
+                        if (this.basic.queue_bls.hasOwnProperty(k)) {
+                            str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
+                        }
+                    }
+                    return str ? str.substring(0, str.length - 2) : str
+                },
+            },
+            filters: {
+                numberFormat: function (v) {
+                    if (v === undefined || isNaN(v)) {
+                        return "0"
+                    }
+                    return new Intl.NumberFormat().format(v)
                 }
-                return new Intl.NumberFormat().format(v)
+            },
+            mounted: function () {
+                handlerSocket();
+                document.getElementById('vue-content').style.display = "block";
+                loadScript('/static/Chart.min.js');
             }
-        },
-        mounted: function () {
-            document.getElementById('vue-content').style.display = "block";
-            handlerSocket();
-        }
+        });
     });
 
     document.getElementById("send-value").onkeypress = function (evt) {
@@ -272,145 +273,6 @@
             sendMessage(document.getElementById("send-value").value);
         }
     };
-    document.getElementById("ws-open-close").onclick = function () {
-        manualOpen();
-        manualClose();
-    };
-
-    function sendMessage(msg) {
-        if (!ws) {
-            return;
-        }
-        if (ws.readyState !== 1) {
-            return;
-        }
-        ws.send(msg);
-    }
-
-    function reconnectSocket() {
-        clearTimeout(timer_d90g8df987g9dfg7df9gdfj);
-        if (manualFlag) {
-            return;
-        }
-        timer_d90g8df987g9dfg7df9gdfj = setTimeout(function () {
-            handlerSocket()
-        }, 2000)
-    }
-
-    function manualOpen() {
-        if (!ws) {
-            return;
-        }
-        if (ws.readyState !== 3) {
-            return;
-        }
-        manualFlag = false;
-        handlerSocket()
-    }
-
-    function manualClose() {
-        if (!ws) {
-            return
-        }
-        if (ws.readyState !== 1) {
-            return;
-        }
-        manualFlag = true;
-        ws.close();
-    }
-
-    function handlerSocket() {
-        ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io");
-        ws.onmessage = function (evt) {
-            let data = JSON.parse(evt.data);
-            vueContent.$data.projects = data.projects;
-            vueContent.$data.basic = data.basic;
-            if (data.basic.loads) {
-                document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
-            }
-            ws.send("");
-
-            //chart
-            if (vueContent.chart1) {
-                vueContent.chart1.data.datasets[0].data = [];
-                for (let s in data.basic.loads) {
-                    vueContent.chart1.data.datasets[0].data.push(data.basic.loads[s]);
-                }
-                vueContent.chart1.update();
-            } else if (data.basic.loads) {
-                let labels = [];
-                for (let k in data.basic.loads) {
-                    labels.push(timestamHumanReadable(k));
-                }
-                vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(labels))
-            }
-        };
-        ws.onopen = function () {
-            sendMessage("");
-            document.body.className = "";
-            document.title = "Asuka connected";
-        };
-        ws.onerror = function () {
-            document.body.className = "ws-closed";
-            document.title = "Asuka Error !";
-            ws && ws.close();
-            reconnectSocket()
-        };
-        ws.onclose = function () {
-            document.body.className = "ws-closed";
-            document.title = "Asuka Closed !";
-            ws && ws.close();
-            reconnectSocket()
-        };
-        window.onbeforeunload = function () {
-            ws && ws.close()
-        };
-    }
-
-    function createConfig(labels) {
-        return {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{label: '', data: [], borderColor: 'rgb(97, 100, 102)', borderWidth: 0.5, fill: false}]
-            },
-            options: {
-                layout: {padding: {left: 10, right: 10, top: 5, bottom: 0}},
-                elements: {point: {pointStyle: "crossRot"}, line: {tension: 0.2}},
-                responsive: false,
-                legend: {display: false},
-                scales: {
-                    xAxes: [{
-                        display: true,
-                        gridLines: {display: false, drawBorder: false},
-                        ticks: {fontColor: "#dadada", fontSize: 10,}
-                    }],
-                    yAxes: [{
-                        display: true,
-                        gridLines: {display: false, drawBorder: false},
-                        ticks: {fontColor: "#dadada", fontSize: 10,}
-                    }]
-                },
-                title: {display: false,}
-            }
-        };
-    }
-
-    function timestamHumanReadable(timestamp) {
-        if (timestamp < 60) {
-            return timestamp + 's';
-        }
-        if (timestamp < 3600) {
-            return timestamp / 60 + 'm';
-        }
-        if (timestamp < 3600) {
-            return timestamp / 60 + 'm';
-        }
-        if (timestamp < 86400) {
-            return timestamp / 3600 + 'h';
-        }
-        return timestamp / 86400 + 'd';
-    }
 </script>
 </body>
 </html>

@@ -107,6 +107,11 @@ func Server(d []*project.Dispatcher, address string) error {
 }
 
 func switchServer(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
 	post := make(map[string]string)
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&post)
@@ -149,6 +154,11 @@ func switchServer(w http.ResponseWriter, r *http.Request) {
 }
 
 func switchProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
 	post := make(map[string]string)
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&post)
@@ -458,6 +468,11 @@ func getServer(w http.ResponseWriter, r *http.Request) {
 }
 
 func addServer(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
 	//login check
 	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
 		http.Error(w, "Login Required", 401)
@@ -535,6 +550,11 @@ func login(w http.ResponseWriter, _ *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
 	if cookie, err := r.Cookie("id"); err == nil {
 		if authCheck(cookie.Value) {
 			database.Redis().Del(cookie.Value)
