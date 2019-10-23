@@ -186,7 +186,7 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 
 	//p.Stop = !p.IsStop()
 	if p.StopTime.IsZero() {
-		p.StopTime = time.Now()
+		p.StopTime = time.Now().Add(-time.Second)
 	} else {
 		p.StopTime = time.Time{}
 	}
