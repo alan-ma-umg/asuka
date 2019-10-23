@@ -633,6 +633,11 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 
 		//send message to wx
+		ip := r.RemoteAddr
+		if strings.HasPrefix(ip, "127.0.0.1") {
+			ip = r.Header.Get("X-Forwarded-For")
+		}
+
 		helper.SendTextToWXDoOnceDurationHour("Asuka login: " + r.RemoteAddr + " " + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
 	} else {
 		jsonMap["success"] = false
