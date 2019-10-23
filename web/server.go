@@ -633,12 +633,16 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 
 		//send message to wx
-		ip := r.RemoteAddr
-		if strings.HasPrefix(ip, "127.0.0.1") && r.Header.Get("X-Forwarded-For") != "" {
-			ip = r.Header.Get("X-Forwarded-For")
+		ip := ""
+		if r.Header.Get("CF-Connecting-IP") != "" {
+			ip += r.Header.Get("CF-Connecting-IP") + " <=> "
 		}
+		if r.Header.Get("X-Forwarded-For") != "" {
+			ip += r.Header.Get("X-Forwarded-For") + " <=> "
+		}
+		ip += r.RemoteAddr
 
-		helper.SendTextToWXDoOnceDurationHour("Asuka login: " + ip + " " + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
+		helper.SendTextToWXDoOnceDurationHour("Asuka login: " + ip + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
 	} else {
 		jsonMap["success"] = false
 		jsonMap["message"] = "Password incorrect"
