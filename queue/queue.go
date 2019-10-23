@@ -34,8 +34,17 @@ func (my *Queue) ResetBloomFilterInstance() {
 		return
 	}
 
+	//save
 	my.BlSave(false)
+
+	//main
 	my.bloomFilterInstance = nil
+
+	//retries
+	my.bls = nil
+	my.BlsTestCount = make(map[int]int)
+
+	//new once
 	my.bloomFilterInstanceDoOnce = new(sync.Once)
 
 	log.Println("Reset: " + my.GetKey())
