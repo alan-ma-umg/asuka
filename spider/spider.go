@@ -58,6 +58,7 @@ type Spider struct {
 
 	startTime        time.Time
 	RequestStartTime time.Time
+	RequestEndTime   time.Time
 	Stop             bool
 	Delete           bool
 	sleepDuration    time.Duration
@@ -206,6 +207,15 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 		spider.FailureLevel = 0
 	}
 }
+func (spider *Spider) IsIdle() bool {
+	if spider.ResponseByte == nil {
+		if spider.client == nil || !spider.RequestEndTime.IsZero() || spider.RequestStartTime.IsZero() {
+			return true
+		}
+	}
+
+	return false
+}
 
 // setRequest http.Request 是维持session会话的关键之一. 这里是在管理http.Request, 保证每个url能找到对应之前的http.Request
 func (spider *Spider) SetRequest(url *url.URL) *Spider {
@@ -280,12 +290,14 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 
 	//time
 	spider.RequestStartTime = time.Now()
+	spider.RequestEndTime = time.Time{} //empty
 
 	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.Transport.U.Host}
 
 	spider.Transport.AddAccess()
 
 	defer func() {
+		spider.RequestEndTime = time.Now()
 		if err != nil {
 			spider.Transport.AddFailure()
 		}

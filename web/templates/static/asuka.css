@@ -270,13 +270,16 @@ tr:hover {
     background: #ff9c38 !important;
 }
 
-.running {
-    color: #00af4c !important;
-    font-weight: 800;
-}
-
 .green {
     background: #00af4c !important;
+}
+
+.text-orange {
+    color: #ff9c38 !important;
+}
+
+.text-green {
+    color: #00af4c !important;
 }
 
 .stop td:not(.ctl), .stop div:not(.ctl) {
@@ -286,6 +289,7 @@ tr:hover {
 .stop td:not(.ctl) {
     opacity: 0.4;
 }
+
 
 .head_wrap {
     display: flex;

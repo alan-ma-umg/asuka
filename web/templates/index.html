@@ -203,7 +203,8 @@
                     style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
             </button>
         {{end}}
-        <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value="" style="max-width: 160px">
+        <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
+               style="max-width: 160px">
     </div>
 </div>
 <script src="/static/asuka.js"></script>
@@ -217,7 +218,7 @@
                 basic: {},
                 projects: [],
                 chart1: null,
-                action: "a",
+                action: "{speed:2}",
             },
             methods: {
                 goTo: function (name) {

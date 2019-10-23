@@ -25,17 +25,29 @@ func NewQueue(name string) (q *Queue) {
 	return &Queue{name: name, BlsTestCount: make(map[int]int), bloomFilterInstanceDoOnce: new(sync.Once)}
 }
 
+//ResetBloomFilterInstance purpose for release memory usage
+func (my *Queue) ResetBloomFilterInstance() {
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+
+	if my.bloomFilterInstance == nil {
+		return
+	}
+
+	my.BlSave(false)
+	my.bloomFilterInstance = nil
+	my.bloomFilterInstanceDoOnce = new(sync.Once)
+
+	log.Println("Reset: " + my.GetKey())
+}
+
 func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	my.bloomFilterInstanceDoOnce.Do(func() {
-
-		my.bloomFilterMutex.Lock()
-		defer my.bloomFilterMutex.Unlock()
-
 		my.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
 		f, _ := os.Open(helper.Env().BloomFilterPath + my.GetBlKey())
 		my.bloomFilterInstance.ReadFrom(f)
 		f.Close()
-		log.Println(my.GetKey() + my.GetKey() + " : do once")
+		log.Println("New: " + my.GetKey())
 	})
 	return my.bloomFilterInstance
 }
@@ -139,7 +151,16 @@ func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	return my.bls[index]
 }
 
-func (my *Queue) BlSave() {
+func (my *Queue) BlSave(checkLock bool) {
+	if checkLock {
+		my.enqueueForFailureMutex.Lock()
+	}
+	defer func() {
+		if checkLock {
+			my.enqueueForFailureMutex.Unlock()
+		}
+	}()
+
 	f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
 	my.getBloomFilterInstance().WriteTo(f)
 	f.Close()

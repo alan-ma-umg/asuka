@@ -132,6 +132,8 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	if !spider.RequestStartTime.IsZero() && time.Since(spider.RequestStartTime).Seconds() > 180 {
 		spider.Delete = true
 		spider.FailureLevel = 100
+	} else if spider.CurrentResponse().StatusCode == 404 && spider.FailureLevel <= 10 { //404 is normal
+		spider.FailureLevel = 0
 	}
 
 	my.Implement.ResponseAfter(spider)

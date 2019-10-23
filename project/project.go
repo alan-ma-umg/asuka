@@ -97,18 +97,18 @@ type Dispatcher struct {
 	queue                *queue.Queue
 	spiders              []*spider.Spider //write this slice need to under spiderSliceMutex.lock
 	spidersWaiting       []*spider.Spider //waiting for execute, write this slice need to under spiderSliceMutex.lock
-	Stop                 bool
+	StartTime            time.Time
+	StopTime             time.Time
 	recentFetchMutex     sync.Mutex
 	spiderSliceMutex     sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
 	TrafficIn            uint64
 	TrafficOut           uint64
-	StartTime            time.Time
 }
 
-func New(project IProject, stop bool) *Dispatcher {
-	d := &Dispatcher{IProject: project, Stop: stop, Counting: &helper.Counting{}, StartTime: time.Now()}
+func New(project IProject, stopTime time.Time) *Dispatcher {
+	d := &Dispatcher{IProject: project, StopTime: stopTime, Counting: &helper.Counting{}, StartTime: time.Now()}
 	gob.Register(project)
 
 	// kill signal handing
@@ -126,7 +126,7 @@ func New(project IProject, stop bool) *Dispatcher {
 		}
 
 		//queue, write to file
-		d.GetQueue().BlSave()
+		d.GetQueue().BlSave(true)
 
 		//清空前获取
 		GOBRedisKey := d.getGOBKey()
@@ -149,6 +149,13 @@ func New(project IProject, stop bool) *Dispatcher {
 	})
 
 	return d
+}
+
+func (my *Dispatcher) IsStop() bool {
+	if my.StopTime.IsZero() || time.Since(my.StopTime).Seconds() < 0 {
+		return false
+	}
+	return true
 }
 
 func (my *Dispatcher) getGOBKey() string {
@@ -294,28 +301,6 @@ func (my *Dispatcher) addSpidersWaiting(s *spider.Spider, checkLock bool) {
 	}
 }
 
-func (my *Dispatcher) loopRunSpidersWaiting() {
-	go func() {
-		for {
-			for {
-				if !my.Stop {
-					break
-				}
-				time.Sleep(time.Second * 5)
-			}
-
-			my.spiderSliceMutex.Lock()
-			for _, s := range my.getSpidersWaiting() {
-				my.runSpider(s)
-			}
-			my.spidersWaiting = nil //nil slice
-			my.spiderSliceMutex.Unlock()
-
-			time.Sleep(10e9)
-		}
-	}()
-}
-
 func (my *Dispatcher) runSpider(s *spider.Spider) {
 	go func(spider *spider.Spider) {
 		for {
@@ -323,7 +308,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 				my.RemoveSpider(spider)
 				return
 			}
-			if my.Stop {
+			if my.IsStop() {
 				spider.ResetSpider()
 				my.addSpidersWaiting(spider, true) //上级调用也有锁, 这里也有所. 但是隔着一层Go Goroutine
 				return
@@ -343,11 +328,10 @@ func (my *Dispatcher) Run() *Dispatcher {
 		//}
 	}
 
+	//transport counter
 	go func() {
-		t := time.NewTicker(time.Second * helper.SecondInterval)
-		defer t.Stop()
 		for {
-			<-t.C
+			time.Sleep(time.Second * helper.SecondInterval)
 			for _, s := range my.GetSpiders() {
 				if s != nil {
 					s.Transport.CountSliceCursor++
@@ -358,18 +342,54 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}
 	}()
 
+	//project counter
 	go func() {
-		t := time.NewTicker(time.Second * helper.SecondInterval)
-		defer t.Stop()
 		for {
-			<-t.C
+			time.Sleep(time.Second * helper.SecondInterval)
 			my.CountSliceCursor++
 			my.RecordAccessSecondCount()
 			my.RecordFailureSecondCount()
 		}
 	}()
 
-	my.loopRunSpidersWaiting()
+	//release queue.BloomFilterInstance
+	go func() {
+		for {
+			time.Sleep(time.Second * 500)
+
+			//if all of spiders are idle, release queue.BloomFilterInstance after durations of stop
+			if my.IsStop() && time.Since(my.StopTime).Seconds() > 300 {
+				for _, s := range my.GetSpiders() {
+					if s != nil && !s.IsIdle() {
+						return //it's not idle
+					}
+				}
+
+				my.GetQueue().ResetBloomFilterInstance()
+			}
+		}
+	}()
+
+	//watching and run SpidersWaiting
+	go func() {
+		for {
+			for {
+				if !my.IsStop() {
+					break
+				}
+				time.Sleep(time.Second * 5)
+			}
+
+			my.spiderSliceMutex.Lock()
+			for _, s := range my.getSpidersWaiting() {
+				my.runSpider(s)
+			}
+			my.spidersWaiting = nil //nil slice
+			my.spiderSliceMutex.Unlock()
+
+			time.Sleep(10e9)
+		}
+	}()
 	return my
 }
 

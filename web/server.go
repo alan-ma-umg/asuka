@@ -184,7 +184,12 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.Stop = !p.Stop
+	//p.Stop = !p.IsStop()
+	if p.StopTime.IsZero() {
+		p.StopTime = time.Now()
+	} else {
+		p.StopTime = time.Time{}
+	}
 
 	jsonMap := map[string]interface{}{
 		"success": true,
@@ -763,7 +768,7 @@ func indexJson(check bool) []byte {
 			}
 		}
 
-		projectMap["stop"] = p.Stop
+		projectMap["stop"] = p.IsStop()
 		projectMap["servers"] = serverCount
 		projectMap["server_run"] = serverRun
 		projectMap["server_enable"] = serverEnable
@@ -847,6 +852,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
+		server["idle"] = s.IsIdle()
 		//server["proxy_status"] = s.Transport.S.Status
 		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))

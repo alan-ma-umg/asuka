@@ -36,7 +36,7 @@
 <script>document.getElementById('link-append').innerHTML = location.origin</script>
 <br>
 
-<div style="position:fixed;color:#00af4c;top:0;right:0;z-index: 9999" id="speed-num"></div>
+<div style="position:fixed;top:0;right:0;z-index: 9999" class="text-green" id="speed-num"></div>
 
 {{range $file := .Files}}<img data-echo="/project/pixiv/images/{{$file | FilePathBase}}"/><br>{{end}}
 
