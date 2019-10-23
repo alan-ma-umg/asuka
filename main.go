@@ -24,6 +24,7 @@ func main() {
 	//todo url filter & queue按需初始化或释放
 	//todo url filter支持远程
 	//todo mysql/oracle 数据库写入支持
+	//todo 文件日记展示系统
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
 
