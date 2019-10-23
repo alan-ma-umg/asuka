@@ -31,12 +31,13 @@ type Illusts struct {
 
 type Pixiv struct {
 	*Implement
-	lastRequestUrl  string
-	dbSpeed         int
-	dbSpeedNum      int
-	lastInsertId    int64
-	lastInsertError string
-	showingString   string
+	lastRequestUrl    string
+	dbSpeed           int
+	dbSpeedNum        int
+	lastInsertId      int64
+	lastInsertError   string
+	showingString     string
+	lastHttpCodeIs404 bool
 }
 
 func (my *Pixiv) Name() string {
@@ -114,6 +115,10 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 		spider.AddSleep(120e9)
 	}
 
+	if my.lastHttpCodeIs404 { // 404 is normal
+		spider.ResetSleep() //无视spider的限制
+	}
+
 	spider.AddSleep(time.Duration(rand.Float64() * 10e9))
 
 	if spider.FailureLevel > 40 {
@@ -132,8 +137,15 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	if !spider.RequestStartTime.IsZero() && time.Since(spider.RequestStartTime).Seconds() > 180 {
 		spider.Delete = true
 		spider.FailureLevel = 100
-	} else if spider.CurrentResponse().StatusCode == 404 && spider.FailureLevel <= 10 { //404 is normal
-		spider.FailureLevel = 0
+	}
+
+	//} else if spider.CurrentResponse().StatusCode == 404 && spider.FailureLevel <= 10 { //404 is normal
+	//	spider.FailureLevel = 0
+
+	if spider.CurrentResponse().StatusCode == 404 {
+		my.lastHttpCodeIs404 = true
+	} else {
+		my.lastHttpCodeIs404 = false
 	}
 
 	my.Implement.ResponseAfter(spider)
