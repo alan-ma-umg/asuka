@@ -207,7 +207,7 @@
                style="max-width: 160px">
     </div>
 </div>
-<script src="/static/asuka.js"></script>
+<script src="/static/asuka.js?v=1"></script>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent,
         wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
@@ -218,7 +218,7 @@
                 basic: {},
                 projects: [],
                 chart1: null,
-                action: "{speed:2}",
+                action: "",
             },
             methods: {
                 goTo: function (name) {
@@ -269,7 +269,11 @@
             mounted: function () {
                 handlerSocket();
                 document.getElementById('vue-content').style.display = "block";
-                loadScript('/static/Chart.min.js');
+                loadScript('/static/Chart.min.js', function () {
+                    setTimeout(function () {
+                        isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
+                    }, 5000)
+                });
             }
         });
     });

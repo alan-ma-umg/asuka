@@ -271,13 +271,15 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		check = authCheck(cookie.Value)
 	}
 
+	var sleepSecondTimes int64 = 1
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
 			break
 		}
 		if messageType == 1 && check {
-			switch strings.TrimSpace(string(b)) {
+			input := strings.TrimSpace(string(b))
+			switch input {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
@@ -299,6 +301,10 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				fmt.Println("spider start")
+			default:
+				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
+					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
+				}
 			}
 		}
 
@@ -307,7 +313,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			//log.Println("write:", err)
 			break
 		}
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * time.Duration(sleepSecondTimes))
 	}
 
 }
@@ -345,7 +351,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 
 	responseContent := "home"
 	var recentFetchIndex int64 = 0
-
+	var sleepSecondTimes int64 = 1
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
@@ -353,7 +359,8 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if messageType == 1 {
-			switch strings.TrimSpace(string(b)) {
+			input := strings.TrimSpace(string(b))
+			switch input {
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
@@ -405,6 +412,10 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				responseContent = strings.TrimSpace(string(b))
 			case "recent":
 				responseContent = strings.TrimSpace(string(b))
+			default:
+				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
+					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
+				}
 			}
 		}
 
@@ -420,7 +431,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			//log.Println("write:", err)
 			break
 		}
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * time.Duration(sleepSecondTimes))
 	}
 }
 
