@@ -27,6 +27,10 @@ func NewQueue(name string) (q *Queue) {
 
 func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	my.bloomFilterInstanceDoOnce.Do(func() {
+
+		my.bloomFilterMutex.Lock()
+		defer my.bloomFilterMutex.Unlock()
+
 		my.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
 		f, _ := os.Open(helper.Env().BloomFilterPath + my.GetBlKey())
 		my.bloomFilterInstance.ReadFrom(f)
@@ -36,7 +40,7 @@ func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	return my.bloomFilterInstance
 }
 
-func (my *Queue) BlCleanUp() {
+func (my *Queue) BlRemoveFile() {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
@@ -45,6 +49,13 @@ func (my *Queue) BlCleanUp() {
 	for i := 0; i < helper.MaxInt(10, len(my.bls)); i++ {
 		os.Remove(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
 	}
+}
+
+func (my *Queue) BlCleanUp() {
+	my.BlRemoveFile()
+
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
 
 	for _, e := range my.bls {
 		e.ClearAll()

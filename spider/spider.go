@@ -56,11 +56,11 @@ type Spider struct {
 
 	FailureLevel int
 
-	StartTime        time.Time
+	startTime        time.Time
 	RequestStartTime time.Time
 	Stop             bool
 	Delete           bool
-	SleepDuration    time.Duration
+	sleepDuration    time.Duration
 	GetQueue         func() *queue.Queue
 	RequestBefore    func(spider *Spider)
 	DownloadFilter   func(spider *Spider, response *http.Response) (bool, error)
@@ -73,7 +73,7 @@ type Spider struct {
 }
 
 func New(transportUrl *url.URL, getQueue func() *queue.Queue) *Spider {
-	return &Spider{Transport: proxy.NewTransport(transportUrl), GetQueue: getQueue, StartTime: time.Now(), RecentSeveralTimesResultCap: 5}
+	return &Spider{Transport: proxy.NewTransport(transportUrl), GetQueue: getQueue, startTime: time.Now(), RecentSeveralTimesResultCap: 5}
 	//spider.ResetRequest()
 	//spider.updateClient()
 	//return spider
@@ -124,15 +124,15 @@ func (spider *Spider) ResetClient() {
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
-	spider.SleepDuration += duration
+	spider.sleepDuration += duration
 }
 
 func (spider *Spider) GetSleep() time.Duration {
-	return spider.SleepDuration
+	return spider.sleepDuration
 }
 
 func (spider *Spider) ResetSleep() {
-	spider.SleepDuration = 0
+	spider.sleepDuration = 0
 }
 
 func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
@@ -164,7 +164,7 @@ func (spider *Spider) Throttle(dispatcherCallback func(spider *Spider)) {
 		if float64(failCount)/float64(spider.RecentSeveralTimesResultCap) >= 0.4 {
 			spider.Transport.RecentFewTimesResult = make([]bool, 0, spider.RecentSeveralTimesResultCap)
 
-			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(spider.StartTime).Seconds()), PeriodOfFailureSecond))
+			accessCountAll, failureCountAll := spider.Transport.AccessCount(helper.MinInt(int(time.Since(spider.startTime).Seconds()), PeriodOfFailureSecond))
 			failureRateAll := helper.SpiderFailureRate(accessCountAll, failureCountAll)
 			if accessCountAll > 40 && failureRateAll > 95 {
 				spider.FailureLevel = 100

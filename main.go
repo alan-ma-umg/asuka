@@ -35,7 +35,6 @@ func asuka() {
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}, true).Run(),
 		project.New(&project.Pixiv{}, true).Run(),
-		//project.New(&project.Test{}, true).Run(),
 		//project.New(&project.Test2{}, true).Run(),
 		//project.New(&project.ZhiHu{}, true).Run(),
 		//project.New(&project.JianShu{}, true).Run(),
@@ -43,10 +42,11 @@ func asuka() {
 		//
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
-		//project.New(&project.Test2{}).CleanUp().Run(),
-		//project.New(&project.ZhiHu{}).CleanUp().Run(),
-		//project.New(&project.JianShu{}).CleanUp().Run(),
-		//project.New(&project.Www{}).CleanUp().Run(),
+		project.New(&project.Test{}, true).CleanUp().Run(),
+		project.New(&project.Test2{}, true).CleanUp().Run(),
+		project.New(&project.ZhiHu{}, true).CleanUp().Run(),
+		project.New(&project.JianShu{}, true).CleanUp().Run(),
+		project.New(&project.Www{}, true).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }

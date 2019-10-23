@@ -384,7 +384,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	//database.Mysql().Exec("truncate asuka_dou_ban")
-	my.GetQueue().BlCleanUp()
+	my.GetQueue().BlRemoveFile()
 	database.Redis().Del(my.getGOBKey())
 	database.Redis().Del(my.GetQueueKey())
 	return my
