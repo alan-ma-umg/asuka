@@ -13,14 +13,14 @@ import (
 
 type Transport struct {
 	*helper.Counting
-	u                    *url.URL
+	U                    *url.URL
 	t                    http.RoundTripper
 	transportClosed      bool
 	RecentFewTimesResult []bool
 }
 
 func NewTransport(u *url.URL) *Transport {
-	return &Transport{u: u, t: createHttpTransport(u), Counting: &helper.Counting{}}
+	return &Transport{U: u, t: createHttpTransport(u), Counting: &helper.Counting{}}
 }
 
 func createHttpTransport(u *url.URL) *http.Transport {
@@ -74,7 +74,7 @@ func (transport *Transport) Close() {
 
 func (transport *Transport) Connect() *http.Transport {
 	if transport.transportClosed {
-		transport.t = createHttpTransport(transport.u)
+		transport.t = createHttpTransport(transport.U)
 		transport.transportClosed = false
 	}
 

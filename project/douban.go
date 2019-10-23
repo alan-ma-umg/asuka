@@ -113,7 +113,7 @@ func (my *DouBan) EntryUrl() []string {
 
 // frequency
 func (my *DouBan) Throttle(spider *spider.Spider) {
-	if spider.Transport != nil && spider.Transport.LoadRate(5) > 5.0 {
+	if spider.Transport.LoadRate(5) > 5.0 {
 		spider.AddSleep(120e9)
 	}
 

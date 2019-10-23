@@ -474,7 +474,7 @@ func getServer(w http.ResponseWriter, r *http.Request) {
 	buf := &bytes.Buffer{}
 	for _, e := range p.GetSpiders() {
 		if e != nil {
-			buf.WriteString(e.TransportUrl.String())
+			buf.WriteString(e.Transport.U.String())
 			buf.WriteString("<br>")
 		}
 	}
@@ -814,7 +814,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 	spiders := p.GetSpiders()
 	if len(spiders) > 1 {
-		if spiders[len(spiders)-1].TransportUrl.Scheme == "direct" {
+		if spiders[len(spiders)-1].Transport.U.Scheme == "direct" {
 			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(101, len(spiders))-1]...)
 		} else {
 			spiders = spiders[0:helper.MinInt(100, len(spiders))]
@@ -825,11 +825,9 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 		failureRateAllValue := .0
 		failureRatePeriodValue := .0
-		if s.Transport != nil {
-			failureRatePeriodValue = helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
-			if s.Transport.GetAccessCount() > 0 {
-				failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
-			}
+		failureRatePeriodValue = helper.SpiderFailureRate(s.Transport.AccessCount(periodOfFailureSecond))
+		if s.Transport.GetAccessCount() > 0 {
+			failureRateAllValue = float64(s.Transport.GetFailureCount()) / float64(s.Transport.GetAccessCount()) * 100
 		}
 
 		server := map[string]interface{}{}
@@ -858,7 +856,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
 		if check {
-			server["name"] = s.TransportUrl.Host
+			server["name"] = s.Transport.U.Host
 		} else {
 			server["name"] = ""
 		}
@@ -881,12 +879,8 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		//server["net_in"] = helper.ByteCountBinary(s.Transport.S.TrafficIn)
 		//server["net_out"] = helper.ByteCountBinary(s.Transport.S.TrafficOut)
 		//server["connections"] = s.Transport.S.Connections
-		server["access_count"] = 0
-		server["failure_count"] = 0
-		if s.Transport != nil {
-			server["access_count"] = s.Transport.GetAccessCount()
-			server["failure_count"] = s.Transport.GetFailureCount()
-		}
+		server["access_count"] = s.Transport.GetAccessCount()
+		server["failure_count"] = s.Transport.GetFailureCount()
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
 	}
 
@@ -1053,7 +1047,7 @@ func searchSpider(projectName string, serverName string) *spider.Spider {
 	for _, e := range dispatchers {
 		if e.Name() == projectName {
 			for _, e := range e.GetSpiders() {
-				if e != nil && e.TransportUrl.Host == serverName {
+				if e != nil && e.Transport.U.Host == serverName {
 					return e
 				}
 			}
