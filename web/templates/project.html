@@ -255,15 +255,18 @@
     <div style="color: #dadada;padding: 0 20px 40px">
         <div>
             <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}  Date: {{"{{basic.date}}"}}</span>
+            <span v-if="basic.filter_new_connections">new conn: {{"{{basic.filter_new_connections}}"}}</span>
         </div>
         <div>
             <span v-if="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
-            <span v-if="basic.sys_mem">Used/Total: {{"{{basic.sys_mem}}"}} <span :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(2)}}"}}%</span></span>
+            <span v-if="basic.sys_mem">Used/Total: {{"{{basic.sys_mem}}"}} <span
+                        :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(2)}}"}}%</span></span>
             <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
         </div>
         <div>
             <span v-if="basic.tcp_filter.load">Load: {{"{{basic.tcp_filter.load}}"}}</span>
-            <span v-if="basic.tcp_filter.mem_total">Used/Total: {{"{{(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_total|fileSizeH}}"}} <span :style="{color: 'hsl('+(100-(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100).toFixed(2)}}"}}%</span></span>
+            <span v-if="basic.tcp_filter.mem_total">Used/Total: {{"{{(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_total|fileSizeH}}"}} <span
+                        :style="{color: 'hsl('+(100-(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100).toFixed(2)}}"}}%</span></span>
             <span v-if="basic.tcp_filter.mem_sys">Sys/Alloc: {{"{{basic.tcp_filter.mem_sys|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_alloc|fileSizeH}}"}}</span>
         </div>
         <div>
