@@ -173,6 +173,8 @@ func (my *TcpFilter) putConn(conn net.Conn) {
 func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
 	conn, err := my.getConn()
 	if err != nil {
+		name, _ := os.Hostname()
+		helper.SendTextToWXDoOnceDurationHour(name + " TcpFilter connection failed: " + err.Error())
 		log.Println(err)
 		return
 	}
