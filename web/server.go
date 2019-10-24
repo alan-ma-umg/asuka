@@ -9,6 +9,7 @@ import (
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/project"
 	"github.com/chenset/asuka/proxy"
+	"github.com/chenset/asuka/queue"
 	"github.com/chenset/asuka/spider"
 	"github.com/gorilla/websocket"
 	"html/template"
@@ -29,6 +30,9 @@ var upgrade = websocket.Upgrader{
 var StartTime = time.Now()
 var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
+var mem runtime.MemStats
+var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second*6 + 234*time.Millisecond)
+var tcpFilterDoOnceInDurationCache = make(map[string]interface{})
 
 func Server(d []*project.Dispatcher, address string) error {
 	dispatchers = d
@@ -45,7 +49,7 @@ func Server(d []*project.Dispatcher, address string) error {
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
 	http.HandleFunc("/get/", commonHandleFunc(getServer))
 	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
-	http.HandleFunc("/queue/", commonHandleFunc(queue))
+	http.HandleFunc("/queue/", commonHandleFunc(redisQueue))
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
 	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
@@ -652,7 +656,7 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func queue(w http.ResponseWriter, r *http.Request) {
+func redisQueue(w http.ResponseWriter, r *http.Request) {
 	path := strings.Split(r.URL.Path, "/")
 	if len(path) < 3 {
 		http.NotFound(w, r)
@@ -923,7 +927,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	}()
 
 	jsonMap["basic"] = map[string]interface{}{
-		"queue_bls": make(map[int]int),
+		"queue_bls":  make(map[int]int),
+		"tcp_filter": make(map[string]interface{}),
 	}
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
@@ -1004,7 +1009,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			jsonMap["basic"].(map[string]interface{})["showing"] = ""
 		}
 	}
-	var mem runtime.MemStats
+
 	runtime.ReadMemStats(&mem)
 
 	//_, memAvailable := helper.GetMemInfoFromProc()
@@ -1015,6 +1020,20 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		sysLoad = helper.GetSystemLoadFromProc()
 		availableMemByte, totalMemByte := helper.GetMemInfoFromProc()
 		sysMemInfo = helper.ByteCountBinary(totalMemByte-availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte) + "   " + strconv.FormatFloat(float64(totalMemByte-availableMemByte)/float64(totalMemByte)*100, 'f', 2, 64) + "%"
+	}
+
+	if check {
+		tcpFilterDoOnceInDuration.Do(func() {
+			//go func() { //fatal error: concurrent map iteration and map write
+			reportBuf, err := queue.GetTcpFilterInstance().Cmd(20, nil)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache)
+			//}()
+		})
+		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 	}
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
@@ -1058,6 +1077,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	jsonMap["basic"].(map[string]interface{})["date"] = time.Now().Format(time.RFC3339)
 	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
+
 }
 
 func getProjectByName(name string) *project.Dispatcher {

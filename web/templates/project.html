@@ -252,12 +252,28 @@
         </table>
     </div>
     <br>
-    <div style="color: #dadada;padding: 0 20px 15px">
-        <span v-show="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
-        <span v-show="basic.sys_mem">Used/Total: {{"{{basic.sys_mem}}"}}</span>
-        <span v-show="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
-        <span v-show="basic.uptime"
-              style="float: right">UPTIME: {{"{{basic.uptime}}"}}  DATE: {{"{{basic.date}}"}}</span>
+    <div style="color: #dadada;padding: 0 20px 40px">
+        <div>
+            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}  Date: {{"{{basic.date}}"}}</span>
+        </div>
+        <div>
+            <span v-if="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
+            <span v-if="basic.sys_mem">Used/Total: {{"{{basic.sys_mem}}"}}</span>
+            <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
+        </div>
+        <div>
+            <span v-if="basic.tcp_filter.load">Load: {{"{{basic.tcp_filter.load}}"}}</span>
+            <span v-if="basic.tcp_filter.mem_total">Used/Total: {{"{{(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_total|fileSizeH}}"}} {{"{{((basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100).toFixed(2)}}"}}%</span>
+            <span v-if="basic.tcp_filter.mem_sys">Sys/Alloc: {{"{{basic.tcp_filter.mem_sys|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_alloc|fileSizeH}}"}}</span>
+        </div>
+        <div>
+            <span v-if="basic.tcp_filter.mem_rss">Rss: {{"{{basic.tcp_filter.mem_rss|fileSizeH}}"}}</span>
+            <span v-if="basic.tcp_filter.goroutine">Goroutine: {{"{{basic.tcp_filter.goroutine}}"}}</span>
+            <span v-if="basic.tcp_filter.db_alive_size">Alive: {{"{{basic.tcp_filter.bl_alive_size}}"}}</span>
+            <span v-if="basic.tcp_filter.db_test_count">Test: {{"{{basic.tcp_filter.bl_test_count}}"}}</span>
+            <span v-if="basic.tcp_filter.pool_size">Pool: {{"{{basic.tcp_filter.pool_size}}"}}</span>
+            <span v-if="basic.tcp_filter.sockets">Sockets: {{"{{basic.tcp_filter.sockets}}"}}</span>
+        </div>
     </div>
 
     <div class="ctrl-wrap">
@@ -289,7 +305,7 @@
                style="max-width: 160px">
     </div>
 </div>
-<script src="/static/asuka.js?v=1"></script>
+<script src="/static/asuka.js?v=2"></script>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent,
         wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}};
@@ -299,7 +315,7 @@
             el: "#vue-content",
             data: {
                 home: {}, recent: {},
-                basic: {},
+                basic: {tcp_filter: {}},
                 fetchList: [],
                 action: "home",
                 chart1: null,
@@ -351,8 +367,9 @@
                         return "0"
                     }
                     return new Intl.NumberFormat().format(v)
-                },
-                urlTruncate: function (str) {
+                }, fileSizeH: function (size) {
+                    return fileSizeH(size);
+                }, urlTruncate: function (str) {
                     if (str.length > 40) {
                         return str.substring(0, 40) + "..(" + str.length + ")"
                     }

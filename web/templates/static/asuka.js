@@ -190,3 +190,8 @@ function isMobile() {
     }
     return false
 }
+
+function fileSizeH(size) {
+    const i = Math.floor(Math.log(size) / Math.log(1024));
+    return (size / Math.pow(1024, i)).toFixed(2) * 1 +  ['B', 'k', 'M', 'G', 'T'][i];
+}

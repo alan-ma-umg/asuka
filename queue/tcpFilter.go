@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -41,11 +42,12 @@ type BlsItem struct {
 }
 
 type TcpFilter struct {
-	blsItems          map[string]*BlsItem
-	bloomFilterMutex  sync.Mutex
-	serverAddress     string
-	connPool          chan net.Conn
-	ServerHandleCount int
+	blsItems         map[string]*BlsItem
+	bloomFilterMutex sync.Mutex
+	serverAddress    string
+	connPool         chan net.Conn
+	blTestCount      int
+	mem              runtime.MemStats
 }
 
 var tcpFilterInstanceOnce sync.Once
@@ -262,27 +264,21 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			}
 		}
 
+		//cmd
 		var replyData []byte
-		//decode
-		//cmd 10=bl filter, 20=other
-		if newBuf[lenOfDataLen] == 10 {
-			//length[4],cmd[1],db[1],fun[1],json[*]
-			res, err := my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			replyData, err = json.Marshal(res)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-		} else {
+		switch newBuf[lenOfDataLen] { //cmd
+		case 10:
+			replyData, err = my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+		case 20:
+			replyData, err = my.serverReport()
+		default:
 			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 		}
-
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		//reply
 		my.serverReply(conn, newBuf, replyData)
 	}
 }
@@ -302,37 +298,65 @@ func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
 	return
 }
 
+func (my *TcpFilter) serverReport() (result []byte, err error) {
+
+	runtime.ReadMemStats(&my.mem)
+
+	memAvailable, total := helper.GetMemInfoFromProc()
+
+	//len(map) is not thread safe
+	my.bloomFilterMutex.Lock()
+	blSize := len(my.blsItems)
+	my.bloomFilterMutex.Unlock()
+
+	return json.Marshal(map[string]interface{}{
+		"pool_size":     len(my.connPool),
+		"bl_alive_size": blSize,
+		"bl_test_count": my.blTestCount,
+		"goroutine":     runtime.NumGoroutine(),
+		"sockets":       helper.GetSocketEstablishedCountLazy(),
+		"load":          helper.GetSystemLoadFromProc(),
+		"mem_rss":       helper.GetProgramRss(),
+		"mem_available": memAvailable,
+		"mem_total":     total,
+		"mem_sys":       my.mem.Sys,
+		"mem_alloc":     my.mem.Alloc,
+	})
+}
+
 func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	//db, fun byte, data []byte
 	var cmd10 Cmd10
-	my.ServerHandleCount++
 	err = json.Unmarshal(buf, &cmd10)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
+	my.blTestCount++
+
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
 	//fun 10=TestString 20=TestAndAddString
 	bl := my.getBl(cmd10.Db)
+	var list []byte
 	for _, u := range cmd10.Urls {
 		var b byte
 		if cmd10.Fun == 10 {
 			if bl.TestString(u) {
 				b = 1
 			}
-			result = append(result, b)
+			list = append(result, b)
 		} else {
 			if bl.TestAndAddString(u) {
 				b = 1
 			}
-			result = append(result, b)
+			list = append(result, b)
 		}
 	}
 
-	return
+	return json.Marshal(list)
 }
 
 //getBl using with lock
