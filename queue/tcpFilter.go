@@ -27,8 +27,14 @@ type Cmd10 struct {
 	Db   string
 }
 
+type BlsItem struct {
+	Bl       *bloom.BloomFilter
+	LastUse  time.Time
+	UseCount int
+}
+
 type TcpFilter struct {
-	bls              map[string]*bloom.BloomFilter
+	blsItems         map[string]*BlsItem
 	bloomFilterMutex sync.Mutex
 
 	connPool chan net.Conn
@@ -43,6 +49,25 @@ func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
 		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 100)}
 
+		//release idle bl
+		go func() {
+			for {
+				time.Sleep(30)
+				tcpFilterInstance.bloomFilterMutex.Lock()
+
+				for name, blItem := range tcpFilterInstance.blsItems {
+					if time.Since(blItem.LastUse).Seconds() > 30 { //todo make since this idle time
+						tcpFilterInstance.blSave(name, blItem)
+						delete(tcpFilterInstance.blsItems, name)
+
+						log.Println("del tcp bl: " + name)
+					}
+				}
+
+				tcpFilterInstance.bloomFilterMutex.Unlock()
+			}
+		}()
+
 		// kill signal handing
 		helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 
@@ -50,10 +75,8 @@ func GetTcpFilterInstance() *TcpFilter {
 			defer tcpFilterInstance.bloomFilterMutex.Unlock()
 
 			//save to file
-			for db, v := range tcpFilterInstance.bls {
-				f, _ := os.Create(tcpFilterInstance.getBlFileName(db))
-				v.WriteTo(f)
-				f.Close()
+			for name, blItem := range tcpFilterInstance.blsItems {
+				tcpFilterInstance.blSave(name, blItem)
 			}
 
 			log.Println("save")
@@ -61,6 +84,12 @@ func GetTcpFilterInstance() *TcpFilter {
 	})
 	return tcpFilterInstance
 }
+func (my *TcpFilter) blSave(name string, blItem *BlsItem) {
+	f, _ := os.Create(tcpFilterInstance.getBlFileName(name))
+	blItem.Bl.WriteTo(f)
+	f.Close()
+}
+
 func (my *TcpFilter) getBlFileName(name string) string {
 	return helper.Env().BloomFilterPath + name + ".db"
 }
@@ -90,11 +119,6 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	if err != nil {
 		return res, err
 	}
-
-	//todo implement
-	//log.Println(string(newBuf[lenOfDataLen:n]))
-	//binary.BigEndian.Uint16(buf[:lenOfData])
-
 	return newBuf[lenOfDataLen:n], nil
 }
 
@@ -286,19 +310,25 @@ func (my *TcpFilter) ServerBl(buf []byte) (result []byte, err error) {
 
 //getBl using with lock
 func (my *TcpFilter) getBl(name string) *bloom.BloomFilter {
-	bl, ok := my.bls[name]
+	blItem, ok := my.blsItems[name]
 	if !ok {
-		bl = bloom.NewWithEstimates(10000000, 0.003)
+		blItem = &BlsItem{}
+		blItem.Bl = bloom.NewWithEstimates(10000000, 0.003) //todo 容量太小, 要视类型与情况加大. 可以考虑通过客户端传参数过来控制
 		f, _ := os.Open(my.getBlFileName(name))
-		bl.ReadFrom(f)
+		blItem.Bl.ReadFrom(f)
 		f.Close()
 
-		if len(my.bls) == 0 {
-			my.bls = make(map[string]*bloom.BloomFilter)
+		if len(my.blsItems) == 0 {
+			my.blsItems = make(map[string]*BlsItem)
 		}
-		my.bls[name] = bl
+		my.blsItems[name] = blItem
+
+		log.Println("new tcp bl: " + name)
 	}
-	return bl
+
+	blItem.LastUse = time.Now()
+	blItem.UseCount++
+	return blItem.Bl
 }
 
 func (my *TcpFilter) OtherCmd(cmd byte, data []byte) (err error) {

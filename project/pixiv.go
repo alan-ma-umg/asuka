@@ -142,7 +142,7 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	//} else if spider.CurrentResponse().StatusCode == 404 && spider.FailureLevel <= 10 { //404 is normal
 	//	spider.FailureLevel = 0
 
-	if spider.CurrentResponse().StatusCode == 404 {
+	if spider.CurrentResponse() != nil && spider.CurrentResponse().StatusCode == 404 {
 		my.lastHttpCodeIs404 = true
 	} else {
 		my.lastHttpCodeIs404 = false
