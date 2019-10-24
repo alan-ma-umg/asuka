@@ -13,6 +13,15 @@ import (
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	//
+	//f, err := os.OpenFile("./output.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	//if err != nil {
+	//	log.Fatalf("error opening file: %v", err)
+	//}
+	//wrt := io.MultiWriter(os.Stdout, f)
+	//wrt = io.MultiWriter(os.Stderr, f)
+	//log.SetOutput(wrt)
+	//log.Println(" Orders API Called")
 }
 
 func main() {
