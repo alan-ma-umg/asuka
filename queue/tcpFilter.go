@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -34,11 +35,10 @@ type BlsItem struct {
 }
 
 type TcpFilter struct {
-	blsItems         map[string]*BlsItem
-	bloomFilterMutex sync.Mutex
-
-	connPool chan net.Conn
-
+	blsItems          map[string]*BlsItem
+	bloomFilterMutex  sync.Mutex
+	ServerAddress     string
+	connPool          chan net.Conn
 	ServerHandleCount int
 }
 
@@ -47,8 +47,18 @@ var tcpFilterInstance *TcpFilter
 
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
-		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 100)}
+		//only client mode
+		serverAddress := ""
+		if helper.Env().BloomFilterClient != "" {
+			u, err := url.Parse(helper.Env().BloomFilterClient)
+			if err != nil {
+				log.Println(err)
+			} else {
+				serverAddress = u.Host
+			}
+		}
 
+		tcpFilterInstance = &TcpFilter{ServerAddress: serverAddress, connPool: make(chan net.Conn, 100)}
 		//release idle bl
 		go func() {
 			for {
@@ -129,7 +139,7 @@ func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
 		// Got one; nothing more to do.
 	default:
 		// None free, so allocate a new one.
-		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", "127.0.0.1:7654")
+		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", my.ServerAddress)
 		if err != nil {
 			break
 		}
