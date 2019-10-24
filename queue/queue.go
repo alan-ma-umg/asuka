@@ -73,6 +73,10 @@ func (my *Queue) BlRemoveFile() {
 }
 
 func (my *Queue) BlCleanUp() {
+	if helper.Env().BloomFilterClient != "" {
+		return
+	}
+
 	my.BlRemoveFile()
 
 	my.bloomFilterMutex.Lock()
@@ -85,18 +89,37 @@ func (my *Queue) BlCleanUp() {
 	my.getBloomFilterInstance().ClearAll()
 }
 
-//BlTestAndAddString if exists return true
-func (my *Queue) BlTestAndAddString(s string) bool {
-	my.bloomFilterMutex.Lock()
-	defer my.bloomFilterMutex.Unlock()
-	return my.getBloomFilterInstance().TestAndAddString(s)
-}
-
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
+	if helper.Env().BloomFilterClient != "" {
+		return my.blTcp(10, 10, s)
+	}
+
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 	return my.getBloomFilterInstance().TestString(s)
+}
+
+func (my *Queue) blTcp(db, fun byte, s string) bool {
+	result, err := GetTcpFilterInstance().ClientBl(10, fun, []string{s})
+	if err != nil {
+		log.Println(err)
+	}
+	if len(result) == 0 || result[0] == 0 {
+		return false
+	}
+	return true
+}
+
+//BlTestAndAddString if exists return true
+func (my *Queue) BlTestAndAddString(s string) bool {
+	if helper.Env().BloomFilterClient != "" {
+		return my.blTcp(10, 20, s)
+	}
+
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+	return my.getBloomFilterInstance().TestAndAddString(s)
 }
 
 func (my *Queue) GetBlKey() string {
@@ -129,15 +152,24 @@ func (my *Queue) GetBlsTestCount() (index, value []int) {
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 	//lock
-	my.enqueueForFailureMutex.Lock()
-	defer my.enqueueForFailureMutex.Unlock()
+	if helper.Env().BloomFilterClient == "" {
+		my.enqueueForFailureMutex.Lock()
+		defer my.enqueueForFailureMutex.Unlock()
+	}
 
 	if retryTimes < 1 {
 		return false
 	}
 
 	for i := 0; i < retryTimes; i++ {
-		if !my.getBl(i).TestAndAddString(rawUrl) {
+		res := false
+		if helper.Env().BloomFilterClient == "" {
+			res = my.getBl(i).TestAndAddString(rawUrl)
+		} else {
+			res = my.blTcp(byte(i), 20, rawUrl)
+		}
+
+		if !res {
 			my.BlsTestCount[i]++
 			my.Enqueue(rawUrl)
 			return true
