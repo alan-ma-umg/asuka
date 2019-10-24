@@ -8,7 +8,8 @@ type EnvConfig struct {
 	Redis                     Redis
 	MysqlDSN                  string
 	WechatSendMessagePassword string
-	SingleProject             string
+	BloomFilterClient         string
+	BloomFilterServer         string
 }
 
 type Redis struct {

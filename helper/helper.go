@@ -38,11 +38,12 @@ func Env() *EnvConfig {
 		redis := flag.String("redis", "tcp://10.0.0.2:6379/9", "Redis connection url")
 		mysql := flag.String("mysql", "root:11111111@(127.0.0.1:3306)/asuka?charset=utf8mb4", "Mysql DSN")
 		webPassword := flag.String("webPassword", "", "WEB login password")
-		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path")
+		bloomFilterPath := flag.String("bloomFilterPath", ".", "BloomFilter save path, don't using with bloomFilterClient at same time")
+		bloomFilterClient := flag.String("bloomFilterClient", "tcp://127.0.0.1:7654", "BloomFilter tcp client, don't using with bloomFilterPath at same time")
+		bloomFilterServer := flag.String("bloomFilterServer", "0.0.0.0:7654", "BloomFilter tcp server")
 		localTransport := flag.Bool("localTransport", true, "Enable http.DefaultTransport")
 		listen := flag.String("listen", "0.0.0.0:666", "WEB monitor listen address")
 		wechatSendMessagePassword := flag.String("wechatSendMessagePassword", "", "Ignore it")
-		singleProject := flag.String("singleProject", "", "Run only specific project")
 		flag.Parse()
 
 		u, err := url.Parse(*redis)
@@ -53,12 +54,13 @@ func Env() *EnvConfig {
 		redisPassword, _ := u.User.Password()
 		envConfig = &EnvConfig{
 			BloomFilterPath:           strings.TrimRight(*bloomFilterPath, "/") + "/",
+			BloomFilterClient:         *bloomFilterClient,
+			BloomFilterServer:         *bloomFilterServer,
 			WEBPassword:               *webPassword,
 			WEBListen:                 *listen,
 			LocalTransport:            *localTransport,
 			MysqlDSN:                  *mysql,
 			WechatSendMessagePassword: *wechatSendMessagePassword,
-			SingleProject:             *singleProject,
 			Redis: Redis{
 				Network:     u.Scheme,
 				Addr:        u.Host,
