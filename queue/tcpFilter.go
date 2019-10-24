@@ -299,15 +299,13 @@ func (my *TcpFilter) ServerBl(db, fun byte, data []byte) (result []byte, err err
 	//fun 10=TestString 20=TestAndAddString
 	bl := my.getBl(strconv.Itoa(int(db)))
 	for _, u := range rawUrls {
+		var b byte
 		if fun == 10 {
-			var b byte
 			if bl.TestString(u) {
 				b = 1
 			}
 			result = append(result, b)
-
 		} else if fun == 20 {
-			var b byte
 			if bl.TestAndAddString(u) {
 				b = 1
 			}
