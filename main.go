@@ -44,9 +44,48 @@ func main() {
 
 	asuka()
 
+	//
 	//time.Sleep(1e9)
+	//var res []byte
+	//
+	//buf, err := queue.GetTcpFilterInstance().Cmd(10, &queue.Cmd10{
+	//	Db:   "ccc",
+	//	Fun:  10,
+	//	Urls: []string{"https://book.douban.com/ta1g/%E8%87%AA%E5%8A%A9%E6%B8%B8", "https://book.douban.com/tag/%E8%87%AA%E5%8A%A9%E6%B8%B8"},
+	//})
+	//
+	//json.Unmarshal(buf, &res)
+	//log.Println(res)
+	//
+	//buf, err = queue.GetTcpFilterInstance().Cmd(10, &queue.Cmd10{
+	//	Db:   "ccc",
+	//	Fun:  20,
+	//	Urls: []string{"https://book.douban.com/tag/%E8%87%AA%E5%8A%A9%E6%B8%B8", "https://book.douban.com/tag/%E8%87%AA%E5%8A%A9%E6%B8%B8"},
+	//})
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//
+	//json.Unmarshal(buf, &res)
+	//log.Println(res)
 
-	//queue.GetTcpFilterInstance().ClientBl(10, 20, list)
+	//
+	//s := time.Now()
+	//for i := 0; i < 1000; i++ {
+	//	if err != nil {
+	//		log.Println(err)
+	//		return
+	//	}
+	//
+	//	var res []byte
+	//	json.Unmarshal(buf, &res)
+	//}
+	//
+	//log.Println(time.Since(s))
+	//log.Println(res)
+
+	//time.Sleep(1e9)
 
 	//s := time.Now()
 
@@ -136,20 +175,20 @@ func main() {
 func asuka() {
 	fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
 	log.Println(web.Server([]*project.Dispatcher{
-		project.New(&project.DouBan{}, time.Time{}).Run(),
-		project.New(&project.Pixiv{}, time.Time{}).Run(),
-		//project.New(&project.Test2{}, time.Now()).Run(),
+		//project.New(&project.DouBan{}, time.Time{}).Run(),
+		//project.New(&project.Pixiv{}, time.Time{}).Run(),
+		project.New(&project.Test2{}, time.Time{}).Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),
 		//project.New(&project.Www{}, time.Now()).Run(),
 		//
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
-		project.New(&project.Test{}, time.Now()).CleanUp().Run(),
-		project.New(&project.Test2{}, time.Now().Add(time.Minute*10)).CleanUp().Run(),
-		project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),
-		project.New(&project.JianShu{}, time.Now().Add(time.Minute*5)).CleanUp().Run(),
-		project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
+		//project.New(&project.Test{}, time.Now()).CleanUp().Run(),
+		//project.New(&project.Test2{}, time.Now().Add(time.Minute*10)).CleanUp().Run(),
+		//project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),
+		//project.New(&project.JianShu{}, time.Now().Add(time.Minute*5)).CleanUp().Run(),
+		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }

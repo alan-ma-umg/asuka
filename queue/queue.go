@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"encoding/json"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/willf/bloom"
@@ -53,7 +54,7 @@ func (my *Queue) ResetBloomFilterInstance() {
 func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	my.bloomFilterInstanceDoOnce.Do(func() {
 		my.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
-		f, _ := os.Open(helper.Env().BloomFilterPath + my.GetBlKey())
+		f, _ := os.Open(my.mainBlFilename())
 		my.bloomFilterInstance.ReadFrom(f)
 		f.Close()
 		log.Println("New: " + my.GetKey())
@@ -61,14 +62,34 @@ func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	return my.bloomFilterInstance
 }
 
+func (my *Queue) GetBlKey() string {
+	return my.GetKey() + "_bl"
+}
+
+func (my *Queue) GetKey() string {
+	return my.name + "_" + helper.Env().Redis.URLQueueKey
+}
+
+func (my *Queue) GetBlsKey(i int) string {
+	return my.name + "_enqueue_retry_" + strconv.Itoa(i)
+}
+
+func (my *Queue) mainBlFilename() string {
+	return helper.Env().BloomFilterPath + my.GetBlKey() + ".db"
+}
+
+func (my *Queue) blsFilename(i int) string {
+	return helper.Env().BloomFilterPath + my.GetBlsKey(i) + ".db"
+}
+
 func (my *Queue) BlRemoveFile() {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
-	os.Remove(helper.Env().BloomFilterPath + my.GetBlKey())
+	os.Remove(my.mainBlFilename())
 
 	for i := 0; i < helper.MaxInt(10, len(my.bls)); i++ {
-		os.Remove(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+		os.Remove(my.blsFilename(i))
 	}
 }
 
@@ -89,10 +110,30 @@ func (my *Queue) BlCleanUp() {
 	my.getBloomFilterInstance().ClearAll()
 }
 
+func (my *Queue) blTcp(db string, fun byte, s string) (res bool) {
+	buf, err := GetTcpFilterInstance().Cmd(10, &Cmd10{
+		Db:   db,
+		Fun:  fun,
+		Urls: []string{s},
+	})
+	if err != nil {
+		log.Println(err)
+		return true
+	}
+
+	var result []byte
+	json.Unmarshal(buf, &result)
+	if len(result) == 0 || result[0] == 1 {
+		return true
+	}
+
+	return false
+}
+
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(10, 10, s)
+		return my.blTcp(my.GetBlKey(), 10, s)
 	}
 
 	my.bloomFilterMutex.Lock()
@@ -100,34 +141,15 @@ func (my *Queue) BlTestString(s string) bool {
 	return my.getBloomFilterInstance().TestString(s)
 }
 
-func (my *Queue) blTcp(db, fun byte, s string) bool {
-	result, err := GetTcpFilterInstance().ClientBl(10, fun, []string{s})
-	if err != nil {
-		log.Println(err)
-	}
-	if len(result) == 0 || result[0] == 0 {
-		return false
-	}
-	return true
-}
-
 //BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(10, 20, s)
+		return my.blTcp(my.GetBlKey(), 20, s)
 	}
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 	return my.getBloomFilterInstance().TestAndAddString(s)
-}
-
-func (my *Queue) GetBlKey() string {
-	return my.GetKey() + "_bl.db"
-}
-
-func (my *Queue) GetKey() string {
-	return my.name + "_" + helper.Env().Redis.URLQueueKey
 }
 
 func (my *Queue) Enqueue(rawUrl string) {
@@ -166,7 +188,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 		if helper.Env().BloomFilterClient == "" {
 			res = my.getBl(i).TestAndAddString(rawUrl)
 		} else {
-			res = my.blTcp(byte(i), 20, rawUrl)
+			res = my.blTcp(my.GetBlsKey(i), 20, rawUrl)
 		}
 
 		if !res {
@@ -183,7 +205,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	for i := len(my.bls); i <= index; i++ {
 		bloomFilterInstance := bloom.NewWithEstimates(10000000, 0.01)
-		f, _ := os.Open(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+		f, _ := os.Open(my.blsFilename(i))
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()
 
@@ -203,13 +225,13 @@ func (my *Queue) BlSave(checkLock bool) {
 	}()
 
 	if my.bloomFilterInstance != nil {
-		f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
+		f, _ := os.Create(my.mainBlFilename())
 		my.getBloomFilterInstance().WriteTo(f)
 		f.Close()
 	}
 
 	for i, bl := range my.bls {
-		f, err := os.Create(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
+		f, err := os.Create(my.blsFilename(i))
 		if err != nil {
 			log.Println(err)
 			continue

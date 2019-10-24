@@ -9,22 +9,23 @@ import (
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 )
 
 //format
-//cmd 10=bl filter, n=other, db 0~255, fun 10=TestString 20=TestAndAddString
-//request: length[4],cmd[1],db[1],fun[1],[string]array[*]
 //request: length[4],cmd[1],json[*]
 //response:length[4],json[*]
 const (
 	lenOfDataLen = 2
 	lenOfCmd     = 1
-	lenOfDb      = 1
-	lenOfFun     = 1
 )
+
+type Cmd10 struct {
+	Urls []string
+	Fun  byte
+	Db   string
+}
 
 type TcpFilter struct {
 	bls              map[string]*bloom.BloomFilter
@@ -49,8 +50,8 @@ func GetTcpFilterInstance() *TcpFilter {
 			defer tcpFilterInstance.bloomFilterMutex.Unlock()
 
 			//save to file
-			for k, v := range tcpFilterInstance.bls {
-				f, _ := os.Create(tcpFilterInstance.getBlFileName(k))
+			for db, v := range tcpFilterInstance.bls {
+				f, _ := os.Create(tcpFilterInstance.getBlFileName(db))
 				v.WriteTo(f)
 				f.Close()
 			}
@@ -61,50 +62,17 @@ func GetTcpFilterInstance() *TcpFilter {
 	return tcpFilterInstance
 }
 func (my *TcpFilter) getBlFileName(name string) string {
-	return helper.Env().BloomFilterPath + "tcp_" + name + ".db"
-}
-
-//ClientBl db 0~255, fun 10=TestString 20=TestAndAddString
-func (my *TcpFilter) ClientBl(db byte, fun byte, rawUrls []string) (result []byte, err error) {
-	buf := helper.LeakyBuf().Get()
-	defer helper.LeakyBuf().Put(buf)
-
-	jsonBytes, err := json.Marshal(rawUrls)
-	if err != nil {
-		return result, err
-	}
-
-	dataLen := uint16(len(jsonBytes) + lenOfCmd + lenOfDb + lenOfFun)
-
-	newBuf := buf
-	if int(dataLen+lenOfDataLen) > len(buf) {
-		newBuf = make([]byte, dataLen+lenOfDataLen)
-	}
-
-	newBuf[lenOfDataLen] = 10                   //cmd 10=bl filter
-	newBuf[lenOfDataLen+lenOfCmd] = db          //Db
-	newBuf[lenOfDataLen+lenOfCmd+lenOfDb] = fun //fun
-	copy(newBuf[lenOfDataLen+lenOfCmd+lenOfDb+lenOfFun:], jsonBytes[:])
-
-	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], dataLen)
-	n, err := my.client(newBuf, dataLen+lenOfDataLen)
-	if err != nil {
-		return result, err
-	}
-
-	//log.Println(string(buf[:n]))
-	err = json.Unmarshal(newBuf[lenOfDataLen:n], &result)
-	return
+	return helper.Env().BloomFilterPath + name + ".db"
 }
 
 //ClientOtherCmd db 0~255, fun 10=TestString 20=TestAndAddString
-func (my *TcpFilter) ClientOtherCmd(cmd byte, cmdData map[string]interface{}) (bool, error) {
+func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) {
 	buf := helper.LeakyBuf().Get()
 	defer helper.LeakyBuf().Put(buf)
 
 	jsonBytes, err := json.Marshal(cmdData)
 	if err != nil {
-		return false, err
+		return res, err
 	}
 	dataLen := uint16(len(jsonBytes) + lenOfCmd)
 
@@ -120,14 +88,14 @@ func (my *TcpFilter) ClientOtherCmd(cmd byte, cmdData map[string]interface{}) (b
 	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], dataLen)
 	n, err := my.client(newBuf, dataLen+lenOfDataLen)
 	if err != nil {
-		return false, err
+		return res, err
 	}
 
 	//todo implement
-	log.Println(newBuf[:n])
+	//log.Println(string(newBuf[lenOfDataLen:n]))
 	//binary.BigEndian.Uint16(buf[:lenOfData])
 
-	return true, nil
+	return newBuf[lenOfDataLen:n], nil
 }
 
 func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
@@ -256,7 +224,8 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		//cmd 10=bl filter, 20=other
 		if newBuf[lenOfDataLen] == 10 {
 			//length[4],cmd[1],db[1],fun[1],json[*]
-			list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd], newBuf[lenOfDataLen+lenOfCmd+lenOfDb], newBuf[lenOfDataLen+lenOfCmd+lenOfDb+lenOfFun:lenOfDataLen+dataLen])
+			//list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd], newBuf[lenOfDataLen+lenOfCmd+lenOfDb], newBuf[lenOfDataLen+lenOfCmd+lenOfDb+lenOfFun:lenOfDataLen+dataLen])
+			list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 			if err != nil {
 				log.Println(err)
 				return
@@ -266,7 +235,6 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 				log.Println(err)
 				return
 			}
-
 			copy(newBuf[lenOfDataLen:], encStr[:])
 
 			dataLen := len(encStr)
@@ -283,10 +251,11 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 	}
 }
 
-func (my *TcpFilter) ServerBl(db, fun byte, data []byte) (result []byte, err error) {
+func (my *TcpFilter) ServerBl(buf []byte) (result []byte, err error) {
+	//db, fun byte, data []byte
+	var cmd10 Cmd10
 	my.ServerHandleCount++
-	var rawUrls []string
-	err = json.Unmarshal(data, &rawUrls)
+	err = json.Unmarshal(buf, &cmd10)
 	if err != nil {
 		log.Println(err)
 		return
@@ -295,17 +264,16 @@ func (my *TcpFilter) ServerBl(db, fun byte, data []byte) (result []byte, err err
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
-	//fun ==
 	//fun 10=TestString 20=TestAndAddString
-	bl := my.getBl(strconv.Itoa(int(db)))
-	for _, u := range rawUrls {
+	bl := my.getBl(cmd10.Db)
+	for _, u := range cmd10.Urls {
 		var b byte
-		if fun == 10 {
+		if cmd10.Fun == 10 {
 			if bl.TestString(u) {
 				b = 1
 			}
 			result = append(result, b)
-		} else if fun == 20 {
+		} else {
 			if bl.TestAndAddString(u) {
 				b = 1
 			}
