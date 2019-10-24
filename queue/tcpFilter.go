@@ -31,6 +31,7 @@ type Cmd10 struct {
 
 //Cmd10 server status report
 type Cmd20 struct {
+	Text string
 }
 
 type BlsItem struct {
@@ -261,35 +262,44 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			}
 		}
 
+		var replyData []byte
 		//decode
 		//cmd 10=bl filter, 20=other
 		if newBuf[lenOfDataLen] == 10 {
 			//length[4],cmd[1],db[1],fun[1],json[*]
-			//list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd], newBuf[lenOfDataLen+lenOfCmd+lenOfDb], newBuf[lenOfDataLen+lenOfCmd+lenOfDb+lenOfFun:lenOfDataLen+dataLen])
-			list, err := my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			res, err := my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			encStr, err := json.Marshal(list)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			copy(newBuf[lenOfDataLen:], encStr[:])
 
-			dataLen := len(encStr)
-			binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], uint16(dataLen))
-			_, err = conn.Write(newBuf[:lenOfDataLen+dataLen])
+			replyData, err = json.Marshal(res)
 			if err != nil {
 				log.Println(err)
 				return
 			}
+
 		} else {
-			//length[4],cmd[1],json[*]
-			my.otherCmd(newBuf[lenOfDataLen], newBuf[lenOfDataLen+lenOfCmd:lenOfDataLen+dataLen])
+			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 		}
+
+		my.serverReply(conn, newBuf, replyData)
 	}
+}
+
+func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
+
+	//todo check if reply data lager than buf
+
+	copy(buf[lenOfDataLen:], data[:])
+	dataLen := len(data)
+	binary.BigEndian.PutUint16(buf[:lenOfDataLen], uint16(dataLen))
+	_, err = conn.Write(buf[:lenOfDataLen+dataLen])
+	if err != nil {
+		log.Println(err)
+	}
+
+	return
 }
 
 func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
@@ -348,21 +358,20 @@ func (my *TcpFilter) getBl(name string) *bloom.BloomFilter {
 	return blItem.Bl
 }
 
-func (my *TcpFilter) otherCmd(cmd byte, data []byte) (err error) {
-	var cmdMap map[string]interface{}
-	err = json.Unmarshal(data, &cmdMap)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	log.Println(cmd)
-	//todo implement
-	res, err := json.Marshal(cmdMap)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Println(string(res))
-	return
-}
+//func (my *TcpFilter) otherCmd(data []byte) (result []byte, err error) {
+//	var cmdMap map[string]interface{}
+//	err = json.Unmarshal(data, &cmdMap)
+//	if err != nil {
+//		log.Println(err)
+//		return
+//	}
+//
+//	//todo implement
+//	result, err = json.Marshal(cmdMap)
+//	if err != nil {
+//		log.Println(err)
+//		//return
+//	}
+//	//log.Println(string(res))
+//	//return
+//}
