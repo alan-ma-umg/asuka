@@ -1016,10 +1016,12 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	sysLoad := ""
 	sysMemInfo := ""
+	sysMemInfoPercent := .0
 	if check && runtime.GOOS != "windows" {
 		sysLoad = helper.GetSystemLoadFromProc()
 		availableMemByte, totalMemByte := helper.GetMemInfoFromProc()
-		sysMemInfo = helper.ByteCountBinary(totalMemByte-availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte) + "   " + strconv.FormatFloat(float64(totalMemByte-availableMemByte)/float64(totalMemByte)*100, 'f', 2, 64) + "%"
+		sysMemInfoPercent = float64(totalMemByte-availableMemByte) / float64(totalMemByte) * 100
+		sysMemInfo = helper.ByteCountBinary(totalMemByte-availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte)
 	}
 
 	if check {
@@ -1067,6 +1069,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["mem_sys"] = helper.ByteCountBinary(helper.GetProgramRss())
 	jsonMap["basic"].(map[string]interface{})["sys_load"] = sysLoad
 	jsonMap["basic"].(map[string]interface{})["sys_mem"] = sysMemInfo
+	jsonMap["basic"].(map[string]interface{})["sys_mem_percent"] = sysMemInfoPercent
 	jsonMap["basic"].(map[string]interface{})["runtime_mem"] = helper.ByteCountBinary(mem.Sys) + "/" + helper.ByteCountBinary(mem.Alloc)
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
