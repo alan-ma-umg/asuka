@@ -18,7 +18,7 @@ type Test2 struct {
 }
 
 //var test2BaseUrl = "http://z.flysay.com:888/"
-var test2BaseUrl = "http://hk.flysay.com:88/"
+var test2BaseUrl = "https://www.bilibili.com/anime/"
 
 func (my *Test2) Init(d *Dispatcher) {
 	go func() {
