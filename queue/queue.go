@@ -30,7 +30,7 @@ func (my *Queue) ResetBloomFilterInstance() {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
-	if my.bloomFilterInstance == nil {
+	if my.bloomFilterInstance == nil && len(my.bls) == 0 {
 		return
 	}
 
@@ -170,9 +170,11 @@ func (my *Queue) BlSave(checkLock bool) {
 		}
 	}()
 
-	f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
-	my.getBloomFilterInstance().WriteTo(f)
-	f.Close()
+	if my.bloomFilterInstance != nil {
+		f, _ := os.Create(helper.Env().BloomFilterPath + my.GetBlKey())
+		my.getBloomFilterInstance().WriteTo(f)
+		f.Close()
+	}
 
 	for i, bl := range my.bls {
 		f, err := os.Create(helper.Env().BloomFilterPath + my.name + "_enqueue_retry_" + strconv.Itoa(i) + ".db")
