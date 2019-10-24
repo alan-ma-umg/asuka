@@ -52,11 +52,11 @@ func GetTcpFilterInstance() *TcpFilter {
 		//release idle bl
 		go func() {
 			for {
-				time.Sleep(30)
+				time.Sleep(time.Minute * 33)
 				tcpFilterInstance.bloomFilterMutex.Lock()
 
 				for name, blItem := range tcpFilterInstance.blsItems {
-					if time.Since(blItem.LastUse).Seconds() > 30 { //todo make since this idle time
+					if time.Since(blItem.LastUse).Seconds() > 3600 {
 						tcpFilterInstance.blSave(name, blItem)
 						delete(tcpFilterInstance.blsItems, name)
 

@@ -173,12 +173,6 @@ func (my *Queue) GetBlsTestCount() (index, value []int) {
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
-	//lock
-	if helper.Env().BloomFilterClient == "" {
-		my.enqueueForFailureMutex.Lock()
-		defer my.enqueueForFailureMutex.Unlock()
-	}
-
 	if retryTimes < 1 {
 		return false
 	}
@@ -186,19 +180,24 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 	for i := 0; i < retryTimes; i++ {
 		res := false
 		if helper.Env().BloomFilterClient == "" {
+			my.enqueueForFailureMutex.Lock()
 			res = my.getBl(i).TestAndAddString(rawUrl)
+			my.enqueueForFailureMutex.Unlock()
 		} else {
 			res = my.blTcp(my.GetBlsKey(i), 20, rawUrl)
 		}
 
 		if !res {
+			my.enqueueForFailureMutex.Lock()
 			my.BlsTestCount[i]++
+			my.enqueueForFailureMutex.Unlock()
 			my.Enqueue(rawUrl)
 			return true
 		}
 	}
-
+	my.enqueueForFailureMutex.Lock()
 	my.BlsTestCount[-1]++
+	my.enqueueForFailureMutex.Unlock()
 	return false
 }
 

@@ -49,9 +49,9 @@ func main() {
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" {
 		go queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
+	} else {
+		asuka()
 	}
-
-	asuka()
 
 	//
 	//time.Sleep(1e9)
