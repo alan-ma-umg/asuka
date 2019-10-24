@@ -22,10 +22,15 @@ const (
 	lenOfCmd     = 1
 )
 
+//Cmd10 bloomFilter
 type Cmd10 struct {
 	Urls []string
 	Fun  byte
 	Db   string
+}
+
+//Cmd10 server status report
+type Cmd20 struct {
 }
 
 type BlsItem struct {
@@ -37,7 +42,7 @@ type BlsItem struct {
 type TcpFilter struct {
 	blsItems          map[string]*BlsItem
 	bloomFilterMutex  sync.Mutex
-	ServerAddress     string
+	serverAddress     string
 	connPool          chan net.Conn
 	ServerHandleCount int
 }
@@ -58,7 +63,7 @@ func GetTcpFilterInstance() *TcpFilter {
 			}
 		}
 
-		tcpFilterInstance = &TcpFilter{ServerAddress: serverAddress, connPool: make(chan net.Conn, 100)}
+		tcpFilterInstance = &TcpFilter{serverAddress: serverAddress, connPool: make(chan net.Conn, 100)}
 		//release idle bl
 		go func() {
 			for {
@@ -89,7 +94,9 @@ func GetTcpFilterInstance() *TcpFilter {
 				tcpFilterInstance.blSave(name, blItem)
 			}
 
-			log.Println("save")
+			if len(tcpFilterInstance.blsItems) > 0 {
+				log.Println("save")
+			}
 		})
 	})
 	return tcpFilterInstance
@@ -132,14 +139,14 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	return newBuf[lenOfDataLen:n], nil
 }
 
-func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
+func (my *TcpFilter) getConn() (conn net.Conn, err error) {
 	// Grab a buffer if available; allocate if not.
 	select {
 	case conn = <-my.connPool:
 		// Got one; nothing more to do.
 	default:
 		// None free, so allocate a new one.
-		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", my.ServerAddress)
+		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", my.serverAddress)
 		if err != nil {
 			break
 		}
@@ -150,7 +157,7 @@ func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
 	return
 }
 
-func (my *TcpFilter) PutConn(conn net.Conn) {
+func (my *TcpFilter) putConn(conn net.Conn) {
 	// Reuse buffer if there's room.
 	select {
 	case my.connPool <- conn:
@@ -161,14 +168,14 @@ func (my *TcpFilter) PutConn(conn net.Conn) {
 }
 
 func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
-	conn, err := my.GetConn()
+	conn, err := my.getConn()
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer func() {
 		if err == nil {
-			my.PutConn(conn)
+			my.putConn(conn)
 		}
 	}()
 
@@ -259,7 +266,7 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		if newBuf[lenOfDataLen] == 10 {
 			//length[4],cmd[1],db[1],fun[1],json[*]
 			//list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd], newBuf[lenOfDataLen+lenOfCmd+lenOfDb], newBuf[lenOfDataLen+lenOfCmd+lenOfDb+lenOfFun:lenOfDataLen+dataLen])
-			list, err := my.ServerBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			list, err := my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 			if err != nil {
 				log.Println(err)
 				return
@@ -280,12 +287,12 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			}
 		} else {
 			//length[4],cmd[1],json[*]
-			my.OtherCmd(newBuf[lenOfDataLen], newBuf[lenOfDataLen+lenOfCmd:lenOfDataLen+dataLen])
+			my.otherCmd(newBuf[lenOfDataLen], newBuf[lenOfDataLen+lenOfCmd:lenOfDataLen+dataLen])
 		}
 	}
 }
 
-func (my *TcpFilter) ServerBl(buf []byte) (result []byte, err error) {
+func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	//db, fun byte, data []byte
 	var cmd10 Cmd10
 	my.ServerHandleCount++
@@ -341,7 +348,7 @@ func (my *TcpFilter) getBl(name string) *bloom.BloomFilter {
 	return blItem.Bl
 }
 
-func (my *TcpFilter) OtherCmd(cmd byte, data []byte) (err error) {
+func (my *TcpFilter) otherCmd(cmd byte, data []byte) (err error) {
 	var cmdMap map[string]interface{}
 	err = json.Unmarshal(data, &cmdMap)
 	if err != nil {
