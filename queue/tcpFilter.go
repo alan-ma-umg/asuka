@@ -326,7 +326,7 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 		"mem_total":     total,
 		"mem_sys":       my.mem.Sys,
 		"mem_alloc":     my.mem.Alloc,
-		"start_time":    my.startTime.Second(),
+		"start_time":    my.startTime.Unix(),
 	})
 }
 
