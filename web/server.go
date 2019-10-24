@@ -1037,6 +1037,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		})
 		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 	}
+	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"

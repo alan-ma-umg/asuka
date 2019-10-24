@@ -42,13 +42,14 @@ type BlsItem struct {
 }
 
 type TcpFilter struct {
-	blsItems         map[string]*BlsItem
-	bloomFilterMutex sync.Mutex
-	serverAddress    string
-	connPool         chan net.Conn
-	blTestCount      int
-	mem              runtime.MemStats
-	startTime        time.Time
+	blsItems           map[string]*BlsItem
+	bloomFilterMutex   sync.Mutex
+	serverAddress      string
+	connPool           chan net.Conn
+	mem                runtime.MemStats
+	startTime          time.Time
+	NewConnectionCount int //for client
+	blTestCount        int //for server
 }
 
 var tcpFilterInstanceOnce sync.Once
@@ -151,6 +152,7 @@ func (my *TcpFilter) getConn() (conn net.Conn, err error) {
 	default:
 		// None free, so allocate a new one.
 		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", my.serverAddress)
+		my.NewConnectionCount++
 		if err != nil {
 			break
 		}
@@ -196,7 +198,6 @@ func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
 	//read
 	n, err = io.ReadAtLeast(conn, buf, lenOfDataLen)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
@@ -207,7 +208,6 @@ func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
 		nn, err := io.ReadAtLeast(conn, buf[n:], int(lenOfDataLen+dataLen)-n)
 		n += nn
 		if err != nil {
-			log.Println(err)
 			return n, err
 		}
 	}
