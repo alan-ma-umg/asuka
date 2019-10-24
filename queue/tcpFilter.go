@@ -48,6 +48,7 @@ type TcpFilter struct {
 	connPool         chan net.Conn
 	blTestCount      int
 	mem              runtime.MemStats
+	startTime        time.Time
 }
 
 var tcpFilterInstanceOnce sync.Once
@@ -66,7 +67,7 @@ func GetTcpFilterInstance() *TcpFilter {
 			}
 		}
 
-		tcpFilterInstance = &TcpFilter{serverAddress: serverAddress, connPool: make(chan net.Conn, 100)}
+		tcpFilterInstance = &TcpFilter{serverAddress: serverAddress, connPool: make(chan net.Conn, 100), startTime: time.Now()}
 		//release idle bl
 		go func() {
 			for {
@@ -325,6 +326,7 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 		"mem_total":     total,
 		"mem_sys":       my.mem.Sys,
 		"mem_alloc":     my.mem.Alloc,
+		"start_time":    my.startTime.Second(),
 	})
 }
 
