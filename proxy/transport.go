@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"context"
-	"github.com/chenset/asuka/helper"
 	"golang.org/x/net/proxy"
 	"log"
 	"net"
@@ -12,15 +11,13 @@ import (
 )
 
 type Transport struct {
-	*helper.Counting
-	U                    *url.URL
-	t                    http.RoundTripper
-	transportClosed      bool
-	RecentFewTimesResult []bool
+	U               *url.URL
+	t               http.RoundTripper
+	transportClosed bool
 }
 
 func NewTransport(u *url.URL) *Transport {
-	return &Transport{U: u, t: createHttpTransport(u), Counting: &helper.Counting{}}
+	return &Transport{U: u, t: createHttpTransport(u)}
 }
 
 func createHttpTransport(u *url.URL) *http.Transport {

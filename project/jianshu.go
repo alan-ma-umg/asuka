@@ -121,7 +121,7 @@ func (my *JianShu) EntryUrl() []string {
 
 // frequency
 func (my *JianShu) Throttle(spider *spider.Spider) {
-	if spider.Transport.LoadRate(5) > 5.0 {
+	if spider.LoadRate(5) > 5.0 {
 		spider.AddSleep(60e9)
 	}
 
@@ -237,7 +237,7 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 		Title:    title,
 		Tag:      tag,
 		Data: map[string]interface{}{
-			"server": spider.Transport.U.Host,
+			"server": spider.TransportUrl.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 			"watch":  watch,
 			"view":   view,

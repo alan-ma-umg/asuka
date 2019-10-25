@@ -62,7 +62,7 @@ func (my *Www) EntryUrl() []string {
 // frequency
 func (my *Www) Throttle(spider *spider.Spider) {
 	spider.RecentSeveralTimesResultCap = 20
-	if spider.Transport.LoadRate(5) > 5.0 {
+	if spider.LoadRate(5) > 5.0 {
 		spider.AddSleep(60e9)
 	}
 
@@ -122,7 +122,7 @@ func (my *Www) ResponseSuccess(spider *spider.Spider) {
 		Url: spider.CurrentRequest().URL.String(),
 		Data: map[string]interface{}{
 			"title":  title,
-			"server": spider.Transport.U.Host,
+			"server": spider.TransportUrl.Host,
 			"time":   time.Since(spider.RequestStartTime).String(),
 		},
 	}

@@ -253,7 +253,7 @@ func (my *Dispatcher) AddSpider(addr *url.URL) {
 	defer my.spiderSliceMutex.Unlock()
 
 	for _, oldSpider := range my.spiders {
-		if oldSpider.Transport.U.Host == addr.Host {
+		if oldSpider.TransportUrl.Host == addr.Host {
 			return
 		}
 	}
@@ -334,9 +334,9 @@ func (my *Dispatcher) Run() *Dispatcher {
 			time.Sleep(time.Second * helper.SecondInterval)
 			for _, s := range my.GetSpiders() {
 				if s != nil {
-					s.Transport.CountSliceCursor++
-					s.Transport.RecordAccessSecondCount()
-					s.Transport.RecordFailureSecondCount()
+					s.CountSliceCursor++
+					s.RecordAccessSecondCount()
+					s.RecordFailureSecondCount()
 				}
 			}
 		}
