@@ -309,98 +309,99 @@
 </div>
 <script src="/static/asuka.js?v=2"></script>
 <script>
-    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent,
-        wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}};
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
+    const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}};
+    const preloadJson = {{.PreloadJson}}
 
-    loadScript("/static/vue.min.js", function () {
-        vueContent = new Vue({
-            el: "#vue-content",
-            data: {
-                home: {}, recent: {},
-                basic: {tcp_filter: {}},
-                fetchList: [],
-                action: "home",
-                chart1: null,
-            },
-            methods: {
-                switchServer: function (server) {
-                    this.$set(server, '_btnDisabled', true);
-                    ajax({
-                        url: "/switchServer",
-                        data: {project: '{{.ProjectName}}', name: server.name,},
-                        error: function (res) {
-                            if (res.status === 401) {
-                                location.href = "/login"
+        loadScript("/static/vue.min.js", function () {
+            vueContent = new Vue({
+                el: "#vue-content",
+                data: {
+                    home: preloadJson, recent: {},
+                    basic:preloadJson.basic,
+                    fetchList: [],
+                    action: "home",
+                    chart1: null,
+                },
+                methods: {
+                    switchServer: function (server) {
+                        this.$set(server, '_btnDisabled', true);
+                        ajax({
+                            url: "/switchServer",
+                            data: {project: '{{.ProjectName}}', name: server.name,},
+                            error: function (res) {
+                                if (res.status === 401) {
+                                    location.href = "/login"
+                                }
+                            }
+                        });
+                    },
+                    logout: function () {
+                        ajax({
+                            url: "/logout", success: function () {
+                                location.reload()
+                            }
+                        });
+                    },
+                    sendCommand: function (evt) {
+                        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+                            sendMessage(evt.target.value);
+                        }
+                    },
+                    wsPageSwitch: function () {
+                        vueContent.$data.action = vueContent.$data.action === "recent" ? "home" : "recent";
+                        sendMessage(vueContent.$data.action);
+                    }
+                },
+                computed: {
+                    retries: function () {
+                        let str = "", k;
+                        for (k in this.basic.queue_bls) {
+                            if (this.basic.queue_bls.hasOwnProperty(k)) {
+                                str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
                             }
                         }
-                    });
+                        return str ? str.substring(0, str.length - 2) : str
+                    }
                 },
-                logout: function () {
-                    ajax({
-                        url: "/logout", success: function () {
-                            location.reload()
+                filters: {
+                    numberFormat: function (v) {
+                        if (v === undefined) {
+                            return "0"
                         }
-                    });
-                },
-                sendCommand: function (evt) {
-                    if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-                        sendMessage(evt.target.value);
-                    }
-                },
-                wsPageSwitch: function () {
-                    vueContent.$data.action = vueContent.$data.action === "recent" ? "home" : "recent";
-                    sendMessage(vueContent.$data.action);
-                }
-            },
-            computed: {
-                retries: function () {
-                    let str = "", k;
-                    for (k in this.basic.queue_bls) {
-                        if (this.basic.queue_bls.hasOwnProperty(k)) {
-                            str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
+                        return new Intl.NumberFormat().format(v)
+                    }, fileSizeH: function (size) {
+                        return fileSizeH(size);
+                    }, urlTruncate: function (str) {
+                        if (str.length > 40) {
+                            return str.substring(0, 40) + "..(" + str.length + ")"
                         }
+                        return str
                     }
-                    return str ? str.substring(0, str.length - 2) : str
+                },
+                mounted: function () {
+                    handlerSocket();
+                    document.getElementById('vue-content').style.display = "block";
+                    loadScript('/static/Chart.min.js', function () {
+                        setTimeout(function () {
+                            isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
+                        }, 5000)
+                    });
                 }
-            },
-            filters: {
-                numberFormat: function (v) {
-                    if (v === undefined) {
-                        return "0"
-                    }
-                    return new Intl.NumberFormat().format(v)
-                }, fileSizeH: function (size) {
-                    return fileSizeH(size);
-                }, urlTruncate: function (str) {
-                    if (str.length > 40) {
-                        return str.substring(0, 40) + "..(" + str.length + ")"
-                    }
-                    return str
-                }
-            },
-            mounted: function () {
-                handlerSocket();
-                document.getElementById('vue-content').style.display = "block";
-                loadScript('/static/Chart.min.js', function () {
-                    setTimeout(function () {
-                        isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
-                    }, 5000)
-                });
-            }
-        });
+            });
 
-        vueContent.$watch('recent.fetched', function (newVal, oldVal) {
-            if (!newVal.length) {
-                return
-            }
-            for (item of newVal) {
-                this.fetchList.unshift(item);
-                if (this.fetchList.length > 200) {
-                    this.fetchList.pop()
+            vueContent.$watch('recent.fetched', function (newVal, oldVal) {
+                if (!newVal.length) {
+                    return
                 }
-            }
+                for (item of newVal) {
+                    this.fetchList.unshift(item);
+                    if (this.fetchList.length > 200) {
+                        this.fetchList.pop()
+                    }
+                }
+            });
         });
-    });
 </script>
 </body>
 </html>

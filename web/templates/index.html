@@ -227,78 +227,77 @@
 </div>
 <script src="/static/asuka.js?v=2"></script>
 <script>
-    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent,
-        wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
-    loadScript("/static/vue.min.js", function () {
-        vueContent = new Vue({
-            el: "#vue-content",
-            data: {
-                basic: {
-                    tcp_filter: {}
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
+    const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
+    const preloadJson = {{.PreloadJson}}
+        loadScript("/static/vue.min.js", function () {
+            vueContent = new Vue({
+                el: "#vue-content",
+                data: {
+                    basic: preloadJson.basic,
+                    projects: preloadJson.projects,
+                    chart1: null,
+                    action: "",
                 },
-                projects: [],
-                chart1: null,
-                action: "",
-            },
-            methods: {
-                goTo: function (name) {
-                    location.href = "/" + name
+                methods: {
+                    goTo: function (name) {
+                        location.href = "/" + name
+                    },
+                    switchProject: function (item) {
+                        this.$set(item, '_btnDisabled', true);
+                        ajax({
+                            url: "/switchProject", data: {name: item.name}, error: function (res) {
+                                if (res.status === 401) {
+                                    location.href = "/login"
+                                }
+                            }
+                        });
+                    },
+                    logout: function () {
+                        ajax({
+                            url: "/logout", success: function () {
+                                location.reload()
+                            }
+                        });
+                    },
+                    sendCommand: function (evt) {
+                        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+                            sendMessage(evt.target.value);
+                        }
+                    }
                 },
-                switchProject: function (item) {
-                    this.$set(item, '_btnDisabled', true);
-                    ajax({
-                        url: "/switchProject", data: {name: item.name}, error: function (res) {
-                            if (res.status === 401) {
-                                location.href = "/login"
+                computed: {
+                    retries: function () {
+                        let str = "", k;
+                        for (k in this.basic.queue_bls) {
+                            if (this.basic.queue_bls.hasOwnProperty(k)) {
+                                str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
                             }
                         }
-                    });
+                        return str ? str.substring(0, str.length - 2) : str
+                    },
                 },
-                logout: function () {
-                    ajax({
-                        url: "/logout", success: function () {
-                            location.reload()
+                filters: {
+                    numberFormat: function (v) {
+                        if (v === undefined || isNaN(v)) {
+                            return "0"
                         }
+                        return new Intl.NumberFormat().format(v)
+                    }, fileSizeH: function (size) {
+                        return fileSizeH(size);
+                    }
+                },
+                mounted: function () {
+                    handlerSocket();
+                    document.getElementById('vue-content').style.display = "block";
+                    loadScript('/static/Chart.min.js', function () {
+                        setTimeout(function () {
+                            isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
+                        }, 5000)
                     });
-                },
-                sendCommand: function (evt) {
-                    if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-                        sendMessage(evt.target.value);
-                    }
                 }
-            },
-            computed: {
-                retries: function () {
-                    let str = "", k;
-                    for (k in this.basic.queue_bls) {
-                        if (this.basic.queue_bls.hasOwnProperty(k)) {
-                            str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
-                        }
-                    }
-                    return str ? str.substring(0, str.length - 2) : str
-                },
-            },
-            filters: {
-                numberFormat: function (v) {
-                    if (v === undefined || isNaN(v)) {
-                        return "0"
-                    }
-                    return new Intl.NumberFormat().format(v)
-                }, fileSizeH: function (size) {
-                    return fileSizeH(size);
-                }
-            },
-            mounted: function () {
-                handlerSocket();
-                document.getElementById('vue-content').style.display = "block";
-                loadScript('/static/Chart.min.js', function () {
-                    setTimeout(function () {
-                        isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
-                    }, 5000)
-                });
-            }
+            });
         });
-    });
 </script>
 </body>
 </html>

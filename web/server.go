@@ -207,8 +207,9 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		GOOS  string
-		Check bool
+		GOOS        string
+		Check       bool
+		PreloadJson template.JS
 	}{
 		GOOS: runtime.GOOS,
 	}
@@ -217,6 +218,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie("id"); err == nil {
 		data.Check = authCheck(cookie.Value)
 	}
+
+	data.PreloadJson = template.JS(indexJson(data.Check))
 
 	template.Must(template.ParseFiles("web/templates/index.html")).Execute(w, data)
 }
@@ -242,6 +245,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		GOOS        string
 		ProjectName string
 		Check       bool
+		PreloadJson template.JS
 	}{
 		GOOS:        runtime.GOOS,
 		ProjectName: p.Name(),
@@ -251,6 +255,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie("id"); err == nil {
 		data.Check = authCheck(cookie.Value)
 	}
+
+	data.PreloadJson = template.JS(projectJson(data.Check, p, "home"))
 
 	template.Must(template.ParseFiles("web/templates/project.html")).Execute(w, data)
 }
