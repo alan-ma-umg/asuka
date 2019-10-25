@@ -1038,7 +1038,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 					log.Println(err)
 					return
 				}
-				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache)
+				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache) //must be struct instead of map in this case
 			}()
 		})
 		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
