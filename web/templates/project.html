@@ -264,17 +264,17 @@
             <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
         </div>
         <div>
-            <span v-if="basic.tcp_filter.load">Load: {{"{{basic.tcp_filter.load}}"}}</span>
-            <span v-if="basic.tcp_filter.mem_total">Used/Total: {{"{{(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_total|fileSizeH}}"}} <span
-                        :style="{color: 'hsl('+(100-(basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.mem_total-basic.tcp_filter.mem_available)/basic.tcp_filter.mem_total*100).toFixed(2)}}"}}%</span></span>
-            <span v-if="basic.tcp_filter.mem_sys">Sys/Alloc: {{"{{basic.tcp_filter.mem_sys|fileSizeH}}"}}/{{"{{basic.tcp_filter.mem_alloc|fileSizeH}}"}}</span>
+            <span v-if="basic.tcp_filter.Load">Load: {{"{{basic.tcp_filter.Load}}"}}</span>
+            <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemTotal|fileSizeH}}"}} <span
+                        :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></span>
+            <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemAlloc|fileSizeH}}"}}</span>
         </div>
         <div>
-            <span v-if="basic.tcp_filter.mem_rss">Rss: {{"{{basic.tcp_filter.mem_rss|fileSizeH}}"}}</span>
-            <span v-if="basic.tcp_filter.goroutine">Goroutine: {{"{{basic.tcp_filter.goroutine}}"}}</span>
-            <span v-if="basic.tcp_filter.goroutine">Alive: {{"{{basic.tcp_filter.bl_alive_size}}"}}</span>
-            <span v-if="basic.tcp_filter.goroutine">Test: {{"{{basic.tcp_filter.bl_test_count}}"}}</span>
-            <span v-if="basic.tcp_filter.goroutine">Sockets: {{"{{basic.tcp_filter.sockets}}"}}</span>
+            <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss|fileSizeH}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Goroutine: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
         </div>
     </div>
 

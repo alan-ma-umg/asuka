@@ -30,9 +30,19 @@ type Cmd10 struct {
 	Db   string
 }
 
-//Cmd10 server status report
-type Cmd20 struct {
-	Text string
+//Cmd20Response use struct instead of map. map may cause "fatal error: concurrent map iteration and map write" error when using json.Marshal with another Goroutine in some case
+type Cmd20Response struct {
+	BlAliveSize  int
+	BlTestCount  int
+	Goroutine    int
+	Sockets      int
+	Load         string
+	MemRss       uint64
+	MemAvailable uint64
+	MemTotal     uint64
+	MemSys       uint64
+	MemAlloc     uint64
+	StartTime    int64
 }
 
 type BlsItem struct {
@@ -146,8 +156,9 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 		return res, err
 	}
 
+	res = make([]byte, len(newBuf[lenOfDataLen:n]))
 	copy(res, newBuf[lenOfDataLen:n]) //must make a copy of buf or "panic: JSON decoder out of sync - data changing underfoot?"
-	return res, nil
+	return
 }
 
 func (my *TcpFilter) getConn() (conn net.Conn, err error) {
@@ -324,19 +335,18 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 	my.bloomFilterMutex.Lock()
 	blSize := len(my.blsItems)
 	my.bloomFilterMutex.Unlock()
-
-	return json.Marshal(map[string]interface{}{
-		"bl_alive_size": blSize,
-		"bl_test_count": my.blTestCount,
-		"goroutine":     runtime.NumGoroutine(),
-		"sockets":       helper.GetSocketEstablishedCountLazy(),
-		"load":          helper.GetSystemLoadFromProc(),
-		"mem_rss":       helper.GetProgramRss(),
-		"mem_available": memAvailable,
-		"mem_total":     total,
-		"mem_sys":       my.mem.Sys,
-		"mem_alloc":     my.mem.Alloc,
-		"start_time":    my.startTime.Unix(),
+	return json.Marshal(&Cmd20Response{
+		BlAliveSize:  blSize,
+		BlTestCount:  my.blTestCount,
+		Goroutine:    runtime.NumGoroutine(),
+		Sockets:      helper.GetSocketEstablishedCountLazy(),
+		Load:         helper.GetSystemLoadFromProc(),
+		MemRss:       helper.GetProgramRss(),
+		MemAvailable: memAvailable,
+		MemTotal:     total,
+		MemSys:       my.mem.Sys,
+		MemAlloc:     my.mem.Alloc,
+		StartTime:    my.startTime.Unix(),
 	})
 }
 
