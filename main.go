@@ -26,7 +26,6 @@ func main() {
 	//todo 文件日记展示系统
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
-	//todo loading css效果
 
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" {
