@@ -263,13 +263,13 @@
                         :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(2)}}"}}%</span></span>
             <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
         </div>
-        <div>
+        <div v-if="basic.tcp_filter">
             <span v-if="basic.tcp_filter.Load">Load: {{"{{basic.tcp_filter.Load}}"}}</span>
             <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemTotal|fileSizeH}}"}} <span
                         :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></span>
             <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemAlloc|fileSizeH}}"}}</span>
         </div>
-        <div>
+        <div v-if="basic.tcp_filter">
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss|fileSizeH}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Goroutine: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
