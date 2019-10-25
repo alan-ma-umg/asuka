@@ -51,7 +51,8 @@ func (my *FileLog) TailFile(tailSize int64) (buf []byte) {
 	}
 	defer file.Close()
 
-	buf = make([]byte, tailSize)
-	file.ReadAt(buf, helper.MaxInt64(0, stat.Size()-tailSize))
+	buf = make([]byte, helper.MinInt64(stat.Size(), tailSize))
+
+	file.ReadAt(buf, stat.Size()-int64(len(buf)))
 	return
 }

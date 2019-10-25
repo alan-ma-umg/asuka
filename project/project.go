@@ -78,6 +78,7 @@ func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 // ResponseAfter HTTP请求失败/成功之后
 // At Last
 func (my *Implement) ResponseAfter(spider *spider.Spider) {
+	//重置spider比较消耗性能
 	spider.ResetSpider() //现在是每请求一次, 就重置一次. 请求代理也会重新连接
 }
 

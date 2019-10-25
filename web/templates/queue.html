@@ -14,5 +14,22 @@
         <a href="{{$element}}" target="_blank">{{$element}}</a><br>
     {{end}}
 </div>
+
+
+<div id="btn" style="position: fixed;bottom: 20px;right:20px;text-align: center">
+    <a href="javascript:history.back()" style="font-size: 16px;margin:30px 0;display: block">{{.ProjectName}}</a>
+    <div id="scroll"
+         style="margin:0 auto;cursor:pointer;width: 70px;height:70px;border-radius:50%;background: #ff9c38"></div>
+</div>
+<script>
+    document.getElementById("scroll").addEventListener("click", function () {
+        if (window.innerHeight + window.scrollY + 100 >= document.body.offsetHeight) {
+            window.scrollTo(0, 0);
+        } else {
+            window.scrollTo(0, document.body.offsetHeight);
+        }
+    })
+</script>
+
 </body>
 </html>
