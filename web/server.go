@@ -420,22 +420,18 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("bloomFilter clearAll")
 			case "stop":
 				if check {
-					for _, d := range dispatchers {
-						for _, s := range d.GetSpiders() {
-							if s != nil {
-								s.Stop = true
-							}
+					for _, s := range p.GetSpiders() {
+						if s != nil {
+							s.Stop = true
 						}
 					}
 				}
 				fmt.Println("spider stop")
 			case "start":
 				if check {
-					for _, d := range dispatchers {
-						for _, s := range d.GetSpiders() {
-							if s != nil {
-								s.Stop = false
-							}
+					for _, s := range p.GetSpiders() {
+						if s != nil {
+							s.Stop = false
 						}
 					}
 				}
