@@ -26,8 +26,6 @@ import (
 
 var upgrade = websocket.Upgrader{
 	EnableCompression: true,
-	ReadBufferSize:    6000,
-	WriteBufferSize:   6000,
 }
 var StartTime = time.Now()
 var webSocketConnections = 0
