@@ -32,7 +32,7 @@ var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
 var mem runtime.MemStats
 var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second*6 + 234*time.Millisecond)
-var tcpFilterDoOnceInDurationCache *queue.Cmd20Response
+var tcpFilterDoOnceInDurationCache = &queue.Cmd20Response{} //not nil
 
 func Server(d []*project.Dispatcher, address string) error {
 	dispatchers = d
@@ -46,6 +46,7 @@ func Server(d []*project.Dispatcher, address string) error {
 		}
 	}()
 
+	http.HandleFunc("/log", commonHandleFunc(fileLog))
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
 	http.HandleFunc("/get/", commonHandleFunc(getServer))
 	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
@@ -78,9 +79,10 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 
 func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			fn(w, r)
-			return
+
+		//intent no httpOnly, js need it
+		if r.Method == "GET" && strings.ToLower(r.URL.String()) != "/login" && r.Header.Get("X-Requested-With") == "" {
+			http.SetCookie(w, &http.Cookie{Name: "intent", Value: r.URL.String(), Path: "/", Expires: time.Now().Add(time.Hour), HttpOnly: false})
 		}
 
 		if w.Header().Get("Content-Type") == "" {
@@ -88,6 +90,12 @@ func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 		}
 		w.Header().Set("Connection", "keep-alive")
 		w.Header().Set("Server", "Asuka")
+
+		//gzip
+		if !strings.Contains(strings.ToLower(r.Header.Get("Accept-Encoding")), "gzip") {
+			fn(w, r)
+			return
+		}
 		w.Header().Set("Content-Encoding", "gzip")
 		gz := gzip.NewWriter(w)
 		defer gz.Close()
@@ -125,10 +133,15 @@ func switchServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
+
+	//login check
+	//if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+	//	http.Error(w, "Login Required", 401)
+	//	return
+	//}
 
 	if _, ok := post["name"]; !ok {
 		http.NotFound(w, r)
@@ -172,10 +185,15 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
+
+	//login check
+	//if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+	//	http.Error(w, "Login Required", 401)
+	//	return
+	//}
 
 	if _, ok := post["name"]; !ok {
 		http.NotFound(w, r)
@@ -222,6 +240,19 @@ func index(w http.ResponseWriter, r *http.Request) {
 	data.PreloadJson = template.JS(indexJson(data.Check))
 
 	template.Must(template.ParseFiles("web/templates/index.html")).Execute(w, data)
+}
+func fileLog(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	GetFileLogInstance().UpdateLogCheckTime()
+
+	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
+		"log": string(GetFileLogInstance().TailFile(102400)),
+		"mod": GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
+	})
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -448,8 +479,7 @@ func getDispatcher(name string) *project.Dispatcher {
 
 func projectWebsite(w http.ResponseWriter, r *http.Request) {
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
 
@@ -470,10 +500,14 @@ func projectWebsite(w http.ResponseWriter, r *http.Request) {
 
 func getServer(w http.ResponseWriter, r *http.Request) {
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
+
+	//if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+	//	http.Error(w, "Login Required", 401)
+	//	return
+	//}
 
 	ps := strings.Split(r.URL.Path, "/")
 	if len(ps) != 3 {
@@ -500,10 +534,13 @@ func getServer(w http.ResponseWriter, r *http.Request) {
 
 func addServer(w http.ResponseWriter, r *http.Request) {
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Error(w, "Login Required", 401)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
+	//if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+	//	http.Error(w, "Login Required", 401)
+	//	return
+	//}
 
 	ps := strings.Split(r.URL.Path, "/")
 	if len(ps) != 3 {
@@ -590,8 +627,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cookie := &http.Cookie{Name: "id", Value: "", Path: "/", Expires: time.Unix(0, 0), HttpOnly: true}
-	http.SetCookie(w, cookie)
+	//clean login session
+	http.SetCookie(w, &http.Cookie{Name: "id", Value: "", Path: "/", Expires: time.Unix(0, 0), HttpOnly: true})
 
 	w.Header().Set("Content-type", "application/json")
 	jsonMap := map[string]interface{}{}
@@ -629,9 +666,17 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 
 		expireDuration := time.Hour * 24 * 7
 		id, _ := helper.Enc([]byte(helper.Env().WEBPassword))
-		cookie := &http.Cookie{Name: "id", Value: id, Path: "/", Expires: time.Now().Add(expireDuration), MaxAge: 0, HttpOnly: true}
 		database.Redis().Set(id, helper.Env().WEBPassword, expireDuration)
-		http.SetCookie(w, cookie)
+		//set login session
+		http.SetCookie(w, &http.Cookie{Name: "id", Value: id, Path: "/", Expires: time.Now().Add(expireDuration), MaxAge: 0, HttpOnly: true})
+
+		//intent
+		if cookie, err := r.Cookie("intent"); err == nil {
+			jsonMap["url"] = cookie.Value
+		}
+
+		//clean intent
+		http.SetCookie(w, &http.Cookie{Name: "intent", Value: "", Path: "/", Expires: time.Unix(0, 0), HttpOnly: true})
 
 		//send message to wx
 		ip := ""
@@ -667,8 +712,7 @@ func redisQueue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//login check
-	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
-		http.Redirect(w, r, "/login", 302)
+	if !authCheckOrRedirect(w, r) {
 		return
 	}
 
@@ -1032,8 +1076,16 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache) //must be struct instead of map in this case
 			}()
 		})
-		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 	}
+
+	jsonMap["basic"].(map[string]interface{})["log_mod"] = 0
+	jsonMap["basic"].(map[string]interface{})["log_check"] = 0
+	if check {
+		jsonMap["basic"].(map[string]interface{})["log_mod"] = GetFileLogInstance().GetLogModifyTime().Unix()
+		jsonMap["basic"].(map[string]interface{})["log_check"] = GetFileLogInstance().GetLogCheckTime().Unix()
+	}
+
+	jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 
 	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
 	jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
@@ -1078,7 +1130,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["access_count"] = accessCount
 	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
 
-	jsonMap["basic"].(map[string]interface{})["date"] = time.Now().Format(time.RFC3339)
 	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
 
 }
@@ -1111,4 +1162,18 @@ func authCheck(id string) bool {
 		return true
 	}
 	return false
+}
+
+func authCheckOrRedirect(w http.ResponseWriter, r *http.Request) bool {
+	if cookie, err := r.Cookie("id"); err != nil || !authCheck(cookie.Value) {
+		if strings.ToLower(r.Header.Get("X-Requested-With")) == "xmlhttprequest" {
+			http.Error(w, "Login Required", 401)
+			return false
+		}
+
+		http.Redirect(w, r, "/login", 302)
+		return false
+	}
+
+	return true
 }

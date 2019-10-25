@@ -18,6 +18,7 @@ function ajax(option) {
         error = option.error;
 
     let xhr = new XMLHttpRequest();
+
     xhr.timeout = timeout;
     xhr.onreadystatechange = function () {
         if (this.readyState !== 4) {
@@ -30,6 +31,7 @@ function ajax(option) {
         }
     };
     xhr.open(method, url, true);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     for (let k in headers) {
         xhr.setRequestHeader(k, headers[k]);
     }
@@ -191,7 +193,15 @@ function isMobile() {
     return false
 }
 
-function fileSizeH(size) {
-    const i = Math.floor(Math.log(size) / Math.log(1024));
-    return (size / Math.pow(1024, i)).toFixed(2) * 1 +  ['B', 'k', 'M', 'G', 'T'][i];
-}
+Number.prototype.fileSizeH = function () {
+    const i = Math.floor(Math.log(this.valueOf()) / Math.log(1024));
+    return (this.valueOf() / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'k', 'M', 'G', 'T'][i];
+};
+
+Number.prototype.timestamp2date = function () {
+    return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
+        timeStyle: "medium",
+        hour12: false,
+        dateStyle: "short"
+    })
+};

@@ -5,7 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <link href="/static/asuka.css?v=1" rel="stylesheet" type="text/css"/>
+    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div style="max-width: 1500px;margin: 20px auto;display: none"
@@ -185,10 +185,10 @@
         </table>
     </div>
     <br>
-    <div style="color: #dadada;padding: 0 20px 40px">
+    <div class="text-gray" style="padding: 0 20px 40px">
         <div>
-            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}  Date: {{"{{basic.date}}"}}</span>
-            <span v-if="basic.pool_size || basic.filter_new_connections">pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
+            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>
+            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
         </div>
         <div>
             <span v-if="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
@@ -196,18 +196,24 @@
                         :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(2)}}"}}%</span></span>
             <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
         </div>
-        <div v-if="basic.tcp_filter">
+        <div>
             <span v-if="basic.tcp_filter.Load">Load: {{"{{basic.tcp_filter.Load}}"}}</span>
-            <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemTotal|fileSizeH}}"}} <span
+            <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable).fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemTotal.fileSizeH()}}"}} <span
                         :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></span>
-            <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys|fileSizeH}}"}}/{{"{{basic.tcp_filter.MemAlloc|fileSizeH}}"}}</span>
+            <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys.fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemAlloc.fileSizeH()}}"}}</span>
         </div>
-        <div v-if="basic.tcp_filter">
-            <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss|fileSizeH}}"}}</span>
+        <div>
+            <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
+        </div>
+        <div>
+            <a href="/log" v-if="basic.log_mod > 0"
+               :class="{'text-orange':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
+                Log: {{"{{basic.log_mod.timestamp2date()}}"}}
+            </a>
         </div>
     </div>
 
@@ -226,78 +232,76 @@
     </div>
 </div>
 <script src="/static/asuka.js?v=2"></script>
-<script>
-    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
-    const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
-    const preloadJson = {{.PreloadJson}}
-        loadScript("/static/vue.min.js", function () {
-            vueContent = new Vue({
-                el: "#vue-content",
-                data: {
-                    basic: preloadJson.basic,
-                    projects: preloadJson.projects,
-                    chart1: null,
-                    action: "",
-                },
-                methods: {
-                    goTo: function (name) {
-                        location.href = "/" + name
+    <script>
+        let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
+        const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
+        const preloadJson = {{.PreloadJson}}
+            loadScript("/static/vue.min.js", function () {
+                vueContent = new Vue({
+                    el: "#vue-content",
+                    data: {
+                        basic: preloadJson.basic,
+                        projects: preloadJson.projects,
+                        chart1: null,
+                        action: "",
                     },
-                    switchProject: function (item) {
-                        this.$set(item, '_btnDisabled', true);
-                        ajax({
-                            url: "/switchProject", data: {name: item.name}, error: function (res) {
-                                if (res.status === 401) {
-                                    location.href = "/login"
+                    methods: {
+                        goTo: function (name) {
+                            location.href = "/" + name
+                        },
+                        switchProject: function (item) {
+                            this.$set(item, '_btnDisabled', true);
+                            ajax({
+                                url: "/switchProject", data: {name: item.name}, error: function (res) {
+                                    if (res.status === 401) {
+                                        location.href = "/login"
+                                    }
+                                }
+                            });
+                        },
+                        logout: function () {
+                            ajax({
+                                url: "/logout", success: function () {
+                                    location.reload()
+                                }
+                            });
+                        },
+                        sendCommand: function (evt) {
+                            if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+                                sendMessage(evt.target.value);
+                            }
+                        }
+                    },
+                    computed: {
+                        retries: function () {
+                            let str = "", k;
+                            for (k in this.basic.queue_bls) {
+                                if (this.basic.queue_bls.hasOwnProperty(k)) {
+                                    str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
                                 }
                             }
-                        });
+                            return str ? str.substring(0, str.length - 2) : str
+                        },
                     },
-                    logout: function () {
-                        ajax({
-                            url: "/logout", success: function () {
-                                location.reload()
+                    filters: {
+                        numberFormat: function (v) {
+                            if (v === undefined || isNaN(v)) {
+                                return "0"
                             }
+                            return new Intl.NumberFormat().format(v)
+                        }
+                    },
+                    mounted: function () {
+                        handlerSocket();
+                        document.getElementById('vue-content').style.display = "block";
+                        loadScript('/static/Chart.min.js', function () {
+                            setTimeout(function () {
+                                isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
+                            }, 5000)
                         });
-                    },
-                    sendCommand: function (evt) {
-                        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-                            sendMessage(evt.target.value);
-                        }
                     }
-                },
-                computed: {
-                    retries: function () {
-                        let str = "", k;
-                        for (k in this.basic.queue_bls) {
-                            if (this.basic.queue_bls.hasOwnProperty(k)) {
-                                str += (k == -1 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
-                            }
-                        }
-                        return str ? str.substring(0, str.length - 2) : str
-                    },
-                },
-                filters: {
-                    numberFormat: function (v) {
-                        if (v === undefined || isNaN(v)) {
-                            return "0"
-                        }
-                        return new Intl.NumberFormat().format(v)
-                    }, fileSizeH: function (size) {
-                        return fileSizeH(size);
-                    }
-                },
-                mounted: function () {
-                    handlerSocket();
-                    document.getElementById('vue-content').style.display = "block";
-                    loadScript('/static/Chart.min.js', function () {
-                        setTimeout(function () {
-                            isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
-                        }, 5000)
-                    });
-                }
+                });
             });
-        });
-</script>
+    </script>
 </body>
 </html>

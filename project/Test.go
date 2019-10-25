@@ -31,13 +31,15 @@ func (my *Test) EntryUrl() []string {
 	var links []string
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, "http://hk.flysay.com:88/")
+		links = append(links, "https://h.flysay.com/forever/")
 	}
 
 	return links
 }
 func (my *Test) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 30e9))
+	if spider.LoadRate(5) > 5 {
+		spider.AddSleep(time.Duration(rand.Float64() * 1e9))
+	}
 }
 
 func (my *Test) RequestBefore(spider *spider.Spider) {

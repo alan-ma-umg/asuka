@@ -138,6 +138,7 @@ body {
     background: rgb(247, 250, 252);
 }
 
+
 small {
     font-size: 0.9em;
 }
@@ -280,6 +281,10 @@ tr:hover {
 
 .text-green {
     color: #00af4c !important;
+}
+
+.text-gray {
+    color: #dadada;
 }
 
 .stop td:not(.ctl), .stop div:not(.ctl) {
