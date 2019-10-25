@@ -902,18 +902,18 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 
 		server := map[string]interface{}{}
 
-		//loads := make(map[int]float64, 9)
-		//loads[5] += s.Transport.LoadRate(5)
-		//loads[60] += s.Transport.LoadRate(60)
-		//loads[60*15] += s.Transport.LoadRate(900)
-		//loads[60*30] += s.Transport.LoadRate(1800)
-		//loads[3600] += s.Transport.LoadRate(3600)
-		//loads[3600*6] += s.Transport.LoadRate(3600 * 6)
-		//loads[3600*12] += s.Transport.LoadRate(3600 * 12)
-		//loads[86400] += s.Transport.LoadRate(86400)
-		//loads[86400*2] += s.Transport.LoadRate(86400 * 2)
-		//loads[86400*3] += s.Transport.LoadRate(86400 * 3)
-		//server["loads"] = loads
+		loads := make(map[int]float64, 9)
+		loads[5] += s.LoadRate(5)
+		loads[60] += s.LoadRate(60)
+		//loads[60*15] += s.LoadRate(900)
+		//loads[60*30] += s.LoadRate(1800)
+		//loads[3600] += s.LoadRate(3600)
+		//loads[3600*6] += s.LoadRate(3600 * 6)
+		//loads[3600*12] += s.LoadRate(3600 * 12)
+		//loads[86400] += s.LoadRate(86400)
+		//loads[86400*2] += s.LoadRate(86400 * 2)
+		//loads[86400*3] += s.LoadRate(86400 * 3)
+		server["loads"] = loads
 
 		server["enable"] = !s.Stop
 		server["stop"] = s.Stop
