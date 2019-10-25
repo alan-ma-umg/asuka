@@ -145,7 +145,9 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	if err != nil {
 		return res, err
 	}
-	return newBuf[lenOfDataLen:n], nil
+
+	copy(res, newBuf[lenOfDataLen:n]) //must make a copy of buf or "panic: JSON decoder out of sync - data changing underfoot?"
+	return res, nil
 }
 
 func (my *TcpFilter) getConn() (conn net.Conn, err error) {
