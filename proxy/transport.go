@@ -11,13 +11,12 @@ import (
 )
 
 type Transport struct {
-	U               *url.URL
 	t               http.RoundTripper
 	transportClosed bool
 }
 
 func NewTransport(u *url.URL) *Transport {
-	return &Transport{U: u, t: createHttpTransport(u)}
+	return &Transport{t: createHttpTransport(u)}
 }
 
 func createHttpTransport(u *url.URL) *http.Transport {
@@ -69,9 +68,9 @@ func (transport *Transport) Close() {
 	}
 }
 
-func (transport *Transport) Connect() *http.Transport {
+func (transport *Transport) Connect(u *url.URL) *http.Transport {
 	if transport.transportClosed {
-		transport.t = createHttpTransport(transport.U)
+		transport.t = createHttpTransport(u)
 		transport.transportClosed = false
 	}
 
