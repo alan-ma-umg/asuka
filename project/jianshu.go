@@ -229,12 +229,13 @@ func (my *JianShu) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 
+	r := []rune(title)
 	model := &AsukaJianShu{
 		Url:      spider.CurrentRequest().URL.String(),
 		Referer:  spider.CurrentRequest().Referer(),                                                  //todo only test
 		Cookie:   helper.TruncateStr([]rune(spider.CurrentRequest().Header.Get("cookie")), 2000, ""), //todo only test
 		UrlCrc32: int64(crc32.ChecksumIEEE([]byte(spider.CurrentRequest().URL.String()))),
-		Title:    title,
+		Title:    string(r[:helper.MinInt(len(r), 1000)]),
 		Tag:      tag,
 		Data: map[string]interface{}{
 			"server": spider.TransportUrl.Host,
