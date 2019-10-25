@@ -58,7 +58,7 @@ type DouBan struct {
 }
 
 func (my *DouBan) Name() string {
-	return "Senjougahara"
+	return "Hitagi"
 }
 
 func (my *DouBan) Showing() (str string) {
