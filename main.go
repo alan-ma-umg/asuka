@@ -39,19 +39,19 @@ func main() {
 func asuka() {
 	fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
 	log.Println(web.Server([]*project.Dispatcher{
-		//project.New(&project.DouBan{}, time.Time{}).Run(),
-		//project.New(&project.Pixiv{}, time.Time{}).Run(),
+		project.New(&project.DouBan{}, time.Time{}).Run(),
+		project.New(&project.Pixiv{}, time.Time{}).Run(),
 		//project.New(&project.Test2{}, time.Time{}).Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),
 		//project.New(&project.Www{}, time.Now()).Run(),
-		//project.New(&project.Forever{}, time.Time{}).CleanUp().Run(),
+		project.New(&project.Forever{}, time.Time{}).CleanUp().Run(),
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
-		//project.New(&project.Test2{}, time.Now().Add(time.Minute*10)).CleanUp().Run(),
-		//project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),
-		//project.New(&project.JianShu{}, time.Now().Add(time.Minute*5)).CleanUp().Run(),
-		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
+		project.New(&project.Test2{}, time.Now().Add(time.Minute*10)).CleanUp().Run(),
+		project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),
+		project.New(&project.JianShu{}, time.Now().Add(time.Minute*5)).CleanUp().Run(),
+		project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }
