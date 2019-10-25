@@ -376,24 +376,15 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("debug.FreeOsMemory")
 			case "enqueue":
 				if check {
-					for _, s := range p.GetSpiders() {
-						if s != nil {
-							for _, l := range p.EntryUrl() {
-								s.GetQueue().Enqueue(l)
-							}
-							break
-						}
+					for _, l := range p.EntryUrl() {
+						p.GetQueue().Enqueue(l)
 					}
 				}
 				fmt.Println("enqueue")
 			case "clear":
 				if check {
-					for _, s := range p.GetSpiders() {
-						if s != nil {
-							s.GetQueue().BlCleanUp()
-							break
-						}
-					}
+					p.GetQueue().BlCleanUp()
+					break
 				}
 				fmt.Println("bloomFilter clearAll")
 			case "stop":
@@ -997,7 +988,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		}
 
 		if len(p.GetSpiders()) > 0 {
-			indexSlice, valueSlice := p.GetSpiders()[0].GetQueue().GetBlsTestCount()
+			indexSlice, valueSlice := p.GetQueue().GetBlsTestCount()
 			for i, v := range indexSlice {
 				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[v] += valueSlice[i]
 			}
