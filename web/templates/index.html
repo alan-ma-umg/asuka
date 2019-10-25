@@ -72,7 +72,7 @@
                             / {{"{{basic.ws_connections|numberFormat}}"}}</strong>
                     </td>
                     <td>
-                        Goroutine
+                        Threads
                     </td>
                     <td>
                         <strong>{{"{{basic.goroutine|numberFormat}}"}}</strong>
@@ -204,7 +204,7 @@
         </div>
         <div v-if="basic.tcp_filter">
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss|fileSizeH}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Goroutine: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
