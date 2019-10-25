@@ -302,8 +302,10 @@
             </a>
         {{end}}
         <button v-on:click="wsPageSwitch()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H /
-            R
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">
+            <span v-if="action=='home'">Crawl History</span>
+            <span v-else>Servers List</span>
+
         </button>
         <button v-on:click="wsOpenClose()" class="btn-mb"
                 style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
