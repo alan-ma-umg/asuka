@@ -32,7 +32,8 @@ var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
 var mem runtime.MemStats
 var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second*6 + 234*time.Millisecond)
-var tcpFilterDoOnceInDurationCache = &queue.Cmd20Response{} //not nil
+var tcpFilterDoOnceInDurationCache *queue.Cmd20Response
+var AlwaysEmptyTcpFilterDoOnceInDuration = &queue.Cmd20Response{} //not nil
 
 func Server(d []*project.Dispatcher, address string) error {
 	dispatchers = d
@@ -1072,6 +1073,10 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache) //must be struct instead of map in this case
 			}()
 		})
+
+		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
+	} else {
+		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = AlwaysEmptyTcpFilterDoOnceInDuration
 	}
 
 	jsonMap["basic"].(map[string]interface{})["log_mod"] = 0
@@ -1080,8 +1085,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		jsonMap["basic"].(map[string]interface{})["log_mod"] = GetFileLogInstance().GetLogModifyTime().Unix()
 		jsonMap["basic"].(map[string]interface{})["log_check"] = GetFileLogInstance().GetLogCheckTime().Unix()
 	}
-
-	jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 
 	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
 	jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
