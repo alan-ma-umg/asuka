@@ -151,6 +151,7 @@
                 <th>Size</th>
                 <th>Content Type</th>
                 <th>Error</th>
+                <th>Find/New</th>
                 <th>Url</th>
             </tr>
             </thead>
@@ -167,6 +168,7 @@
                 <td class="center">{{"{{item.TrafficInStr}}"}}</td>
                 <td class="center">{{"{{item.ContentType}}"}}</td>
                 <td class="center">{{"{{item.ErrType}}"}}</td>
+                <td class="center">{{"{{item.FindUrls}}"}}/{{"{{item.NewUrls}}"}}</td>
                 {{if .Check}}
                     <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a>
                     </td>
@@ -303,6 +305,10 @@
                 style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H /
             R
         </button>
+        <button v-on:click="wsOpenClose()" class="btn-mb"
+                style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+            Off
+        </button>
         <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                style="max-width: 160px">
     </div>
@@ -318,7 +324,7 @@
                 el: "#vue-content",
                 data: {
                     home: preloadJson, recent: {},
-                    basic:preloadJson.basic,
+                    basic: preloadJson.basic,
                     fetchList: [],
                     action: "home",
                     chart1: null,
@@ -351,6 +357,9 @@
                     wsPageSwitch: function () {
                         vueContent.$data.action = vueContent.$data.action === "recent" ? "home" : "recent";
                         sendMessage(vueContent.$data.action);
+                    }, wsOpenClose: function () {
+                        manualOpen();
+                        manualClose();
                     }
                 },
                 computed: {

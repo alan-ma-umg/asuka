@@ -443,6 +443,10 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		project.AddFailure()
 	}
 
+	if summary == nil {
+		return
+	}
+
 	//IO
 	project.TrafficIn += summary.TrafficIn
 	project.TrafficOut += summary.TrafficOut
@@ -477,10 +481,11 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 				continue
 			}
 
+			summary.FindUrls++
 			if spider.GetQueue().BlTestAndAddString(enqueueUrl) {
 				continue
 			}
-
+			summary.NewUrls++
 			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 		}
 	}

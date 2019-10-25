@@ -33,6 +33,8 @@ type Summary struct {
 	Index         int64
 	TransportName string
 	StatusCode    int // http response status code
+	FindUrls      int //页面中找到的全部url
+	NewUrls       int //页面中找到的全部新url, 新入队列的url数量
 	RawUrl        string
 	ConsumeTime   string
 	AddTime       string
@@ -105,17 +107,16 @@ func (spider *Spider) ResetResponse() {
 }
 
 func (spider *Spider) Client() *http.Client {
-	spider.setClient()
-	return spider.client
-}
-
-func (spider *Spider) setClient() {
 	if spider.client == nil || spider.client.Transport == nil || spider.transport == nil || spider.client.Transport.(*http.Transport) != spider.transport.Connect(spider.TransportUrl) {
 		spider.ResetClient()
 
+		// new one
+		spider.transport = proxy.NewTransport(spider.TransportUrl)
 		j, _ := cookiejar.New(nil)
 		spider.client = &http.Client{Transport: spider.transport.Connect(spider.TransportUrl), Jar: j, Timeout: time.Second * 30}
 	}
+
+	return spider.client
 }
 
 func (spider *Spider) ResetClient() {
@@ -128,6 +129,7 @@ func (spider *Spider) ResetClient() {
 	}
 
 	spider.client = nil
+	spider.transport = nil
 }
 
 func (spider *Spider) AddSleep(duration time.Duration) {
