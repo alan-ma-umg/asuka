@@ -57,52 +57,56 @@ var tcpFilterInstance *TcpFilter
 
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
-		//only client mode
-		serverAddress := ""
+
+		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 100), startTime: time.Now()}
+
+		//for client mode
 		if helper.Env().BloomFilterClient != "" {
 			u, err := url.Parse(helper.Env().BloomFilterClient)
 			if err != nil {
 				log.Println(err)
 			} else {
-				serverAddress = u.Host
+				tcpFilterInstance.serverAddress = u.Host
 			}
 		}
 
-		tcpFilterInstance = &TcpFilter{serverAddress: serverAddress, connPool: make(chan net.Conn, 100), startTime: time.Now()}
-		//release idle bl
-		go func() {
-			for {
-				time.Sleep(time.Minute * 33)
-				tcpFilterInstance.bloomFilterMutex.Lock()
+		//for server mode
+		if helper.Env().BloomFilterServer != "" {
+			//release idle bl
+			go func() {
+				for {
+					time.Sleep(time.Minute * 33)
+					tcpFilterInstance.bloomFilterMutex.Lock()
 
-				for name, blItem := range tcpFilterInstance.blsItems {
-					if time.Since(blItem.LastUse).Seconds() > 3600 {
-						tcpFilterInstance.blSave(name, blItem)
-						delete(tcpFilterInstance.blsItems, name)
+					for name, blItem := range tcpFilterInstance.blsItems {
+						if time.Since(blItem.LastUse).Seconds() > 3600 {
+							tcpFilterInstance.blSave(name, blItem)
+							delete(tcpFilterInstance.blsItems, name)
 
-						log.Println("del tcp bl: " + name)
+							log.Println("del tcp bl: " + name)
+						}
 					}
+
+					tcpFilterInstance.bloomFilterMutex.Unlock()
+				}
+			}()
+
+			// kill signal handing
+			helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
+
+				tcpFilterInstance.bloomFilterMutex.Lock()
+				defer tcpFilterInstance.bloomFilterMutex.Unlock()
+
+				//save to file
+				for name, blItem := range tcpFilterInstance.blsItems {
+					tcpFilterInstance.blSave(name, blItem)
 				}
 
-				tcpFilterInstance.bloomFilterMutex.Unlock()
-			}
-		}()
-
-		// kill signal handing
-		helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
-
-			tcpFilterInstance.bloomFilterMutex.Lock()
-			defer tcpFilterInstance.bloomFilterMutex.Unlock()
-
-			//save to file
-			for name, blItem := range tcpFilterInstance.blsItems {
-				tcpFilterInstance.blSave(name, blItem)
-			}
-
-			if len(tcpFilterInstance.blsItems) > 0 {
-				log.Println("save")
-			}
-		})
+				if len(tcpFilterInstance.blsItems) > 0 {
+					log.Println("save")
+				}
+			})
+		}
 	})
 	return tcpFilterInstance
 }
@@ -161,6 +165,11 @@ func (my *TcpFilter) getConn() (conn net.Conn, err error) {
 		conn.(*net.TCPConn).SetKeepAlivePeriod(time.Second * 58)
 	}
 	return
+}
+
+//ConnPoolSize for client
+func (my *TcpFilter) ConnPoolSize() int {
+	return len(my.connPool)
 }
 
 func (my *TcpFilter) putConn(conn net.Conn) {
@@ -315,7 +324,6 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 	my.bloomFilterMutex.Unlock()
 
 	return json.Marshal(map[string]interface{}{
-		"pool_size":     len(my.connPool),
 		"bl_alive_size": blSize,
 		"bl_test_count": my.blTestCount,
 		"goroutine":     runtime.NumGoroutine(),

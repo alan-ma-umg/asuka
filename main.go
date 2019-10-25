@@ -30,10 +30,10 @@ func main() {
 
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" {
-		queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
+		go queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
 	} else {
-		asuka()
 	}
+	asuka()
 }
 
 func asuka() {

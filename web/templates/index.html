@@ -188,7 +188,7 @@
     <div style="color: #dadada;padding: 0 20px 40px">
         <div>
             <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}  Date: {{"{{basic.date}}"}}</span>
-            <span v-if="basic.filter_new_connections">new conn: {{"{{basic.filter_new_connections}}"}}</span>
+            <span v-if="basic.pool_size || basic.filter_new_connections">pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
         </div>
         <div>
             <span v-if="basic.sys_load">Load: {{"{{basic.sys_load}}"}}</span>
@@ -207,7 +207,6 @@
             <span v-if="basic.tcp_filter.goroutine">Goroutine: {{"{{basic.tcp_filter.goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.goroutine">Alive: {{"{{basic.tcp_filter.bl_alive_size}}"}}</span>
             <span v-if="basic.tcp_filter.goroutine">Test: {{"{{basic.tcp_filter.bl_test_count}}"}}</span>
-            <span v-if="basic.tcp_filter.goroutine">Pool: {{"{{basic.tcp_filter.pool_size}}"}}</span>
             <span v-if="basic.tcp_filter.goroutine">Sockets: {{"{{basic.tcp_filter.sockets}}"}}</span>
         </div>
     </div>

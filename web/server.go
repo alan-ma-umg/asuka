@@ -26,6 +26,8 @@ import (
 
 var upgrade = websocket.Upgrader{
 	EnableCompression: true,
+	ReadBufferSize:    6000,
+	WriteBufferSize:   6000,
 }
 var StartTime = time.Now()
 var webSocketConnections = 0
@@ -1024,7 +1026,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		sysMemInfo = helper.ByteCountBinary(totalMemByte-availableMemByte) + "/" + helper.ByteCountBinary(totalMemByte)
 	}
 
-	if check {
+	if check && helper.Env().BloomFilterClient != "" {
 		tcpFilterDoOnceInDuration.Do(func() {
 			//go func() { //fatal error: concurrent map iteration and map write
 			reportBuf, err := queue.GetTcpFilterInstance().Cmd(20, nil)
@@ -1036,9 +1038,10 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			//}()
 		})
 		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
-
-		jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
 	}
+
+	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
+	jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
