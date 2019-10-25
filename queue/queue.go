@@ -11,6 +11,11 @@ import (
 	"sync"
 )
 
+const (
+	mainBlSize     = 30000000
+	retriesBlsSize = 3000000
+)
+
 type Queue struct {
 	name                   string
 	bls                    []*bloom.BloomFilter
@@ -53,7 +58,7 @@ func (my *Queue) ResetBloomFilterInstance() {
 
 func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	my.bloomFilterInstanceDoOnce.Do(func() {
-		my.bloomFilterInstance = bloom.NewWithEstimates(30000000, 0.004)
+		my.bloomFilterInstance = bloom.NewWithEstimates(mainBlSize, 0.004)
 		f, _ := os.Open(my.mainBlFilename())
 		my.bloomFilterInstance.ReadFrom(f)
 		f.Close()
@@ -110,9 +115,10 @@ func (my *Queue) BlCleanUp() {
 	my.getBloomFilterInstance().ClearAll()
 }
 
-func (my *Queue) blTcp(db string, fun byte, s string) (res bool) {
+func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 	buf, err := GetTcpFilterInstance().Cmd(10, &Cmd10{
 		Db:   db,
+		Size: size,
 		Fun:  fun,
 		Urls: []string{s},
 	})
@@ -133,7 +139,7 @@ func (my *Queue) blTcp(db string, fun byte, s string) (res bool) {
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), 10, s)
+		return my.blTcp(my.GetBlKey(), mainBlSize, 10, s)
 	}
 
 	my.bloomFilterMutex.Lock()
@@ -144,7 +150,7 @@ func (my *Queue) BlTestString(s string) bool {
 //BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), 20, s)
+		return my.blTcp(my.GetBlKey(), mainBlSize, 20, s)
 	}
 
 	my.bloomFilterMutex.Lock()
@@ -184,7 +190,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 			res = my.getBl(i).TestAndAddString(rawUrl)
 			my.enqueueForFailureMutex.Unlock()
 		} else {
-			res = my.blTcp(my.GetBlsKey(i), 20, rawUrl)
+			res = my.blTcp(my.GetBlsKey(i), retriesBlsSize, 20, rawUrl)
 		}
 
 		if !res {
@@ -203,7 +209,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	for i := len(my.bls); i <= index; i++ {
-		bloomFilterInstance := bloom.NewWithEstimates(10000000, 0.01)
+		bloomFilterInstance := bloom.NewWithEstimates(retriesBlsSize, 0.01)
 		f, _ := os.Open(my.blsFilename(i))
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()

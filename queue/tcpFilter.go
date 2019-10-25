@@ -28,6 +28,7 @@ type Cmd10 struct {
 	Urls []string
 	Fun  byte
 	Db   string
+	Size uint
 }
 
 //Cmd20Response use struct instead of map. map may cause "fatal error: concurrent map iteration and map write" error when using json.Marshal with another Goroutine in some case
@@ -68,7 +69,7 @@ var tcpFilterInstance *TcpFilter
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
 
-		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 100), startTime: time.Now()}
+		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 1024), startTime: time.Now()}
 
 		//for client mode
 		if helper.Env().BloomFilterClient != "" {
@@ -352,7 +353,7 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 
 func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	//db, fun byte, data []byte
-	var cmd10 Cmd10
+	var cmd10 *Cmd10
 	err = json.Unmarshal(buf, &cmd10)
 	if err != nil {
 		log.Println(err)
@@ -365,7 +366,7 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	defer my.bloomFilterMutex.Unlock()
 
 	//fun 10=TestString 20=TestAndAddString
-	bl := my.getBl(cmd10.Db)
+	bl := my.getBl(cmd10)
 	var list []byte
 	for _, u := range cmd10.Urls {
 		var b byte
@@ -386,21 +387,21 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 }
 
 //getBl using with lock
-func (my *TcpFilter) getBl(name string) *bloom.BloomFilter {
-	blItem, ok := my.blsItems[name]
+func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
+	blItem, ok := my.blsItems[cmd10.Db]
 	if !ok {
 		blItem = &BlsItem{}
-		blItem.Bl = bloom.NewWithEstimates(10000000, 0.003) //todo 容量太小, 要视类型与情况加大. 可以考虑通过客户端传参数过来控制
-		f, _ := os.Open(my.getBlFileName(name))
+		blItem.Bl = bloom.NewWithEstimates(cmd10.Size, 0.003)
+		f, _ := os.Open(my.getBlFileName(cmd10.Db))
 		blItem.Bl.ReadFrom(f)
 		f.Close()
 
 		if len(my.blsItems) == 0 {
 			my.blsItems = make(map[string]*BlsItem)
 		}
-		my.blsItems[name] = blItem
+		my.blsItems[cmd10.Db] = blItem
 
-		log.Println("new tcp bl: " + name)
+		log.Println("new tcp bl: " + cmd10.Db)
 	}
 
 	blItem.LastUse = time.Now()

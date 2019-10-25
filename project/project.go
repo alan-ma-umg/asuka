@@ -241,7 +241,7 @@ func (my *Dispatcher) initSpider() { //todo 这个需要重构
 //}
 
 func (my *Dispatcher) GetQueue() *queue.Queue {
-	if my.queue == nil {
+	if my.queue == nil { //todo DoOnce in struct
 		my.queue = queue.NewQueue(my.Name())
 	}
 	return my.queue
