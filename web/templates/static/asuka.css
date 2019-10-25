@@ -253,7 +253,7 @@ tr:hover {
 
 .ctrl-wrap {
     position: fixed;
-    bottom: 10px;
+    bottom: 0;
     left: 10px;
     z-index: 1;
 }

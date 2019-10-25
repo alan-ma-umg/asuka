@@ -5,7 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/asuka.css?v=1" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div style="max-width: 1500px;margin: 20px auto;display: none"
@@ -254,7 +254,7 @@
         </table>
     </div>
     <br>
-    <div style="color: #dadada;padding: 0 20px 40px">
+    <div style="color: #dadada;padding: 0 20px 70px">
         <div>
             <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}  Date: {{"{{basic.date}}"}}</span>
             <span v-if="basic.pool_size || basic.filter_new_connections">pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
@@ -283,34 +283,34 @@
     <div class="ctrl-wrap">
         {{if not .Check}}
             <a href="/login">
-                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
+                <button class="btn-mb" style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login</button>
             </a>
         {{else}}
             <button v-on:click="logout()" class="btn-mb"
-                    style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
             </button>
             <a href="/add/{{.ProjectName}}">
-                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Add Proxy
+                <button class="btn-mb" style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Add Proxy
                 </button>
             </a>
             <a href="/get/{{.ProjectName}}">
-                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Get Proxy
+                <button class="btn-mb" style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Get Proxy
                 </button>
             </a>
             <a href="/website/{{.ProjectName}}">
-                <button class="btn-mb" style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">WEB</button>
+                <button class="btn-mb" style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">WEB</button>
             </a>
         {{end}}
         <button v-on:click="wsPageSwitch()" class="btn-mb"
-                style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H /
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">H /
             R
         </button>
         <button v-on:click="wsOpenClose()" class="btn-mb"
-                style="background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
             Off
         </button>
         <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
-               style="max-width: 160px">
+               style="margin-bottom: 10px;max-width: 160px">
     </div>
 </div>
 <script src="/static/asuka.js?v=2"></script>
