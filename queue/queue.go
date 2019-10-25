@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	mainBlSize     = 30000000
-	retriesBlsSize = 3000000
+	mainBlSize         = 30000000
+	retriesBlsSizeBase = 3000000
 )
 
 type Queue struct {
@@ -190,7 +190,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 			res = my.getBl(i).TestAndAddString(rawUrl)
 			my.enqueueForFailureMutex.Unlock()
 		} else {
-			res = my.blTcp(my.GetBlsKey(i), retriesBlsSize, 20, rawUrl)
+			res = my.blTcp(my.GetBlsKey(i), uint(retriesBlsSizeBase/(i+1)), 20, rawUrl)
 		}
 
 		if !res {
@@ -209,7 +209,7 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 func (my *Queue) getBl(index int) *bloom.BloomFilter {
 	for i := len(my.bls); i <= index; i++ {
-		bloomFilterInstance := bloom.NewWithEstimates(retriesBlsSize, 0.01)
+		bloomFilterInstance := bloom.NewWithEstimates(uint(retriesBlsSizeBase/(i+1)), 0.01)
 		f, _ := os.Open(my.blsFilename(i))
 		bloomFilterInstance.ReadFrom(f)
 		f.Close()

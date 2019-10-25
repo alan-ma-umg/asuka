@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"runtime"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -401,7 +402,7 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 		}
 		my.blsItems[cmd10.Db] = blItem
 
-		log.Println("new tcp bl: " + cmd10.Db)
+		log.Println("new tcp bl: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))
 	}
 
 	blItem.LastUse = time.Now()
