@@ -1032,14 +1032,14 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	if check && helper.Env().BloomFilterClient != "" {
 		tcpFilterDoOnceInDuration.Do(func() {
-			//go func() { //fatal error: concurrent map iteration and map write
-			reportBuf, err := queue.GetTcpFilterInstance().Cmd(20, nil)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache)
-			//}()
+			go func() {
+				reportBuf, err := queue.GetTcpFilterInstance().Cmd(20, nil)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache)
+			}()
 		})
 		jsonMap["basic"].(map[string]interface{})["tcp_filter"] = tcpFilterDoOnceInDurationCache
 	}
