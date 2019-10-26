@@ -44,7 +44,7 @@ func asuka() {
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),
 		//project.New(&project.Www{}, time.Now()).Run(),
-		project.New(&project.Forever{}, time.Time{}).CleanUp().Run(),
+		project.New(&project.Forever{}, time.Now().Add(time.Minute*30)).CleanUp().Run(),
 		project.New(&project.Test{}, time.Time{}).CleanUp().Run(),
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),

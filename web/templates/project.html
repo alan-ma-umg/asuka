@@ -12,8 +12,8 @@
      id="vue-content">
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
-            <div style="float:right">
-                <h1>{{"{{basic.mem_sys}}"}}</h1>
+            <div style="float:right;">
+                <h1>{{"{{basic.mem_sys}}"}} <small style="font-size: 12px" v-if="basic.tcp_filter.MemRss>0">{{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</small></h1>
                 <small>Memory usage</small>
             </div>
             <div>
@@ -30,12 +30,22 @@
                     <td>
                         <strong>{{"{{basic.time}}"}}</strong>
                     </td>
-                    <td>
-                        Uptime
-                    </td>
-                    <td>
-                        <strong>{{"{{basic.uptime}}"}}</strong>
-                    </td>
+                    <template v-if="basic.sys_load">
+                        <td>
+                            Load
+                        </td>
+                        <td>
+                            <strong>{{"{{basic.sys_load}}"}}</strong>
+                        </td>
+                    </template>
+                    <template v-else>
+                        <td>
+                            Uptime
+                        </td>
+                        <td>
+                            <strong>{{"{{basic.uptime}}"}}</strong>
+                        </td>
+                    </template>
                 </tr>
                 <tr>
                     <td>
@@ -274,20 +284,20 @@
                 Log: {{"{{basic.log_mod.timestamp2date()}}"}}
             </a>
         </div>
-        <div v-if="basic.tcp_filter">
+        <div>
             <span v-if="basic.tcp_filter.Load">Load: {{"{{basic.tcp_filter.Load}}"}}</span>
             <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable).fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemTotal.fileSizeH()}}"}} <span
                         :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></span>
             <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys.fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemAlloc.fileSizeH()}}"}}</span>
         </div>
-        <div v-if="basic.tcp_filter">
+        <div>
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
         </div>
-        <div v-if="basic.tcp_filter">
+        <div>
             <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
                :class="{'text-orange':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
                 Log: {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}

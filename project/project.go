@@ -184,62 +184,29 @@ func (my *Dispatcher) getSpidersWaiting() []*spider.Spider {
 	return my.spidersWaiting
 }
 
-func (my *Dispatcher) initSpider() { //todo 这个需要重构
+func (my *Dispatcher) initProject() {
 	defer database.Redis().Del(my.getGOBKey())
 
 	// recover Dispatcher
 	gobEnc, err := database.Redis().Get(my.getGOBKey()).Result()
-	//recoverSpiders := make(map[string]*spider.Spider)
 	if err == nil && gobEnc != "" {
 		decBuf := &bytes.Buffer{}
 		decBuf.WriteString(gobEnc)
 		gob.NewDecoder(decBuf).Decode(my)
-		//log.Println(err)
-		//} else {
-		//	for _, item := range my.spiders {
-		//		recoverSpiders[item.Transport.S.Host] = item
-		//	}
-		//}
-		//my.spiders = []*spider.Spider{}
 	}
 
 	//append default transport
 	u, _ := url.Parse("direct://localhost")
 	my.AddSpider(u)
-	//s := spider.New(u, my.queue)
-	//my.spiders = append(my.spiders, s)
 
-	//for _, t := range my.initTransport() {
+	my.Init(my)
 
-	//name := s.Transport.S.Name
-	//enable := s.Transport.S.Enable
-	//interval := s.Transport.S.Interval
-	//clientAddr := s.Transport.S.ClientAddr
-
-	//recover from
-	//if recoverSpider, ok := recoverSpiders[s.Transport.S.Host]; ok {
-	//	encBuf := &bytes.Buffer{}
-	//	if err = gob.NewEncoder(encBuf).Encode(recoverSpider); err != nil || gob.NewDecoder(encBuf).Decode(s) != nil {
-	//		log.Println(err)
-	//	}
-	//}
-
-	//s.Stop = t.S.Stop
-	//s.Transport.S.Name = name
-	//s.Transport.S.Enable = enable
-	//s.Transport.S.Interval = interval
-	//s.Transport.S.ClientAddr = clientAddr
-
-	//}
+	for _, l := range my.EntryUrl() {
+		//if !my.GetQueue().BlTestString(l) {
+		my.GetQueue().Enqueue(l)
+		//}
+	}
 }
-
-//func (my *Dispatcher) initTransport() (transports []*proxy.Transport) {
-//append default transport
-//u, _ := url.Parse("direct://localhost")
-//dt := proxy.NewTransport(&proxy.AddrInfo{URL: u})
-//dt.S.Stop = !helper.Env().LocalTransport
-//return append(transports, dt)
-//}
 
 func (my *Dispatcher) GetQueue() *queue.Queue {
 	if my.queue == nil { //todo DoOnce in struct
@@ -320,14 +287,9 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 }
 
 func (my *Dispatcher) Run() *Dispatcher {
-	my.initSpider()
-	my.Init(my)
-
-	for _, l := range my.EntryUrl() {
-		//if !my.GetQueue().BlTestString(l) {
-		my.GetQueue().Enqueue(l)
-		//}
-	}
+	go func() {
+		my.initProject()
+	}()
 
 	//transport counter
 	go func() {

@@ -32,7 +32,7 @@ var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
 var mem runtime.MemStats
 var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second*6 + 234*time.Millisecond)
-var tcpFilterDoOnceInDurationCache *queue.Cmd20Response
+var tcpFilterDoOnceInDurationCache = &queue.Cmd20Response{}       //not nil
 var AlwaysEmptyTcpFilterDoOnceInDuration = &queue.Cmd20Response{} //not nil
 
 func Server(d []*project.Dispatcher, address string) error {

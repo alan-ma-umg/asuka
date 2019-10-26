@@ -12,7 +12,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -72,10 +71,9 @@ func (my *ZhiHu) Init(d *Dispatcher) {
 	}()
 
 	go func() {
-		t := time.NewTicker(time.Second * 5)
 		for {
-			<-t.C
-			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+			time.Sleep(10e9)
+			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
 }

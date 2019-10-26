@@ -50,7 +50,7 @@ func (my *Forever) EntryUrl() []string {
 	return links
 }
 func (my *Forever) Throttle(spider *spider.Spider) {
-	if spider.LoadRate(5) > 10 {
+	if spider.LoadRate(5) > 100 {
 		spider.AddSleep(time.Duration(rand.Float64() * 1e9))
 	}
 }
