@@ -138,7 +138,7 @@ func (my *V2ex) ResponseAfter(spider *spider.Spider) {
 		}
 	}
 
-	//my.Implement.ResponseAfter(spider)
+	my.Implement.ResponseAfter(spider)
 }
 
 // queue
