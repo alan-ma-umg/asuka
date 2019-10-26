@@ -139,7 +139,9 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 		Urls: []string{s},
 	})
 	if err != nil {
-		log.Println(err)
+		TcpErrorPrintDoOnce.Do(func() {
+			log.Println(err)
+		})
 		return true
 	}
 

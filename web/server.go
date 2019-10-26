@@ -716,7 +716,9 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		}
 		ip += r.RemoteAddr
 
-		helper.SendTextToWXDoOnceDurationHour("Asuka login: " + ip + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
+		if runtime.GOOS == "linux" {
+			helper.SendTextToWXDoOnceDurationHour("Asuka login: " + ip + "\n" + r.UserAgent() + "\n" + time.Now().Format("2006-01-02 15:04:05"))
+		}
 	} else {
 		jsonMap["success"] = false
 		jsonMap["message"] = "Password incorrect"
@@ -1086,7 +1088,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			go func() {
 				reportBuf, err := queue.GetTcpFilterInstance().Cmd(20, nil)
 				if err != nil {
-					log.Println(err)
 					return
 				}
 				json.Unmarshal(reportBuf, &tcpFilterDoOnceInDurationCache) //must be struct instead of map in this case

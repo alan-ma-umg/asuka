@@ -86,6 +86,7 @@ type TcpFilter struct {
 
 var tcpFilterInstanceOnce sync.Once
 var tcpFilterInstance *TcpFilter
+var TcpErrorPrintDoOnce = helper.NewDoOnceInDuration(time.Minute)
 
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
@@ -222,7 +223,9 @@ func (my *TcpFilter) client(buf []byte, writeLen uint16) (response []byte, err e
 		if err != nil {
 			name, _ := os.Hostname()
 			helper.SendTextToWXDoOnceDurationHour(name + " TcpFilter connection failed: " + err.Error())
-			log.Println(err)
+			TcpErrorPrintDoOnce.Do(func() {
+				log.Println(err)
+			})
 			return
 		}
 		my.putConn(conn)
