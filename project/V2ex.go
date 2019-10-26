@@ -89,23 +89,22 @@ func (my *V2ex) ResponseSuccess(spider *spider.Spider) {
 
 	res := regexp.MustCompile("<a\\shref=\"([^\"]+)\"\\sclass=\"topic-link\">(.+)</a>").FindAllStringSubmatch(string(spider.ResponseByte), -1)
 
-	m := make(map[string]interface{})
+	var list []string
+
 	for _, v := range res {
 		if len(v) < 3 {
 			return
 		}
-		if _, ok := m[v[1]]; ok {
-			return
-		}
 
 		if str, err := json.Marshal(map[string]string{
+			"url":   v[1],
 			"title": v[2],
 		}); err == nil {
-			m[v[1]] = str
+			list = append(list, string(str))
 		}
 	}
 
-	if len(m) == 0 {
+	if len(list) == 0 {
 		return
 	}
 
@@ -114,7 +113,7 @@ func (my *V2ex) ResponseSuccess(spider *spider.Spider) {
 		cate = "hot"
 	}
 	database.Redis().Del(my.resultRedisKeyName(cate))
-	if _, err := database.Redis().HMSet(my.resultRedisKeyName(cate), m).Result(); err != nil {
+	if _, err := database.Redis().RPush(my.resultRedisKeyName(cate), list).Result(); err != nil {
 		helper.SendTextToWXDoOnceDurationHour(my.Name() + " v2ex redis HMSet fail: " + err.Error())
 		log.Println(err)
 	}
@@ -156,12 +155,12 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 	var titlesHot []string
 	var urlsHot []string
 
-	if m, err := database.Redis().HGetAll(my.resultRedisKeyName("hot")).Result(); err == nil {
-		for k, v := range m {
+	if m, err := database.Redis().LRange(my.resultRedisKeyName("hot"), 0, -1).Result(); err == nil {
+		for _, v := range m {
 			l := make(map[string]string)
 			if err := json.Unmarshal([]byte(v), &l); err == nil {
 				titlesHot = append(titlesHot, l["title"])
-				urlsHot = append(urlsHot, k)
+				urlsHot = append(urlsHot, l["url"])
 			}
 		}
 	}
@@ -169,12 +168,12 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 	var titlesAll []string
 	var urlsAll []string
 
-	if m, err := database.Redis().HGetAll(my.resultRedisKeyName("all")).Result(); err == nil {
-		for k, v := range m {
+	if m, err := database.Redis().LRange(my.resultRedisKeyName("all"), 0, -1).Result(); err == nil {
+		for _, v := range m {
 			l := make(map[string]string)
 			if err := json.Unmarshal([]byte(v), &l); err == nil {
 				titlesAll = append(titlesAll, l["title"])
-				urlsAll = append(urlsAll, k)
+				urlsAll = append(urlsAll, l["url"])
 			}
 		}
 	}

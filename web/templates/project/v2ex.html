@@ -13,14 +13,14 @@
 <div style="float: right">
     <h2><a href="https://v2ex.com/?tab=all">ALL</a></h2>
     {{range $index, $element := .ListTitleAll}}
-        <a href="https://v2ex.com{{index $.ListUrlAll 0}}" target="_blank">{{$element}}</a><br>
+        <a href="https://v2ex.com{{index $.ListUrlAll $index}}" target="_blank">{{$element}}</a><br>
     {{end}}
 </div>
 
 <div>
     <h3><a href="https://v2ex.com/?tab=hot">HOT</a></h3>
     {{range $index, $element := .ListTitleHot}}
-        <a href="https://v2ex.com{{index $.ListUrlHot 0}}" target="_blank">{{$element}}</a><br>
+        <a href="https://v2ex.com{{index $.ListUrlHot $index}}" target="_blank">{{$element}}</a><br>
     {{end}}
 </div>
 
