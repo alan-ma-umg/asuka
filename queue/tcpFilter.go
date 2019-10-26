@@ -91,7 +91,7 @@ var TcpErrorPrintDoOnce = helper.NewDoOnceInDuration(time.Minute)
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
 
-		tcpFilterInstance = &TcpFilter{connPool: make(chan net.Conn, 1024), startTime: time.Now()}
+		tcpFilterInstance = &TcpFilter{blsItems: make(map[string]*BlsItem), connPool: make(chan net.Conn, 1024), startTime: time.Now()}
 
 		//for client mode
 		if helper.Env().BloomFilterClient != "" {
@@ -477,9 +477,6 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 		blItem.Bl.ReadFrom(f)
 		f.Close()
 
-		if len(my.blsItems) == 0 {
-			my.blsItems = make(map[string]*BlsItem)
-		}
 		my.blsItems[cmd10.Db] = blItem
 
 		log.Println("NEW: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))

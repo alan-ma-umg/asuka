@@ -5,7 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
+    <link href="{{FileCacheCtl "/static/asuka.css"}}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div style="max-width: 1500px;margin: 20px auto;display: none"
@@ -351,13 +351,13 @@
                style="margin-bottom: 10px;max-width: 160px">
     </div>
 </div>
-<script src="/static/asuka.js"></script>
+<script src="{{FileCacheCtl "/static/asuka.js"}}"></script>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}};
     const preloadJson = {{.PreloadJson}}
 
-        loadScript("/static/vue.min.js", function () {
+        loadScript("{{FileCacheCtl "/static/vue.min.js"}}", function () {
             vueContent = new Vue({
                 el: "#vue-content",
                 data: {
@@ -427,7 +427,7 @@
                 mounted: function () {
                     handlerSocket();
                     document.getElementById('vue-content').style.display = "block";
-                    loadScript('/static/Chart.min.js', function () {
+                    loadScript('{{FileCacheCtl "/static/Chart.min.js"}}', function () {
                         setTimeout(function () {
                             isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
                         }, 5000)

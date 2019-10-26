@@ -7,7 +7,6 @@ import (
 	"errors"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -246,9 +245,8 @@ func (my *Pixiv) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 
 func (my *Pixiv) WEBSite(w http.ResponseWriter, r *http.Request) {
 	files, _ := filepath.Glob("project/pixiv/*")
-	template.Must(template.New("pixiv.html").Funcs(template.FuncMap{
-		"FilePathBase": filepath.Base,
-	}).ParseFiles("web/templates/project/pixiv.html")).Execute(w, struct {
+
+	helper.GetTemplates().ExecuteTemplate(w, "pixiv.html", struct {
 		ProjectName string
 		Files       []string
 	}{

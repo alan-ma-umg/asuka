@@ -5,7 +5,6 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
@@ -64,8 +63,7 @@ func (my *V2ex) EntryUrl() []string {
 }
 
 func (my *V2ex) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 200e9)) //todo !!!!!!!!!!!!!!!
-	//spider.AddSleep(time.Duration(rand.Float64() * 1e9)) //todo !!!!!!!!!!!!!!!
+	spider.AddSleep(time.Duration(rand.Float64() * 600e9))
 }
 
 func (my *V2ex) RequestBefore(spider *spider.Spider) {
@@ -195,6 +193,5 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 		ProjectName:  my.Name(),
 	}
 
-	template.Must(template.ParseFiles("web/templates/project/v2ex.html")).Execute(w, data)
-
+	helper.GetTemplates().ExecuteTemplate(w, "v2ex.html", data)
 }

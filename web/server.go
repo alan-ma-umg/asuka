@@ -241,7 +241,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	data.PreloadJson = template.JS(indexJson(data.Check))
 
-	template.Must(template.ParseFiles("web/templates/index.html")).Execute(w, data)
+	helper.GetTemplates().ExecuteTemplate(w, "index.html", data)
 }
 func fileLog(w http.ResponseWriter, r *http.Request) {
 	//login check
@@ -250,8 +250,7 @@ func fileLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helper.GetFileLogInstance().UpdateLogCheckTime()
-
-	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
+	helper.GetTemplates().ExecuteTemplate(w, "log.html", map[string]interface{}{
 		"log":  string(helper.GetFileLogInstance().TailFile(102400)),
 		"mod":  helper.GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
 		"size": helper.ByteCountBinary(helper.GetFileLogInstance().FileSize()),
@@ -278,9 +277,7 @@ func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
 	var res *queue.Cmd21Response
 	json.Unmarshal(buf, &res) //must be struct instead of map in this case
 
-	//helper.GetFileLogInstance().UpdateLogCheckTime()
-
-	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
+	helper.GetTemplates().ExecuteTemplate(w, "log.html", map[string]interface{}{
 		"log":  string(res.TailContent),
 		"mod":  time.Unix(res.LogMod, 0).Format(time.Stamp),
 		"size": helper.ByteCountBinary(res.LogSize),
@@ -321,7 +318,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	data.PreloadJson = template.JS(projectJson(data.Check, p, "home"))
 
-	template.Must(template.ParseFiles("web/templates/project.html")).Execute(w, data)
+	helper.GetTemplates().ExecuteTemplate(w, "project.html", data)
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -588,7 +585,7 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 		addServerPost(w, r, p)
 	}
 
-	template.Must(template.ParseFiles("web/templates/addServer.html")).Execute(w, struct {
+	helper.GetTemplates().ExecuteTemplate(w, "addServer.html", struct {
 		ProjectName     string
 		FormValueServer string
 		FormValueType   string
@@ -640,7 +637,7 @@ func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.D
 }
 
 func login(w http.ResponseWriter, _ *http.Request) {
-	template.Must(template.ParseFiles("web/templates/login.html")).Execute(w, nil)
+	helper.GetTemplates().ExecuteTemplate(w, "login.html", nil)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -755,7 +752,7 @@ func redisQueue(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	template.Must(template.ParseFiles("web/templates/queue.html")).Execute(w, data)
+	helper.GetTemplates().ExecuteTemplate(w, "queue.html", data)
 }
 
 func forever(w http.ResponseWriter, _ *http.Request) {
