@@ -767,8 +767,10 @@ func forever(w http.ResponseWriter, _ *http.Request) {
 func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchIndex int64) ([]byte, int64) {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
-		"type":    sType,
-		"fetched": []*spider.Summary{},
+		"type":      sType,
+		"stop":      p.IsStop(),
+		"stop_time": p.StopTime.Unix(),
+		"fetched":   []*spider.Summary{},
 	}
 
 	var lastIndex int64
@@ -903,8 +905,10 @@ func indexJson(check bool) []byte {
 func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
-		"type":    sType,
-		"servers": []map[string]interface{}{},
+		"type":      sType,
+		"stop":      p.IsStop(),
+		"stop_time": p.StopTime.Unix(),
+		"servers":   []map[string]interface{}{},
 	}
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)

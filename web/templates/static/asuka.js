@@ -141,6 +141,8 @@ function handlerSocket() {
         } else {
             vueContent.$data[data.type] = data;
         }
+        vueContent.$data.stop = data.stop;
+        vueContent.$data.stopTime = data.stop_time;
         vueContent.$data.basic = data.basic;
         if (data.basic.loads) {
             document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;

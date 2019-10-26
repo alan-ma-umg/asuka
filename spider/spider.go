@@ -384,6 +384,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	}
 
 	res, err := ioutil.ReadAll(reader)
+	reader.Close()
 	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
 		return summary, err

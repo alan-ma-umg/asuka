@@ -52,6 +52,7 @@ func asuka() {
 		project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),
 		project.New(&project.JianShu{}, time.Now().Add(time.Minute*5)).CleanUp().Run(),
 		project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
+		project.New(&project.Death{}, time.Now()).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }

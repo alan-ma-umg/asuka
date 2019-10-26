@@ -343,6 +343,8 @@ func (my *Dispatcher) Run() *Dispatcher {
 				time.Sleep(time.Second * 5)
 			}
 
+			time.Sleep(2e9)
+
 			my.spiderSliceMutex.Lock()
 			for _, s := range my.getSpidersWaiting() {
 				my.runSpider(s)
