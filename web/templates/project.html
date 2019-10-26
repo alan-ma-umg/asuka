@@ -38,9 +38,11 @@
                             Load
                         </td>
                         <td style="line-height: 10px" v-if="basic.tcp_filter.Load">
-                            <strong style="font-size: 10px">{{"{{basic.sys_load}}"}}</strong>
+                            <strong style="font-size: 10px">{{"{{basic.sys_load}}"}} <span
+                                        :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(2)}}"}}%</span></strong>
                             <br>
-                            <strong style="font-size: 10px">{{"{{basic.tcp_filter.Load}}"}}</strong>
+                            <strong style="font-size: 10px">{{"{{basic.tcp_filter.Load}}"}} <span
+                                        :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></strong>
                         </td>
                         <td v-else>
                             <strong>{{"{{basic.sys_load}}"}}</strong>
