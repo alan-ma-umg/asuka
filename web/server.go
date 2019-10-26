@@ -252,8 +252,9 @@ func fileLog(w http.ResponseWriter, r *http.Request) {
 	helper.GetFileLogInstance().UpdateLogCheckTime()
 
 	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
-		"log": string(helper.GetFileLogInstance().TailFile(102400)),
-		"mod": helper.GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
+		"log":  string(helper.GetFileLogInstance().TailFile(102400)),
+		"mod":  helper.GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
+		"size": helper.ByteCountBinary(helper.GetFileLogInstance().FileSize()),
 	})
 }
 
@@ -263,7 +264,7 @@ func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 1024})
+	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 30000}) //返回的总内容不能超过int16的长度
 	if err != nil {
 		log.Println(err)
 		return
@@ -280,8 +281,9 @@ func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
 	//helper.GetFileLogInstance().UpdateLogCheckTime()
 
 	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
-		"log": string(res.TailContent),
-		"mod": time.Unix(res.LogMod, 0).Format(time.Stamp),
+		"log":  string(res.TailContent),
+		"mod":  time.Unix(res.LogMod, 0).Format(time.Stamp),
+		"size": helper.ByteCountBinary(res.LogSize),
 	})
 }
 

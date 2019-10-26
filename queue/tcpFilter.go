@@ -46,7 +46,7 @@ type Cmd21 struct {
 type Cmd21Response struct {
 	TailContent []byte
 	LogMod      int64
-	LogSize     int64
+	LogSize     uint64
 }
 
 //Cmd20Response use struct instead of map. map may cause "fatal error: concurrent map iteration and map write" error when using json.Marshal with another Goroutine in some case
@@ -64,7 +64,7 @@ type Cmd20Response struct {
 	StartTime    int64
 	LogMod       int64
 	LogCheck     int64
-	LogSize      int64
+	LogSize      uint64
 }
 
 type BlsItem struct {
@@ -153,6 +153,8 @@ func (my *TcpFilter) getBlFileName(name string) string {
 }
 
 //ClientOtherCmd db 0~255, fun 10=TestString 20=TestAndAddString
+//请求不超过len(buf)的长度~4000
+//响应不超过uint16的长度~65535
 func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) {
 	buf := helper.LeakyBuf().Get()
 	defer helper.LeakyBuf().Put(buf)
@@ -173,13 +175,13 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	copy(newBuf[lenOfDataLen+lenOfCmd:], jsonBytes[:])
 
 	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], dataLen)
-	n, err := my.client(newBuf, dataLen+lenOfDataLen)
+	result, err := my.client(newBuf, dataLen+lenOfDataLen)
 	if err != nil {
 		return res, err
 	}
 
-	res = make([]byte, len(newBuf[lenOfDataLen:n]))
-	copy(res, newBuf[lenOfDataLen:n]) //must make a copy of buf or "panic: JSON decoder out of sync - data changing underfoot?"
+	res = make([]byte, len(result))
+	copy(res, result) //must make a copy of buf or "panic: JSON decoder out of sync - data changing underfoot?"
 	return
 }
 
@@ -217,7 +219,7 @@ func (my *TcpFilter) putConn(conn net.Conn) {
 	}
 }
 
-func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
+func (my *TcpFilter) client(buf []byte, writeLen uint16) (response []byte, err error) {
 	conn, err := my.getConn()
 	defer func() {
 		if err != nil {
@@ -230,33 +232,39 @@ func (my *TcpFilter) client(buf []byte, writeLen uint16) (n int, err error) {
 	}()
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	//write
 	_, err = conn.Write(buf[:writeLen])
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	//read
-	n, err = io.ReadAtLeast(conn, buf, lenOfDataLen)
+	n, err := io.ReadAtLeast(conn, buf, lenOfDataLen)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	dataLen := binary.BigEndian.Uint16(buf[:lenOfDataLen])
 
+	newBuf := buf
+	if int(dataLen+lenOfDataLen) > len(buf) {
+		newBuf = make([]byte, dataLen+lenOfDataLen)
+		copy(newBuf, buf)
+	}
+
 	// read continue
 	if uint16(n) < lenOfDataLen+dataLen {
-		nn, err := io.ReadAtLeast(conn, buf[n:], int(lenOfDataLen+dataLen)-n)
+		nn, err := io.ReadAtLeast(conn, newBuf[n:], int(lenOfDataLen+dataLen)-n)
 		n += nn
 		if err != nil {
-			return n, err
+			return nil, err
 		}
 	}
 
-	return
+	return newBuf[lenOfDataLen:n], err
 }
 
 func (my *TcpFilter) ServerListen(address string) {
@@ -278,13 +286,16 @@ func (my *TcpFilter) ServerListen(address string) {
 }
 
 func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
-
-	//todo check if reply data lager than buf
-
-	copy(buf[lenOfDataLen:], data[:])
 	dataLen := len(data)
-	binary.BigEndian.PutUint16(buf[:lenOfDataLen], uint16(dataLen))
-	_, err = conn.Write(buf[:lenOfDataLen+dataLen])
+	newBuf := buf
+	if dataLen+lenOfDataLen > len(buf) {
+		newBuf = make([]byte, dataLen+lenOfDataLen)
+	}
+
+	copy(newBuf[lenOfDataLen:], data[:])
+
+	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], uint16(dataLen))
+	_, err = conn.Write(newBuf[:lenOfDataLen+dataLen])
 	if err != nil {
 		log.Println(err)
 	}
@@ -340,7 +351,7 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		case 21: //fileLog.TailFile
 			replyData, err = my.serverTailFile(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 		case 22: //fileLog.UpdateLogCheckTime
-			_, err = my.serverUpdateLogCheckTime()
+			helper.GetFileLogInstance().UpdateLogCheckTime()
 		default:
 			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 		}
@@ -352,6 +363,7 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		my.serverReply(conn, newBuf, replyData)
 	}
 }
+
 func (my *TcpFilter) serverTailFile(buf []byte) (result []byte, err error) {
 	//db, fun byte, data []byte
 	var cmd *Cmd21
@@ -368,15 +380,8 @@ func (my *TcpFilter) serverTailFile(buf []byte) (result []byte, err error) {
 	})
 }
 
-func (my *TcpFilter) serverUpdateLogCheckTime() (result []byte, err error) {
-	helper.GetFileLogInstance().UpdateLogCheckTime()
-	return
-}
-
 func (my *TcpFilter) serverReport() (result []byte, err error) {
-
 	runtime.ReadMemStats(&my.mem)
-
 	memAvailable, total := helper.GetMemInfoFromProc()
 
 	//len(map) is not thread safe
@@ -444,12 +449,17 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 		return
 	}
 
+	s := time.Now()
+	os.Remove(my.getBlFileName(cmd.Db))
+
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
 	if blItem, ok := my.blsItems[cmd.Db]; ok {
-		os.Remove(my.getBlFileName(cmd.Db))
 		blItem.Bl.ClearAll()
+
+		log.Println("clean: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
+
 		blItem.Bl = nil
 		delete(my.blsItems, cmd.Db)
 	}

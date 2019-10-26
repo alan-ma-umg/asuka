@@ -38,12 +38,12 @@ func (my *FileLog) GetLogModifyTime() (t time.Time) {
 	return
 }
 
-func (my *FileLog) FileSize() int64 {
+func (my *FileLog) FileSize() uint64 {
 	stat, err := os.Stat(my.filename)
 	if err != nil {
 		return 0
 	}
-	return stat.Size()
+	return uint64(stat.Size())
 }
 
 func (my *FileLog) TailFile(tailSize int64) (buf []byte) {

@@ -100,6 +100,22 @@ func (my *Queue) BlRemoveFile() {
 
 func (my *Queue) BlCleanUp() {
 	if helper.Env().BloomFilterClient != "" {
+		go func() {
+			my.bloomFilterMutex.Lock()
+			defer my.bloomFilterMutex.Unlock()
+			//main
+			GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlKey()})
+
+			//bls
+			for i, _ := range my.bls {
+				GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlsKey(i)})
+			}
+
+			//无论是否存在把0~10, 全清了
+			for v := 0; v < 10; v++ {
+				GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlsKey(v)})
+			}
+		}()
 		return
 	}
 

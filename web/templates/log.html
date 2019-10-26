@@ -12,10 +12,11 @@
     <div style="display:block;font-size: 16px" class="text-orange">{{.mod}}</div>
     <a href="javascript:history.back()" style="font-size: 16px;margin:30px 0;display: block">Back</a>
     <div id="scroll"
-         style="margin:0 auto;cursor:pointer;width: 70px;height:70px;border-radius:50%;background: #ff9c38"></div>
+         style="margin:0 auto;cursor:pointer;width: 70px;height:70px;line-height:70px;border-radius:50%;background: #ff9c38">
+        <strong style="color: #fff">{{.size}}</strong></div>
 </div>
 
-<pre style="padding: 10px">{{.log}}</pre>
+<pre style="padding: 10px;">{{.log}}</pre>
 <script>
     setTimeout(function () {
         window.scrollTo(0, document.body.offsetHeight);
