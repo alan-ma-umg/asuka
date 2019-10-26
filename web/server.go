@@ -902,7 +902,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		loads := make(map[int]float64, 9)
 		loads[5] += s.LoadRate(5)
 		loads[60] += s.LoadRate(60)
-		//loads[60*15] += s.LoadRate(900)
+		loads[60*15] += s.LoadRate(900)
 		//loads[60*30] += s.LoadRate(1800)
 		//loads[3600] += s.LoadRate(3600)
 		//loads[3600*6] += s.LoadRate(3600 * 6)

@@ -22,6 +22,8 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo tcp filter clear cmd
+	//todo tcp filter file log time and lines
 	//todo WEB输入频率限制
 	//todo mysql/oracle 数据库写入支持
 	//todo chrome 插件 => pixiv.net js自动抓取报送

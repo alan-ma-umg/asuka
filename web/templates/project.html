@@ -190,7 +190,7 @@
                 <th>Status</th>
                 <th style="min-width:145px">Failure Recent/all</th>
                 <th style="width:1px">Dispatch</th>
-                <th>Load 5s/60s</th>
+                <th>Load 5s/60s/15m</th>
                 {{/*<th style="min-width:70px">Time</th>*/}}
                 <th>Pass / Sleep</th>
                 <th>Idle</th>
@@ -229,8 +229,11 @@
                     <div style="display:inline-block;width:45px"
                          class="right">{{"{{server.loads[5].toFixed(2)}}"}}</div>
                     /
-                    <div style="display:inline-block;width:45px"
+                    <div style="display:inline-block;"
                          class="left">{{"{{server.loads[60].toFixed(2)}}"}}</div>
+                    /
+                    <div style="display:inline-block;width:45px"
+                         class="left">{{"{{server.loads[900].toFixed(2)}}"}}</div>
                 </td>
                 {{/*<td class="center">{{"{{server.avg_time}}"}}</td>*/}}
                 <td class="center">
