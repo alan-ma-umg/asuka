@@ -26,9 +26,14 @@
                     <td>
                         <strong>{{"{{basic.time}}"}}</strong>
                     </td>
-                    <template v-if="basic.sys_load">
+                    <template v-if="!basic.sys_load">
                         <td>
                             Load
+                        </td>
+                        <td style="line-height: 7px" v-if="basic.tcp_filter.Load">
+                            <strong style="font-size: 10px">{{"{{basic.sys_load}}"}}</strong>
+                            <br>
+                            <strong style="font-size: 10px">{{"{{basic.tcp_filter.Load}}"}}</strong>
                         </td>
                         <td>
                             <strong>{{"{{basic.sys_load}}"}}</strong>
