@@ -115,7 +115,7 @@ func GetTcpFilterInstance() *TcpFilter {
 							tcpFilterInstance.blSave(name, blItem)
 							delete(tcpFilterInstance.blsItems, name)
 
-							log.Println("del tcp bl: " + name)
+							log.Println("RELEASE: " + name)
 						}
 					}
 
@@ -132,10 +132,7 @@ func GetTcpFilterInstance() *TcpFilter {
 				//save to file
 				for name, blItem := range tcpFilterInstance.blsItems {
 					tcpFilterInstance.blSave(name, blItem)
-				}
-
-				if len(tcpFilterInstance.blsItems) > 0 {
-					log.Println("save")
+					log.Println("SAVE: " + name)
 				}
 			})
 		}
@@ -458,7 +455,7 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 	if blItem, ok := my.blsItems[cmd.Db]; ok {
 		blItem.Bl.ClearAll()
 
-		log.Println("clean: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
+		log.Println("DEL: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
 
 		blItem.Bl = nil
 		delete(my.blsItems, cmd.Db)
@@ -482,7 +479,7 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 		}
 		my.blsItems[cmd10.Db] = blItem
 
-		log.Println("new tcp bl: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))
+		log.Println("NEW: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))
 	}
 
 	blItem.LastUse = time.Now()
