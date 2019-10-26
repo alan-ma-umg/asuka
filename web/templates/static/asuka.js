@@ -201,9 +201,16 @@ Number.prototype.fileSizeH = function () {
 };
 
 Number.prototype.timestamp2date = function () {
-    return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
-        timeStyle: "medium",
-        hour12: false,
-        dateStyle: "short"
-    })
+    return new Date(this.valueOf() * 1000).toISOString().slice(5,19).split("T").join(" ");
+    // return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
+    //     timeStyle: "medium",
+    //     hour12: false,
+    //     dateStyle: "short"
+    // });
+
+    // return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
+    //     timeStyle: "medium",
+    //     hour12: false,
+    //     dateStyle: "short"
+    // })
 };
