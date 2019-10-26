@@ -208,11 +208,10 @@ func switchProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//p.Stop = !p.IsStop()
-	if p.StopTime.IsZero() {
-		p.StopTime = time.Now().Add(-time.Second)
-	} else {
+	if p.IsStop() {
 		p.StopTime = time.Time{}
+	} else {
+		p.StopTime = time.Now().Add(-time.Second)
 	}
 
 	jsonMap := map[string]interface{}{
@@ -863,6 +862,7 @@ func indexJson(check bool) []byte {
 		}
 
 		projectMap["stop"] = p.IsStop()
+		projectMap["stop_time"] = p.StopTime.Unix()
 		projectMap["servers"] = serverCount
 		projectMap["server_run"] = serverRun
 		projectMap["server_enable"] = serverEnable

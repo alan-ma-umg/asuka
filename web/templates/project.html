@@ -19,7 +19,7 @@
                 <small>Memory usage</small>
             </div>
             <div>
-                <h1><a href="/" :class="{'text-orange':stop}">{{.ProjectName}}</a></h1>
+                <h1><a style="min-width: 50px;display:inline-block;" href="/" :class="{'text-orange':stop}">{{.ProjectName}}</a></h1>
                 <small v-if="stopTime > 0" class="text-orange">Stop: {{"{{stopTime.timestamp2date()}}"}}</small>
                 <small v-else>Project</small>
             </div>
@@ -268,7 +268,7 @@
                 {{/*</td>*/}}
                 <td class="right ctl">
                     <button class="btn-sm ctl" :disabled="server._btnDisabled"
-                            :class="{orange:!server.stop,green:server.stop}" style="color:#fff"
+                            :class="{orange:server.stop,green:!server.stop}"
                             v-on:click.stop.prevent="switchServer(server)">{{"{{server.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>
@@ -318,35 +318,35 @@
         {{if not .Check}}
             <a href="/login">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Login
                 </button>
             </a>
         {{else}}
             <button v-on:click="logout()" class="btn-mb"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
             </button>
             <a href="/add/{{.ProjectName}}">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Add Proxy
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Add Proxy
                 </button>
             </a>
             <a href="/get/{{.ProjectName}}">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Get Proxy
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Get Proxy
                 </button>
             </a>
             <a href="/website/{{.ProjectName}}">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">WEB
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">WEB
                 </button>
             </a>
         {{end}}
         <button v-on:click="wsOpenClose()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">On /
             Off
         </button>
         <button v-on:click="wsPageSwitch()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">
             <span v-if="action=='home'">Crawling</span>
             <span v-else>Servers</span>
 

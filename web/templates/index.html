@@ -166,14 +166,16 @@
                 <th>Load 60s/15m</th>
                 {{/*<th>Pass/Sleep</th>*/}}
                 <th>Traffic I/O</th>
-                <th></th>
+                <th style="width:1px"></th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="item,index in projects" style="cursor: pointer"
                 :class="{ stop: item.stop}">
                 <td class="center" v-on:click="goTo(item.name)">{{"{{index+1}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)"><a :href="item.name">{{"{{item.name}}"}}</a></td>
+                <td class="center" v-on:click="goTo(item.name)"><a :href="item.name"
+                                                                   :class="{'text-orange':item.stop}">{{"{{item.name}}"}}</a>
+                </td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.server_run}}"}}
                     / {{"{{item.server_enable}}"}}
                 </td>
@@ -192,10 +194,11 @@
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="right ctl">
+                     <span v-if="!item.stop && item.stop_time > 0" style="margin-right: 10px" class="text-orange">
+                               Stop: {{"{{item.stop_time.timestamp2date()}}"}}
+                     </span>
                     <button class="btn-sm ctl" :disabled="item._btnDisabled"
-                            :class="{orange:!item.stop,green:item.stop}"
-                            style="color:#fff"
-                            v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
+                            :class="{orange:item.stop,green:!item.stop}" v-on:click.stop.prevent="switchProject(item)">{{"{{item.stop?'start':'stop'}}"}}</button>
                 </td>
             </tr>
             </tbody>
@@ -244,12 +247,12 @@
         {{if not .Check}}
             <a href="/login">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Login
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Login
                 </button>
             </a>
         {{else}}
             <button v-on:click="logout()" class="btn-mb"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">Logout
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
             </button>
         {{end}}
         <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
