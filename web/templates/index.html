@@ -197,22 +197,28 @@
             <span v-if="basic.runtime_mem">Sys/Alloc: {{"{{basic.runtime_mem}}"}}</span>
         </div>
         <div>
+            <a href="/log" v-if="basic.log_mod > 0"
+               :class="{'text-orange':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
+                Log: {{"{{basic.log_mod.timestamp2date()}}"}}
+            </a>
+        </div>
+        <div v-if="basic.tcp_filter">
             <span v-if="basic.tcp_filter.Load">Load: {{"{{basic.tcp_filter.Load}}"}}</span>
             <span v-if="basic.tcp_filter.MemTotal">Used/Total: {{"{{(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable).fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemTotal.fileSizeH()}}"}} <span
                         :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(2)}}"}}%</span></span>
             <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys.fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemAlloc.fileSizeH()}}"}}</span>
         </div>
-        <div>
+        <div v-if="basic.tcp_filter">
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
         </div>
-        <div>
-            <a href="/log" v-if="basic.log_mod > 0"
-               :class="{'text-orange':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
-                Log: {{"{{basic.log_mod.timestamp2date()}}"}}
+        <div v-if="basic.tcp_filter">
+            <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
+               :class="{'text-orange':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
+                Log: {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
             </a>
         </div>
     </div>

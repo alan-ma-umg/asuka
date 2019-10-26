@@ -24,12 +24,29 @@ const (
 	lenOfCmd     = 1
 )
 
-//Cmd10 bloomFilter
+//Cmd10 bloomFilter TestString & TestAndAddString
 type Cmd10 struct {
 	Urls []string
-	Fun  byte
+	Fun  byte //fun 10=TestString 20=TestAndAddString
 	Db   string
 	Size uint
+}
+
+//Cmd11 bloomFilter clear & remove file
+type Cmd11 struct {
+	Db string
+}
+
+//Cmd21 fileLog.TailFile
+type Cmd21 struct {
+	TailSize int64
+}
+
+//Cmd21 fileLog.TailFile
+type Cmd21Response struct {
+	TailContent []byte
+	LogMod      int64
+	LogSize     int64
 }
 
 //Cmd20Response use struct instead of map. map may cause "fatal error: concurrent map iteration and map write" error when using json.Marshal with another Goroutine in some case
@@ -45,6 +62,9 @@ type Cmd20Response struct {
 	MemSys       uint64
 	MemAlloc     uint64
 	StartTime    int64
+	LogMod       int64
+	LogCheck     int64
+	LogSize      int64
 }
 
 type BlsItem struct {
@@ -257,6 +277,21 @@ func (my *TcpFilter) ServerListen(address string) {
 	}
 }
 
+func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
+
+	//todo check if reply data lager than buf
+
+	copy(buf[lenOfDataLen:], data[:])
+	dataLen := len(data)
+	binary.BigEndian.PutUint16(buf[:lenOfDataLen], uint16(dataLen))
+	_, err = conn.Write(buf[:lenOfDataLen+dataLen])
+	if err != nil {
+		log.Println(err)
+	}
+
+	return
+}
+
 func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 	defer func() {
 		conn.Close()
@@ -296,10 +331,16 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		//cmd
 		var replyData []byte
 		switch newBuf[lenOfDataLen] { //cmd
-		case 10:
+		case 10: //bloomFilter test
 			replyData, err = my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
-		case 20:
+		case 11: //bloomFilter clear & remove file.db
+			replyData, err = my.serverBlClear(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+		case 20: //system report
 			replyData, err = my.serverReport()
+		case 21: //fileLog.TailFile
+			replyData, err = my.serverTailFile(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+		case 22: //fileLog.UpdateLogCheckTime
+			_, err = my.serverUpdateLogCheckTime()
 		default:
 			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 		}
@@ -311,19 +352,24 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		my.serverReply(conn, newBuf, replyData)
 	}
 }
-
-func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
-
-	//todo check if reply data lager than buf
-
-	copy(buf[lenOfDataLen:], data[:])
-	dataLen := len(data)
-	binary.BigEndian.PutUint16(buf[:lenOfDataLen], uint16(dataLen))
-	_, err = conn.Write(buf[:lenOfDataLen+dataLen])
+func (my *TcpFilter) serverTailFile(buf []byte) (result []byte, err error) {
+	//db, fun byte, data []byte
+	var cmd *Cmd21
+	err = json.Unmarshal(buf, &cmd)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
+	return json.Marshal(&Cmd21Response{
+		TailContent: helper.GetFileLogInstance().TailFile(cmd.TailSize),
+		LogMod:      helper.GetFileLogInstance().GetLogModifyTime().Unix(),
+		LogSize:     helper.GetFileLogInstance().FileSize(),
+	})
+}
+
+func (my *TcpFilter) serverUpdateLogCheckTime() (result []byte, err error) {
+	helper.GetFileLogInstance().UpdateLogCheckTime()
 	return
 }
 
@@ -349,6 +395,9 @@ func (my *TcpFilter) serverReport() (result []byte, err error) {
 		MemSys:       my.mem.Sys,
 		MemAlloc:     my.mem.Alloc,
 		StartTime:    my.startTime.Unix(),
+		LogMod:       helper.GetFileLogInstance().GetLogModifyTime().Unix(),
+		LogCheck:     helper.GetFileLogInstance().GetLogCheckTime().Unix(),
+		LogSize:      helper.GetFileLogInstance().FileSize(),
 	})
 }
 
@@ -361,8 +410,6 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 		return
 	}
 
-	my.blTestCount++
-
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
@@ -370,6 +417,7 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	bl := my.getBl(cmd10)
 	var list []byte
 	for _, u := range cmd10.Urls {
+		my.blTestCount++
 		var b byte
 		if cmd10.Fun == 10 {
 			if bl.TestString(u) {
@@ -385,6 +433,28 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	}
 
 	return json.Marshal(list)
+}
+
+func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
+	//db, fun byte, data []byte
+	var cmd *Cmd11
+	err = json.Unmarshal(buf, &cmd)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+
+	if blItem, ok := my.blsItems[cmd.Db]; ok {
+		os.Remove(my.getBlFileName(cmd.Db))
+		blItem.Bl.ClearAll()
+		blItem.Bl = nil
+		delete(my.blsItems, cmd.Db)
+	}
+
+	return
 }
 
 //getBl using with lock

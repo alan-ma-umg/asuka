@@ -48,6 +48,7 @@ func Server(d []*project.Dispatcher, address string) error {
 	}()
 
 	http.HandleFunc("/log", commonHandleFunc(fileLog))
+	http.HandleFunc("/log/tcp", commonHandleFunc(fileLogTcpFilter))
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
 	http.HandleFunc("/get/", commonHandleFunc(getServer))
 	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
@@ -248,11 +249,39 @@ func fileLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	GetFileLogInstance().UpdateLogCheckTime()
+	helper.GetFileLogInstance().UpdateLogCheckTime()
 
 	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
-		"log": string(GetFileLogInstance().TailFile(102400)),
-		"mod": GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
+		"log": string(helper.GetFileLogInstance().TailFile(102400)),
+		"mod": helper.GetFileLogInstance().GetLogModifyTime().Format(time.Stamp),
+	})
+}
+
+func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 1024})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	//touch file
+	go func() {
+		queue.GetTcpFilterInstance().Cmd(22, nil)
+	}()
+
+	var res *queue.Cmd21Response
+	json.Unmarshal(buf, &res) //must be struct instead of map in this case
+
+	//helper.GetFileLogInstance().UpdateLogCheckTime()
+
+	template.Must(template.ParseFiles("web/templates/log.html")).Execute(w, map[string]interface{}{
+		"log": string(res.TailContent),
+		"mod": time.Unix(res.LogMod, 0).Format(time.Stamp),
 	})
 }
 
@@ -928,15 +957,6 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		} else {
 			server["name"] = ""
 		}
-		//if s.Transport.Ping == 0 {
-		//	server["ping"] = "-"
-		//} else {
-		//	server["ping"] = s.Transport.Ping.Truncate(time.Millisecond).String()
-		//}
-		//server["ping_hsl"] = helper.MinInt(150, helper.MaxInt(150-int(s.Transport.Ping.Seconds()*1000/2), 0))
-		//server["ping_failure"] = strconv.FormatFloat(s.Transport.PingFailureRate*100, 'f', 0, 64)
-		//server["ping_failure_hsl"] = int(150 - s.Transport.PingFailureRate*150)
-		//server["avg_time"] = avgTime.Truncate(time.Millisecond).String()
 		server["sleep"] = s.GetSleep().Truncate(time.Millisecond).String()
 		server["waiting"] = "0s"
 		if !s.RequestStartTime.IsZero() {
@@ -1012,7 +1032,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 					if !s.RequestStartTime.IsZero() {
 						waitingAvg += time.Since(s.RequestStartTime)
 					}
-					//avgTimeAvg += s.GetAvgTime()
 				}
 
 				serverCount++
@@ -1020,8 +1039,6 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 					serverEnable++
 				}
 				sleepAvg += s.GetSleep()
-				//pingFailureAvg += s.Transport.PingFailureRate
-				//pingAvg += s.Transport.Ping
 
 				//NetIn += s.Transport.S.TrafficIn
 				//NetOut += s.Transport.S.TrafficOut
@@ -1082,8 +1099,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["log_mod"] = 0
 	jsonMap["basic"].(map[string]interface{})["log_check"] = 0
 	if check {
-		jsonMap["basic"].(map[string]interface{})["log_mod"] = GetFileLogInstance().GetLogModifyTime().Unix()
-		jsonMap["basic"].(map[string]interface{})["log_check"] = GetFileLogInstance().GetLogCheckTime().Unix()
+		jsonMap["basic"].(map[string]interface{})["log_mod"] = helper.GetFileLogInstance().GetLogModifyTime().Unix()
+		jsonMap["basic"].(map[string]interface{})["log_check"] = helper.GetFileLogInstance().GetLogCheckTime().Unix()
 	}
 
 	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
@@ -1091,15 +1108,10 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
-	//jsonMap["basic"].(map[string]interface{})["ping_avg"] = "0s"
-	//jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = ""
-	//jsonMap["basic"].(map[string]interface{})["avg_time_avg"] = "0s"
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = "0s"
 
 	if serverCount > 0 {
 		jsonMap["basic"].(map[string]interface{})["sleep_avg"] = (sleepAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
-		//jsonMap["basic"].(map[string]interface{})["ping_avg"] = (pingAvg / time.Duration(serverCount)).Truncate(time.Millisecond).String()
-		//jsonMap["basic"].(map[string]interface{})["ping_failure_avg"] = strconv.FormatFloat(pingFailureAvg/float64(serverCount), 'f', 2, 64)
 		jsonMap["basic"].(map[string]interface{})["loads"] = loads
 	}
 	if failureLevelZeroCount > 0 {

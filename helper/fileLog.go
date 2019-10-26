@@ -1,7 +1,6 @@
-package web
+package helper
 
 import (
-	"github.com/chenset/asuka/helper"
 	"os"
 	"sync"
 	"time"
@@ -39,6 +38,14 @@ func (my *FileLog) GetLogModifyTime() (t time.Time) {
 	return
 }
 
+func (my *FileLog) FileSize() int64 {
+	stat, err := os.Stat(my.filename)
+	if err != nil {
+		return 0
+	}
+	return stat.Size()
+}
+
 func (my *FileLog) TailFile(tailSize int64) (buf []byte) {
 	stat, err := os.Stat(my.filename)
 	if err != nil || stat.Size() == 0 {
@@ -51,7 +58,7 @@ func (my *FileLog) TailFile(tailSize int64) (buf []byte) {
 	}
 	defer file.Close()
 
-	buf = make([]byte, helper.MinInt64(stat.Size(), tailSize))
+	buf = make([]byte, MinInt64(stat.Size(), tailSize))
 
 	file.ReadAt(buf, stat.Size()-int64(len(buf)))
 	return
