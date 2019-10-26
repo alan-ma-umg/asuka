@@ -113,6 +113,7 @@ func (spider *Spider) Client() *http.Client {
 		// new one
 		spider.transport = proxy.NewTransport(spider.TransportUrl)
 		j, _ := cookiejar.New(nil)
+		//todo 要支持无需重置spider而单独刷新cookie
 		spider.client = &http.Client{Transport: spider.transport.Connect(spider.TransportUrl), Jar: j, Timeout: time.Second * 30}
 	}
 

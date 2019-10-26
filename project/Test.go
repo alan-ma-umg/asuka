@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -23,10 +22,9 @@ type Test struct {
 
 func (my *Test) Init(d *Dispatcher) {
 	go func() {
-		t := time.NewTicker(time.Second * 10)
 		for {
-			<-t.C
-			my.queueUrlLen, _ = database.Redis().LLen(strings.Split(reflect.TypeOf(my).String(), ".")[1] + "_" + helper.Env().Redis.URLQueueKey).Result()
+			time.Sleep(10e9)
+			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
 
