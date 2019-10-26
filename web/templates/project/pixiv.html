@@ -18,14 +18,19 @@
         ::selection {
             background: none;
         }
+
+        pre::selection,   pre *::selection  {
+            background: red;
+        }
     </style>
 </head>
 <body>
+<br>
 <pre>
 (function () {
     let script = document.createElement('script');
     let domain = "<span id='link-append'></span>";
-    script.src = domain + "/static/pixiv2asuka.js";
+    script.src = domain + "{{FileCacheCtl "/static/pixiv2asuka.js"}}";
     script.onload = function () {
         script = null;
         pixivHenTaiStart_(domain);
@@ -33,6 +38,7 @@
     document.body.appendChild(script);
 })();
 </pre>
+<br>
 <script>document.getElementById('link-append').innerHTML = location.origin</script>
 <br>
 

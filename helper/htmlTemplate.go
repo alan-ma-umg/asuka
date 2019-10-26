@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 )
 
@@ -20,6 +21,17 @@ var fileCacheCtlMap = make(map[string]string)
 var fileCacheCtlMapMutex sync.Mutex
 
 func GetTemplates() *template.Template {
+	if runtime.GOOS == "linux" {
+		templatesOnce.Do(func() {
+			templates = getTemplates()
+		})
+		return templates
+	} else {
+		return getTemplates()
+	}
+}
+
+func getTemplates() *template.Template {
 	//templatesOnce.Do(func() {
 	templates = template.Must(template.Must(template.New("").Funcs(template.FuncMap{
 		"FilePathBase": filepath.Base,
