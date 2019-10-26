@@ -322,15 +322,15 @@
                 </button>
             </a>
         {{end}}
+        <button v-on:click="wsOpenClose()" class="btn-mb"
+                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
+            Off
+        </button>
         <button v-on:click="wsPageSwitch()" class="btn-mb"
                 style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">
             <span v-if="action=='home'">Crawling</span>
             <span v-else>Servers</span>
 
-        </button>
-        <button v-on:click="wsOpenClose()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff">On /
-            Off
         </button>
         <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                style="margin-bottom: 10px;max-width: 160px">
