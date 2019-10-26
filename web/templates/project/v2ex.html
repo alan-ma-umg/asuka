@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.ProjectName}} Queue</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link href="/static/asuka.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div>
+    <h2><a href="/{{.ProjectName}}">{{.ProjectName}}</a></h2>
+    {{range $index, $element := .ListTitleHot}}
+        <a href="https://v2ex.com{{index $.ListUrlHot 0}}" target="_blank">{{$element}}</a><br>
+    {{end}}
+</div>
+
+<div>
+    {{range $index, $element := .ListTitleAll}}
+        <a href="https://v2ex.com{{index $.ListUrlAll 0}}" target="_blank">{{$element}}</a><br>
+    {{end}}
+</div>
+
+
+<div id="btn" style="position: fixed;bottom: 20px;right:20px;text-align: center">
+    <a href="javascript:history.back()" style="font-size: 16px;margin:30px 0;display: block">{{.ProjectName}}</a>
+    <div id="scroll"
+         style="margin:0 auto;cursor:pointer;width: 70px;height:70px;border-radius:50%;background: #ff9c38"></div>
+</div>
+<script>
+    document.getElementById("scroll").addEventListener("click", function () {
+        if (window.innerHeight + window.scrollY + 100 >= document.body.offsetHeight) {
+            window.scrollTo(0, 0);
+        } else {
+            window.scrollTo(0, document.body.offsetHeight);
+        }
+    })
+</script>
+
+</body>
+</html>
