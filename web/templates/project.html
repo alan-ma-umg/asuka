@@ -83,11 +83,11 @@
         <div class="head-item">
             <div>
                 <h1><a href="/queue/{{.ProjectName}}"
-                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a>   <small style="font-size: 12px;">{{"{{basic.retries_queue.numFormat()}}"}}</small></h1>
+                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a>   <small style="font-size: 12px;" v-if="basic.retries_queue">{{"{{basic.retries_queue.numFormat()}}"}}</small></h1>
                 <small>All url in redis</small>
                 <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong>
                   <br>
-                    <span class="text-gray">{{"{{basic.redis_retries_mem}}"}}</span></span>
+                    <span class="text-gray" v-if="basic.redis_retries_mem!='0B'">{{"{{basic.redis_retries_mem}}"}}</span></span>
             </div>
             <br>
             <table>
@@ -357,8 +357,10 @@
             <span v-else>Servers</span>
 
         </button>
+        {{if .Check}}
         <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                style="margin-bottom: 10px;max-width: 160px">
+        {{end}}
     </div>
 </div>
 <script src="{{FileCacheCtl "/static/asuka.js"}}"></script>
