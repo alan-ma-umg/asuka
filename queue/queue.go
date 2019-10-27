@@ -10,20 +10,17 @@ import (
 	"sync"
 )
 
-const (
-	mainBlSize = 50000000
-)
-
 type Queue struct {
 	Retries                   []int
 	name                      string
 	bloomFilterMutex          sync.Mutex
 	bloomFilterInstance       *bloom.BloomFilter
 	bloomFilterInstanceDoOnce *sync.Once
+	bloomFilterSize           uint
 }
 
-func NewQueue(name string) (q *Queue) {
-	return &Queue{name: name, Retries: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once)}
+func NewQueue(name string, size uint) (q *Queue) {
+	return &Queue{name: name, Retries: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once), bloomFilterSize: size}
 }
 
 //ResetBloomFilterInstance purpose for release memory usage
@@ -49,7 +46,7 @@ func (my *Queue) ResetBloomFilterInstance() {
 
 func (my *Queue) getBloomFilterInstance() *bloom.BloomFilter {
 	my.bloomFilterInstanceDoOnce.Do(func() {
-		my.bloomFilterInstance = bloom.NewWithEstimates(mainBlSize, 0.004)
+		my.bloomFilterInstance = bloom.NewWithEstimates(my.bloomFilterSize, 0.004)
 		f, _ := os.Open(my.mainBlFilename())
 		my.bloomFilterInstance.ReadFrom(f)
 		f.Close()
@@ -126,7 +123,7 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), mainBlSize, 10, s)
+		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 10, s)
 	}
 
 	my.bloomFilterMutex.Lock()
@@ -137,7 +134,7 @@ func (my *Queue) BlTestString(s string) bool {
 //BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), mainBlSize, 20, s)
+		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 20, s)
 	}
 
 	my.bloomFilterMutex.Lock()

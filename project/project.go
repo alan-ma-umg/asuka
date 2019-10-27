@@ -58,7 +58,12 @@ type IProject interface {
 
 	//Showing 在web监控上展示信息
 	Showing() string
+
+	//Name of project
 	Name() string
+
+	// BloomFilterSize 系统首次创建对应过滤器时的容量
+	InitBloomFilterCapacity() uint
 
 	//项目自定义WEB
 	WEBSite(w http.ResponseWriter, r *http.Request)
@@ -67,10 +72,9 @@ type IProject interface {
 
 type Implement struct{}
 
-func (my *Implement) Init() {}
-func (my *Implement) Showing() string {
-	return "Have a nice day !"
-}
+func (my *Implement) InitBloomFilterCapacity() uint { return 7000000 }
+func (my *Implement) Init(d *Dispatcher)            {}
+func (my *Implement) Showing() string               { return "Have a nice day !" }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
 func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
@@ -85,16 +89,12 @@ func (my *Implement) ResponseAfter(spider *spider.Spider) {
 	spider.ResetSpider() //现在是每请求一次, 就重置一次. 请求代理也会重新连接
 }
 
-func (my *Implement) Name() string {
-	return ""
-}
+func (my *Implement) Name() string { return "" }
 func (my *Implement) WEBSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
 	io.WriteString(w, my.Name())
 }
-func (my *Implement) WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool {
-	return true
-}
+func (my *Implement) WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool { return true }
 
 const RecentFetchCount = 50
 
@@ -216,7 +216,7 @@ func (my *Dispatcher) initProject() {
 
 func (my *Dispatcher) GetQueue() *queue.Queue {
 	if my.queue == nil { //todo DoOnce in struct
-		my.queue = queue.NewQueue(my.Name())
+		my.queue = queue.NewQueue(my.Name(), my.InitBloomFilterCapacity())
 	}
 	return my.queue
 }
