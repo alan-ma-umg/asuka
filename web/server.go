@@ -1007,6 +1007,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	//var NetOut uint64
 	var queueCount int64
 	var redisMem int64
+	var redisRetriesMem int64
+	var redisRetriesQueueCount int64
 	var serverCount int
 	var serverEnable int
 	var accessCount int
@@ -1067,11 +1069,14 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			}
 		}
 
+		//todo make improvement !!!!!!!!!
 		//redis
-		mem, _ := database.Redis().MemoryUsage(p.GetQueueKey()).Result() //about 1ms
-		redisMem += mem
-		num, _ := database.Redis().LLen(p.GetQueueKey()).Result() //about 1ms
-		queueCount += num
+		redisMem += database.Redis().MemoryUsage(p.GetQueueKey()).Val()
+		queueCount += database.Redis().LLen(p.GetQueueKey()).Val()
+
+		//redis retries
+		redisRetriesMem += database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
+		redisRetriesQueueCount += database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
 
 		if check {
 			jsonMap["basic"].(map[string]interface{})["showing"] = p.Showing()
@@ -1136,6 +1141,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["server_run"] = failureLevelZeroCount
 	jsonMap["basic"].(map[string]interface{})["server_enable"] = serverEnable
 	jsonMap["basic"].(map[string]interface{})["queue"] = queueCount
+	jsonMap["basic"].(map[string]interface{})["redis_retries_mem"] = helper.ByteCountBinary(uint64(redisRetriesMem))
+	jsonMap["basic"].(map[string]interface{})["retries_queue"] = redisRetriesQueueCount
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
 	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)

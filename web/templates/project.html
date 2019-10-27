@@ -13,7 +13,8 @@
     <div class="head_wrap" v-if="basic.time">
         <div class="head-item">
             <div style="float:right;">
-                <h1>{{"{{basic.mem_sys}}"}}<small style="font-size: 12px"
+                <h1>{{"{{basic.mem_sys}}"}}
+                    <small style="font-size: 12px"
                                                   v-if="basic.tcp_filter.MemRss>0">{{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</small>
                 </h1>
                 <small>Memory usage</small>
@@ -82,9 +83,11 @@
         <div class="head-item">
             <div>
                 <h1><a href="/queue/{{.ProjectName}}"
-                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a></h1>
+                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a>   <small style="font-size: 12px;">{{"{{basic.retries_queue.numFormat()}}"}}</small></h1>
                 <small>All url in redis</small>
-                <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
+                <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong>
+                  <br>
+                    <span class="text-gray">{{"{{basic.redis_retries_mem}}"}}</span></span>
             </div>
             <br>
             <table>

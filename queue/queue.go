@@ -7,19 +7,16 @@ import (
 	"github.com/willf/bloom"
 	"log"
 	"os"
-	"strconv"
 	"sync"
 )
 
 const (
-	mainBlSize         = 30000000
-	retriesBlsSizeBase = 3000000
+	mainBlSize = 30000000
 )
 
 type Queue struct {
-	name                   string
-	Retries                []int //moving to project to save status on file when exit
-	enqueueForFailureMutex sync.Mutex
+	name    string
+	Retries []int //moving to project to save status on file when exit
 
 	bloomFilterMutex          sync.Mutex
 	bloomFilterInstance       *bloom.BloomFilter
@@ -74,16 +71,8 @@ func (my *Queue) GetFailureKey() string {
 	return my.name + "_fail_" + helper.Env().Redis.URLQueueKey
 }
 
-func (my *Queue) GetBlsKey(i int) string {
-	return my.name + "_enqueue_retry_" + strconv.Itoa(i)
-}
-
 func (my *Queue) mainBlFilename() string {
 	return helper.Env().BloomFilterPath + my.GetBlKey() + ".db"
-}
-
-func (my *Queue) blsFilename(i int) string {
-	return helper.Env().BloomFilterPath + my.GetBlsKey(i) + ".db"
 }
 
 func (my *Queue) BlRemoveFile() {
@@ -135,16 +124,6 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 	return false
 }
 
-func (my *Queue) getBlsRetriesBlSize(i int) uint {
-	i *= 3
-
-	if i >= 9 {
-		i = 9
-	}
-
-	return uint(retriesBlsSizeBase * (10. - i) / 10.)
-}
-
 //BlTestString if exists return true
 func (my *Queue) BlTestString(s string) bool {
 	if helper.Env().BloomFilterClient != "" {
@@ -176,7 +155,7 @@ func (my *Queue) Dequeue() (string, error) {
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
-	retryTimes *= 2
+	retryTimes *= 3 //control by project
 
 	incrInt := int(database.Redis().HIncrBy(my.GetFailureKey(), rawUrl, 1).Val()) //incr failure
 
@@ -196,13 +175,9 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 func (my *Queue) BlSave(checkLock bool) {
 	if checkLock {
-		my.enqueueForFailureMutex.Lock()
+		my.bloomFilterMutex.Lock()
+		defer my.bloomFilterMutex.Unlock()
 	}
-	defer func() {
-		if checkLock {
-			my.enqueueForFailureMutex.Unlock()
-		}
-	}()
 
 	if my.bloomFilterInstance != nil {
 		f, _ := os.Create(my.mainBlFilename())
