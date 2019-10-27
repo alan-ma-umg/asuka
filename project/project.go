@@ -134,8 +134,8 @@ func New(project IProject, stopTime time.Time) *Dispatcher {
 		projectName := d.Name()
 
 		//gob
-		//d.RecentFetchLastIndex = 0 //序列化前清空
-		//d.RecentFetchList = nil    //序列化前清空
+		d.RecentFetchLastIndex = 0 //序列化前清空
+		d.RecentFetchList = nil    //序列化前清空
 		//d.IProject = nil           //这里提前清空容易导致其他地方还未退出时读取到空指针
 		encBuf := &bytes.Buffer{}
 		if err := gob.NewEncoder(encBuf).Encode(d); err != nil {
