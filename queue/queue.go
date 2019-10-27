@@ -18,9 +18,7 @@ const (
 
 type Queue struct {
 	name                   string
-	bls                    []*bloom.BloomFilter
-	BlsTestCount           map[int]int //moving to project to save status on file when exit
-	FailureCountSlice      []int       //moving to project to save status on file when exit
+	Retries                []int //moving to project to save status on file when exit
 	enqueueForFailureMutex sync.Mutex
 
 	bloomFilterMutex          sync.Mutex
@@ -29,7 +27,7 @@ type Queue struct {
 }
 
 func NewQueue(name string) (q *Queue) {
-	return &Queue{name: name, BlsTestCount: make(map[int]int), FailureCountSlice: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once)}
+	return &Queue{name: name, Retries: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once)}
 }
 
 //ResetBloomFilterInstance purpose for release memory usage
@@ -37,7 +35,7 @@ func (my *Queue) ResetBloomFilterInstance() {
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
 
-	if my.bloomFilterInstance == nil && len(my.bls) == 0 {
+	if my.bloomFilterInstance == nil {
 		return
 	}
 
@@ -46,10 +44,6 @@ func (my *Queue) ResetBloomFilterInstance() {
 
 	//main
 	my.bloomFilterInstance = nil
-
-	//retries
-	my.bls = nil
-	my.BlsTestCount = make(map[int]int)
 
 	//new once
 	my.bloomFilterInstanceDoOnce = new(sync.Once)
@@ -97,10 +91,6 @@ func (my *Queue) BlRemoveFile() {
 	defer my.bloomFilterMutex.Unlock()
 
 	os.Remove(my.mainBlFilename())
-
-	for i := 0; i < helper.MaxInt(10, len(my.bls)); i++ {
-		os.Remove(my.blsFilename(i))
-	}
 }
 
 func (my *Queue) BlCleanUp() {
@@ -110,16 +100,6 @@ func (my *Queue) BlCleanUp() {
 			defer my.bloomFilterMutex.Unlock()
 			//main
 			GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlKey()})
-
-			//bls
-			for i, _ := range my.bls {
-				GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlsKey(i)})
-			}
-
-			//无论是否存在把0~10, 全清了
-			for v := 0; v < 10; v++ {
-				GetTcpFilterInstance().Cmd(11, &Cmd11{Db: my.GetBlsKey(v)})
-			}
 		}()
 		return
 	}
@@ -128,10 +108,6 @@ func (my *Queue) BlCleanUp() {
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-
-	for _, e := range my.bls {
-		e.ClearAll()
-	}
 
 	my.getBloomFilterInstance().ClearAll()
 }
@@ -199,18 +175,6 @@ func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
 }
 
-func (my *Queue) GetBlsTestCount() (index, value []int) {
-	//lock
-	my.enqueueForFailureMutex.Lock()
-	defer my.enqueueForFailureMutex.Unlock()
-
-	for i, v := range my.BlsTestCount {
-		index = append(index, i)
-		value = append(value, v)
-	}
-	return
-}
-
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 	retryTimes *= 2
 
@@ -218,57 +182,16 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 
 	if incrInt > retryTimes {
 		//final failure
-		my.FailureCountSlice[0]++
+		my.Retries[0]++
 		return false
 	}
 
-	if len(my.FailureCountSlice) <= incrInt {
-		my.FailureCountSlice = append(my.FailureCountSlice, 0) //put 0 instead of 1
+	if len(my.Retries) <= incrInt {
+		my.Retries = append(my.Retries, 0) //put 0 instead of 1
 	}
-	my.FailureCountSlice[incrInt]++
+	my.Retries[incrInt]++
 	my.Enqueue(rawUrl)
 	return true
-}
-
-func (my *Queue) EnqueueForFailureOld(rawUrl string, retryTimes int) bool {
-	if retryTimes < 1 {
-		return false
-	}
-
-	for i := 0; i < retryTimes; i++ {
-		res := false
-		if helper.Env().BloomFilterClient == "" {
-			my.enqueueForFailureMutex.Lock()
-			res = my.getBl(i).TestAndAddString(rawUrl)
-			my.enqueueForFailureMutex.Unlock()
-		} else {
-			res = my.blTcp(my.GetBlsKey(i), my.getBlsRetriesBlSize(i), 20, rawUrl)
-		}
-
-		if !res {
-			my.enqueueForFailureMutex.Lock()
-			my.BlsTestCount[i]++
-			my.enqueueForFailureMutex.Unlock()
-			my.Enqueue(rawUrl)
-			return true
-		}
-	}
-	my.enqueueForFailureMutex.Lock()
-	my.BlsTestCount[-1]++
-	my.enqueueForFailureMutex.Unlock()
-	return false
-}
-
-func (my *Queue) getBl(index int) *bloom.BloomFilter {
-	for i := len(my.bls); i <= index; i++ {
-		bloomFilterInstance := bloom.NewWithEstimates(my.getBlsRetriesBlSize(i), 0.01)
-		f, _ := os.Open(my.blsFilename(i))
-		bloomFilterInstance.ReadFrom(f)
-		f.Close()
-
-		my.bls = append(my.bls, bloomFilterInstance)
-	}
-	return my.bls[index]
 }
 
 func (my *Queue) BlSave(checkLock bool) {
@@ -284,16 +207,6 @@ func (my *Queue) BlSave(checkLock bool) {
 	if my.bloomFilterInstance != nil {
 		f, _ := os.Create(my.mainBlFilename())
 		my.getBloomFilterInstance().WriteTo(f)
-		f.Close()
-	}
-
-	for i, bl := range my.bls {
-		f, err := os.Create(my.blsFilename(i))
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		bl.WriteTo(f)
 		f.Close()
 	}
 }

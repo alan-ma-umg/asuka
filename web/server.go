@@ -990,8 +990,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	}()
 
 	jsonMap["basic"] = map[string]interface{}{
-		"queue_bls":  make(map[int]int),
-		"tcp_filter": make(map[string]interface{}),
+		"queue_retries": make([]int, 1),
+		"tcp_filter":    make(map[string]interface{}),
 	}
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
@@ -1050,10 +1050,20 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			}
 		}
 
+		//if len(p.GetSpiders()) > 0 {
+		//	indexSlice, valueSlice := p.GetQueue().GetBlsTestCount()
+		//	for i, v := range indexSlice {
+		//		jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[v] += valueSlice[i]
+		//	}
+		//}
+
 		if len(p.GetSpiders()) > 0 {
-			indexSlice, valueSlice := p.GetQueue().GetBlsTestCount()
-			for i, v := range indexSlice {
-				jsonMap["basic"].(map[string]interface{})["queue_bls"].(map[int]int)[v] += valueSlice[i]
+			//ugly
+			for ii, vv := range p.GetQueue().Retries {
+				if len(jsonMap["basic"].(map[string]interface{})["queue_retries"].([]int)) <= ii {
+					jsonMap["basic"].(map[string]interface{})["queue_retries"] = append(jsonMap["basic"].(map[string]interface{})["queue_retries"].([]int), 0)
+				}
+				jsonMap["basic"].(map[string]interface{})["queue_retries"].([]int)[ii] += vv
 			}
 		}
 

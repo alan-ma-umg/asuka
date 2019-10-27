@@ -304,12 +304,10 @@
                 },
                 computed: {
                     retries: function () {
-                        let str = "", k;
-                        for (k in this.basic.queue_bls) {
-                            if (this.basic.queue_bls.hasOwnProperty(k)) {
-                                str += (k == 0 ? "F:" : "") + " " + this.basic.queue_bls[k] + " / "
-                            }
-                        }
+                        let str = "";
+                        this.basic.queue_retries.forEach(function (v, i) {
+                            str += (i === 0 ? "F:" : "") + " " + v + " / "
+                        });
                         return str ? str.substring(0, str.length - 2) : str
                     }
                 },
