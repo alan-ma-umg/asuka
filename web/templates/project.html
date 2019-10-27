@@ -20,7 +20,7 @@
                 <small>Memory usage</small>
             </div>
             <div>
-                <h1><a style="min-width: 50px;display:inline-block;" href="/"
+                <h1><a style="min-width: 50px;display:inline-block;" href="javascript:history.back()"
                        :class="{'text-orange':stop}">{{.ProjectName}}</a></h1>
                 <small v-if="stopTime > 0" class="text-orange">Stop: {{"{{stopTime.timestamp2date()}}"}}</small>
                 <small v-else>Project</small>

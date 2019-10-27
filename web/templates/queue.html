@@ -9,7 +9,7 @@
 </head>
 <body>
 <div>
-    <h2><a href="/{{.ProjectName}}">{{.ProjectName}}</a></h2>
+    <h2><a href="javascript:history.back()">{{.ProjectName}}</a></h2>
     {{range $index, $element := .List}}
         <a href="{{$element}}" target="_blank">{{$element}}</a><br>
     {{end}}
