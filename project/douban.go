@@ -681,7 +681,7 @@ func (my *DouBan) WEBSite(w http.ResponseWriter, r *http.Request) {
 		Url    string
 	}
 
-	database.Mysql().Table("asuka_dou_ban").Limit(100).Find(&result)
+	database.Mysql().Table("asuka_dou_ban").OrderBy("id desc").Limit(100).Find(&result)
 
 	if byteJson, err := json.Marshal(result); err == nil {
 		w.Header().Set("Content-type", "application/json")

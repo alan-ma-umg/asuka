@@ -19,7 +19,8 @@ const (
 type Queue struct {
 	name                   string
 	bls                    []*bloom.BloomFilter
-	BlsTestCount           map[int]int
+	BlsTestCount           map[int]int //moving to project to save status on file when exit
+	FailureCountSlice      []int       //moving to project to save status on file when exit
 	enqueueForFailureMutex sync.Mutex
 
 	bloomFilterMutex          sync.Mutex
@@ -28,7 +29,7 @@ type Queue struct {
 }
 
 func NewQueue(name string) (q *Queue) {
-	return &Queue{name: name, BlsTestCount: make(map[int]int), bloomFilterInstanceDoOnce: new(sync.Once)}
+	return &Queue{name: name, BlsTestCount: make(map[int]int), FailureCountSlice: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once)}
 }
 
 //ResetBloomFilterInstance purpose for release memory usage
@@ -73,6 +74,10 @@ func (my *Queue) GetBlKey() string {
 
 func (my *Queue) GetKey() string {
 	return my.name + "_" + helper.Env().Redis.URLQueueKey
+}
+
+func (my *Queue) GetFailureKey() string {
+	return my.name + "_fail_" + helper.Env().Redis.URLQueueKey
 }
 
 func (my *Queue) GetBlsKey(i int) string {
@@ -207,6 +212,25 @@ func (my *Queue) GetBlsTestCount() (index, value []int) {
 }
 
 func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
+	retryTimes *= 2
+
+	incrInt := int(database.Redis().HIncrBy(my.GetFailureKey(), rawUrl, 1).Val()) //incr failure
+
+	if incrInt > retryTimes {
+		//final failure
+		my.FailureCountSlice[0]++
+		return false
+	}
+
+	if len(my.FailureCountSlice) <= incrInt {
+		my.FailureCountSlice = append(my.FailureCountSlice, 0) //put 0 instead of 1
+	}
+	my.FailureCountSlice[incrInt]++
+	my.Enqueue(rawUrl)
+	return true
+}
+
+func (my *Queue) EnqueueForFailureOld(rawUrl string, retryTimes int) bool {
 	if retryTimes < 1 {
 		return false
 	}
