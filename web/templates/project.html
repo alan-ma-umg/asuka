@@ -15,7 +15,7 @@
             <div style="float:right;">
                 <h1>{{"{{basic.mem_sys}}"}}
                     <small style="font-size: 12px"
-                                                  v-if="basic.tcp_filter.MemRss>0">{{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</small>
+                           v-if="basic.tcp_filter.MemRss>0">{{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</small>
                 </h1>
                 <small>Memory usage</small>
             </div>
@@ -83,11 +83,14 @@
         <div class="head-item">
             <div>
                 <h1><a href="/queue/{{.ProjectName}}"
-                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a>   <small style="font-size: 12px;" v-if="basic.retries_queue">{{"{{basic.retries_queue.numFormat()}}"}}</small></h1>
+                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a> <small
+                            style="font-size: 12px;"
+                            v-if="basic.retries_queue">{{"{{basic.retries_queue.numFormat()}}"}}</small></h1>
                 <small>All url in redis</small>
                 <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong>
                   <br>
-                    <span class="text-gray" v-if="basic.redis_retries_mem!='0B'">{{"{{basic.redis_retries_mem}}"}}</span></span>
+                    <span class="text-gray"
+                          v-if="basic.redis_retries_mem!='0B'">{{"{{basic.redis_retries_mem}}"}}</span></span>
             </div>
             <br>
             <table>
@@ -331,6 +334,9 @@
             <button v-on:click="logout()" class="btn-mb"
                     style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
             </button>
+            <button v-on:click="switchProject()" class="btn-mb"
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">{{"{{stop?'Start':'Stop'}}"}}
+            </button>
             <a href="/add/{{.ProjectName}}">
                 <button class="btn-mb"
                         style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Add Proxy
@@ -358,8 +364,8 @@
 
         </button>
         {{if .Check}}
-        <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
-               style="margin-bottom: 10px;max-width: 160px">
+            <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
+                   style="margin-bottom: 10px;max-width: 160px">
         {{end}}
     </div>
 </div>
@@ -388,6 +394,15 @@
                             url: "/switchServer",
                             data: {project: '{{.ProjectName}}', name: server.name,},
                             error: function (res) {
+                                if (res.status === 401) {
+                                    location.href = "/login"
+                                }
+                            }
+                        });
+                    },
+                    switchProject: function (item) {
+                        ajax({
+                            url: "/switchProject", data: {name: '{{.ProjectName}}'}, error: function (res) {
                                 if (res.status === 401) {
                                     location.href = "/login"
                                 }
