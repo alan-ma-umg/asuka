@@ -20,6 +20,7 @@ type Forever struct {
 	speedMax    time.Duration
 }
 
+func (my *Forever) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *Forever) Init(d *Dispatcher) {
 	go func() {
 		for {

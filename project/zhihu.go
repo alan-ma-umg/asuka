@@ -40,6 +40,7 @@ type ZhiHu struct {
 	lastInsertError string
 }
 
+func (my *ZhiHu) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *ZhiHu) Name() (str string) {
 	return "Miyamori"
 }

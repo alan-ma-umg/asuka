@@ -26,6 +26,7 @@ type V2ex struct {
 	itemRegex   *regexp.Regexp
 }
 
+func (my *V2ex) InitBloomFilterCapacity() uint { return 10000000 }
 func (my *V2ex) Init(d *Dispatcher) {
 
 	database.Redis().Del(my.Name() + "_" + helper.Env().Redis.URLQueueKey)

@@ -41,6 +41,7 @@ type JianShu struct {
 	lastInsertError string
 }
 
+func (my *JianShu) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *JianShu) Name() string {
 	return "Akua"
 }
