@@ -4,7 +4,6 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"runtime"
@@ -25,7 +24,7 @@ type Death struct {
 func (my *Death) Init(d *Dispatcher) {
 	go func() {
 		for {
-			time.Sleep(10e9)
+			time.Sleep(2e9)
 			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
@@ -61,9 +60,9 @@ func (my *Death) EntryUrl() []string {
 	return links
 }
 func (my *Death) Throttle(spider *spider.Spider) {
-	if spider.LoadRate(5) > 1000 {
-		spider.AddSleep(time.Duration(rand.Float64() * 1e9))
-	}
+	//if spider.LoadRate(5) > 1000 {
+	//	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
+	//}
 }
 
 func (my *Death) RequestBefore(spider *spider.Spider) {
@@ -101,7 +100,7 @@ func (my *Death) ResponseAfter(spider *spider.Spider) {
 
 // queue
 func (my *Death) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-	if my.queueUrlLen > 20000 {
+	if my.queueUrlLen > 100000 {
 		return
 	}
 

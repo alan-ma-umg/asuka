@@ -7,12 +7,15 @@ import (
 	"github.com/chenset/asuka/queue"
 	"github.com/chenset/asuka/web"
 	"log"
+	"math/rand"
 	"strings"
 	"time"
 )
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	rand.Seed(time.Now().UnixNano()) //global effect
 }
 
 func main() {
@@ -28,7 +31,13 @@ func main() {
 	//todo douban web page.
 
 	//BloomFilterServer
-	if helper.Env().BloomFilterServer != "" {
+	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {
+		go func() {
+			queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
+		}()
+
+		asuka()
+	} else if helper.Env().BloomFilterServer != "" {
 		queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
 	} else {
 		asuka()
