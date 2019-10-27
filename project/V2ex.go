@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -157,9 +158,14 @@ func (my *V2ex) WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) boo
 
 func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 	if tab := r.URL.Query().Get("tab"); tab != "" {
+		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 		w.Header().Set("Content-type", "text/plain;charset=utf-8")
 		if m, err := database.Redis().LRange(my.resultRedisKeyName(strings.TrimSpace(strings.ToLower(tab))), 0, -1).Result(); err == nil {
-			for _, v := range m {
+			for i, v := range m {
+				if limit > 0 && i >= limit {
+					break
+				}
+
 				l := make(map[string]string)
 				if err := json.Unmarshal([]byte(v), &l); err == nil {
 					io.WriteString(w, l["title"]+"\nhttps://v2ex.com"+l["url"]+"\n")
