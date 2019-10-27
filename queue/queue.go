@@ -15,9 +15,8 @@ const (
 )
 
 type Queue struct {
-	name    string
-	Retries []int //moving to project to save status on file when exit
-
+	Retries                   []int
+	name                      string
 	bloomFilterMutex          sync.Mutex
 	bloomFilterInstance       *bloom.BloomFilter
 	bloomFilterInstanceDoOnce *sync.Once

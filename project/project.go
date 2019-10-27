@@ -101,7 +101,7 @@ const RecentFetchCount = 50
 type Dispatcher struct {
 	IProject
 	*helper.Counting
-	queue                *queue.Queue
+	Queue                *queue.Queue
 	spiders              []*spider.Spider //write this slice need to under spiderSliceMutex.lock
 	spidersWaiting       []*spider.Spider //waiting for execute, write this slice need to under spiderSliceMutex.lock
 	StartTime            time.Time
@@ -215,10 +215,10 @@ func (my *Dispatcher) initProject() {
 }
 
 func (my *Dispatcher) GetQueue() *queue.Queue {
-	if my.queue == nil { //todo DoOnce in struct
-		my.queue = queue.NewQueue(my.Name())
+	if my.Queue == nil { //todo DoOnce in struct
+		my.Queue = queue.NewQueue(my.Name())
 	}
-	return my.queue
+	return my.Queue
 }
 
 //AddSpider 加入的spider不是直接立即执行的, 会通过addSpidersWaiting添加到spidersWaiting中等待合适时机执行
