@@ -416,6 +416,9 @@
                     retries: function () {
                         let str = "";
                         this.basic.queue_retries.forEach(function (v, i) {
+                            if (i === 0 && v === 0) {
+                                return
+                            }
                             str += (i === 0 ? "F:" : "") + " " + v + " / "
                         });
                         return str ? str.substring(0, str.length - 2) : str
