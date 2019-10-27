@@ -21,6 +21,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -1069,14 +1070,26 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 			}
 		}
 
-		//todo make improvement !!!!!!!!!
 		//redis
-		redisMem += database.Redis().MemoryUsage(p.GetQueueKey()).Val()
-		queueCount += database.Redis().LLen(p.GetQueueKey()).Val()
+		//queueCount += database.Redis().LLen(p.GetQueueKey()).Val()
+		queueCount += getInt64ValueFromCache(p.GetQueueKey()+"1", time.Second*2*time.Duration(len(ps)), func() int64 {
+			return database.Redis().LLen(p.GetQueueKey()).Val()
+		})
+
+		//redisMem += database.Redis().MemoryUsage(p.GetQueueKey()).Val()
+		redisMem += getInt64ValueFromCache(p.GetQueueKey()+"2", time.Second*8*time.Duration(len(ps)), func() int64 {
+			return database.Redis().MemoryUsage(p.GetQueueKey()).Val()
+		})
 
 		//redis retries
-		redisRetriesMem += database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
-		redisRetriesQueueCount += database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
+		//redisRetriesQueueCount += database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
+		redisRetriesQueueCount += getInt64ValueFromCache(p.GetQueueKey()+"3", time.Second*8*time.Duration(len(ps)), func() int64 {
+			return database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
+		})
+		//redisRetriesMem += database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
+		redisRetriesMem += getInt64ValueFromCache(p.GetQueueKey()+"4", time.Second*8*time.Duration(len(ps)), func() int64 {
+			return database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
+		})
 
 		if check {
 			jsonMap["basic"].(map[string]interface{})["showing"] = p.Showing()
@@ -1208,4 +1221,26 @@ func authCheckOrRedirect(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	return true
+}
+
+var getMemUsageCacheMap = make(map[string]int64)
+var getInt64ValueFromCacheMutex sync.Mutex
+
+func getInt64ValueFromCache(key string, duration time.Duration, f func() int64) int64 {
+	getInt64ValueFromCacheMutex.Lock()
+	defer getInt64ValueFromCacheMutex.Unlock()
+	if _, ok := getMemUsageCacheMap[key]; !ok {
+		getMemUsageCacheMap[key] = f()
+
+		//clean the cache after a while
+		go func(key string) {
+			time.Sleep(duration)
+
+			getInt64ValueFromCacheMutex.Lock()
+			delete(getMemUsageCacheMap, key)
+			getInt64ValueFromCacheMutex.Unlock()
+		}(key)
+	}
+
+	return getMemUsageCacheMap[key]
 }

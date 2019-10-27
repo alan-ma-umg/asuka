@@ -12,7 +12,9 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -314,9 +316,11 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 	for {
 		n, err := io.ReadAtLeast(conn, buf, lenOfDataLen+lenOfCmd)
 		if err != nil {
-			if err != io.EOF {
-				log.Println(err)
+			if err == io.EOF || strings.Contains(err.Error(), syscall.ECONNRESET.Error()) {
+				return
 			}
+
+			log.Println(err)
 			return
 		}
 
