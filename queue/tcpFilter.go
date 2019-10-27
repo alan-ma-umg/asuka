@@ -114,8 +114,9 @@ func GetTcpFilterInstance() *TcpFilter {
 					tcpFilterInstance.bloomFilterMutex.Lock()
 
 					for name, blItem := range tcpFilterInstance.blsItems {
+						tcpFilterInstance.blSave(name, blItem)
+
 						if time.Since(blItem.LastUse).Seconds() > 3600 {
-							tcpFilterInstance.blSave(name, blItem)
 							delete(tcpFilterInstance.blsItems, name)
 
 							log.Println("RELEASE: " + name)
