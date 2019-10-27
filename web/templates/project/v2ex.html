@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{.ProjectName}} Queue</title>
+    <title>{{.ProjectName}}</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <link href="{{FileCacheCtl "/static/asuka.css"}}" rel="stylesheet" type="text/css"/>
@@ -11,14 +11,16 @@
 <h3><a href="/{{.ProjectName}}">{{.ProjectName}}</a></h3>
 <br>
 <div style="float: right">
-    <h2><a href="https://v2ex.com/?tab=all">ALL</a></h2>
+    <h2><a href="https://v2ex.com/?tab=all">ALL</a>&nbsp;<a href="/website/{{.ProjectName}}?tab=all"
+                                                            class="text-orange">TEXT</a></h2>
     {{range $index, $element := .ListTitleAll}}
         <a href="https://v2ex.com{{index $.ListUrlAll $index}}" target="_blank">{{$element}}</a><br>
     {{end}}
 </div>
 
 <div>
-    <h3><a href="https://v2ex.com/?tab=hot">HOT</a></h3>
+    <h2><a href="https://v2ex.com/?tab=hot">HOT</a>&nbsp;<a href="/website/{{.ProjectName}}?tab=hot"
+                                                            class="text-orange">TEXT</a></h2>
     {{range $index, $element := .ListTitleHot}}
         <a href="https://v2ex.com{{index $.ListUrlHot $index}}" target="_blank">{{$element}}</a><br>
     {{end}}

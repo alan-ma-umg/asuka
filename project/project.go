@@ -59,7 +59,10 @@ type IProject interface {
 	//Showing 在web监控上展示信息
 	Showing() string
 	Name() string
+
+	//项目自定义WEB
 	WEBSite(w http.ResponseWriter, r *http.Request)
+	WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool //控制是否需要登录
 }
 
 type Implement struct{}
@@ -88,6 +91,9 @@ func (my *Implement) Name() string {
 func (my *Implement) WEBSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
 	io.WriteString(w, my.Name())
+}
+func (my *Implement) WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool {
+	return true
 }
 
 const RecentFetchCount = 50

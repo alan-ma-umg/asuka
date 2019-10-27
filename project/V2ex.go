@@ -5,6 +5,7 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -150,7 +151,23 @@ func (my *V2ex) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl str
 	return
 }
 
+func (my *V2ex) WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool {
+	return false
+}
+
 func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
+	if tab := r.URL.Query().Get("tab"); tab != "" {
+		w.Header().Set("Content-type", "text/plain;charset=utf-8")
+		if m, err := database.Redis().LRange(my.resultRedisKeyName(strings.TrimSpace(strings.ToLower(tab))), 0, -1).Result(); err == nil {
+			for _, v := range m {
+				l := make(map[string]string)
+				if err := json.Unmarshal([]byte(v), &l); err == nil {
+					io.WriteString(w, l["title"]+"\nhttps://v2ex.com"+l["url"]+"\n")
+				}
+			}
+		}
+		return
+	}
 
 	var titlesHot []string
 	var urlsHot []string

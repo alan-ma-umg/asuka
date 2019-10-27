@@ -502,11 +502,6 @@ func getDispatcher(name string) *project.Dispatcher {
 }
 
 func projectWebsite(w http.ResponseWriter, r *http.Request) {
-	//login check
-	if !authCheckOrRedirect(w, r) {
-		return
-	}
-
 	ps := strings.Split(r.URL.Path, "/")
 	if len(ps) != 3 {
 		http.NotFound(w, r)
@@ -516,6 +511,11 @@ func projectWebsite(w http.ResponseWriter, r *http.Request) {
 	p := getDispatcher(ps[2])
 	if p == nil {
 		http.NotFound(w, r)
+		return
+	}
+
+	//login check
+	if p.WEBSiteLoginRequired(w, r) && !authCheckOrRedirect(w, r) {
 		return
 	}
 
