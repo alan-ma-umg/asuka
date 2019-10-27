@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -27,6 +29,15 @@ func (my *Death) Init(d *Dispatcher) {
 			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
+
+	for _, s := range d.GetSpiders() {
+		d.RemoveSpider(s)
+	}
+
+	for i := 0; i < helper.MaxInt(2, runtime.NumCPU()); i++ {
+		uu, _ := url.Parse("direct://thread-" + strconv.Itoa(i))
+		d.AddSpider(uu)
+	}
 
 	my.speedMin = time.Hour
 	my.showStr = "Waiting"

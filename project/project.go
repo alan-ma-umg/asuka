@@ -134,8 +134,8 @@ func New(project IProject, stopTime time.Time) *Dispatcher {
 		projectName := d.Name()
 
 		//gob
-		d.RecentFetchLastIndex = 0 //序列化前清空
-		d.RecentFetchList = nil    //序列化前清空
+		//d.RecentFetchLastIndex = 0 //序列化前清空
+		//d.RecentFetchList = nil    //序列化前清空
 		//d.IProject = nil           //这里提前清空容易导致其他地方还未退出时读取到空指针
 		encBuf := &bytes.Buffer{}
 		if err := gob.NewEncoder(encBuf).Encode(d); err != nil {
@@ -271,6 +271,13 @@ func (my *Dispatcher) addSpidersWaiting(s *spider.Spider, checkLock bool) {
 
 func (my *Dispatcher) runSpider(s *spider.Spider) {
 	go func(spider *spider.Spider) {
+		if my != nil {
+			spider.RequestBefore = my.RequestBefore
+			spider.DownloadFilter = my.DownloadFilter
+			spider.ProjectThrottle = my.Throttle
+			spider.EnqueueForFailure = my.EnqueueForFailure
+		}
+
 		for {
 			if spider.Delete {
 				my.RemoveSpider(spider)
@@ -376,12 +383,6 @@ func (my *Dispatcher) CleanUp() *Dispatcher {
 }
 
 func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(spider *spider.Spider)) {
-	if project != nil {
-		spider.RequestBefore = project.RequestBefore
-		spider.DownloadFilter = project.DownloadFilter
-		spider.ProjectThrottle = project.Throttle
-		spider.EnqueueForFailure = project.EnqueueForFailure
-	}
 	spider.Throttle(dispatcherCallback)
 
 	link, err := spider.GetQueue().Dequeue()
@@ -399,6 +400,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	defer func() {
 		if project != nil {
 			project.ResponseAfter(spider)
+			spider.ResponseByte = nil
 		}
 	}()
 

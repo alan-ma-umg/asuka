@@ -295,8 +295,6 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 		spider.RequestBefore(spider)
 	}
 
-	spider.ResponseByte = nil
-
 	//time
 	spider.RequestStartTime = time.Now()
 	spider.RequestEndTime = time.Time{} //empty
