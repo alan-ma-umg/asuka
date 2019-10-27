@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	mainBlSize = 30000000
+	mainBlSize = 50000000
 )
 
 type Queue struct {
