@@ -75,7 +75,7 @@
 
         <div class="head-item">
             <div>
-                <h1>{{"{{basic.queue|numberFormat}}"}}</h1>
+                <h1>{{"{{basic.queue.numFormat()}}"}}</h1>
                 <small>All url in redis</small>
                 <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
             </div>
@@ -87,14 +87,14 @@
                         socket / ws
                     </td>
                     <td>
-                        <strong>{{"{{basic.connections|numberFormat}}"}}
-                            / {{"{{basic.ws_connections|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.connections.numFormat()}}"}}
+                            / {{"{{basic.ws_connections.numFormat()}}"}}</strong>
                     </td>
                     <td>
                         Threads
                     </td>
                     <td>
-                        <strong>{{"{{basic.goroutine|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.goroutine.numFormat()}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -123,13 +123,13 @@
                         Request
                     </td>
                     <td>
-                        <strong>{{"{{basic.access_count|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.access_count.numFormat()}}"}}</strong>
                     </td>
                     <td>
                         Failed
                     </td>
                     <td>
-                        <strong>{{"{{basic.failure_count|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.failure_count.numFormat()}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -137,14 +137,14 @@
                         Failure Recent
                     </td>
                     <td>
-                        <strong>{{"{{ projects.length?(basic.failure_period/projects.length):0 |numberFormat }}"}}
+                        <strong>{{"{{ (projects.length?(basic.failure_period/projects.length):0).numFormat()}}"}}
                             %</strong>
                     </td>
                     <td>
                         Failure All
                     </td>
                     <td>
-                        <strong>{{"{{ basic.access_count?(basic.failure_count/basic.access_count)*100:0 |numberFormat }}"}}
+                        <strong>{{"{{ (basic.access_count?(basic.failure_count/basic.access_count)*100:0).numFormat()}}"}}
                             %</strong>
                     </td>
                 </tr>
@@ -185,13 +185,13 @@
                     v-on:click="goTo(item.name)">{{"{{item.server_enable?((item.server_enable-item.server_run)/item.server_enable*100).toFixed(2):0}}"}}
                     %
                 </td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.failure_period|numberFormat}}"}}%
-                    / {{"{{item.failure_all|numberFormat}}"}}%
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.failure_period.numFormat()}}"}}%
+                    / {{"{{item.failure_all.numFormat()}}"}}%
                 </td>
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.access_count}}"}}
                     / {{"{{item.failure_count}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60']|numberFormat}}"}}
-                    / {{"{{item.loads['900']|numberFormat}}"}}</td>
+                <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60'].numFormat()}}"}}
+                    / {{"{{item.loads['900'].numFormat()}}"}}</td>
                 {{/*<td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>*/}}
                 <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
@@ -232,9 +232,9 @@
         </div>
         <div>
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine.numFormat()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
         </div>
         <div>
@@ -312,14 +312,6 @@
                         }
                         return str ? str.substring(0, str.length - 2) : str
                     },
-                },
-                filters: {
-                    numberFormat: function (v) {
-                        if (v === undefined || isNaN(v)) {
-                            return "0"
-                        }
-                        return new Intl.NumberFormat().format(v)
-                    }
                 },
                 mounted: function () {
                     handlerSocket();

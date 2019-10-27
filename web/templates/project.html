@@ -19,7 +19,8 @@
                 <small>Memory usage</small>
             </div>
             <div>
-                <h1><a style="min-width: 50px;display:inline-block;" href="/" :class="{'text-orange':stop}">{{.ProjectName}}</a></h1>
+                <h1><a style="min-width: 50px;display:inline-block;" href="/"
+                       :class="{'text-orange':stop}">{{.ProjectName}}</a></h1>
                 <small v-if="stopTime > 0" class="text-orange">Stop: {{"{{stopTime.timestamp2date()}}"}}</small>
                 <small v-else>Project</small>
             </div>
@@ -81,7 +82,7 @@
         <div class="head-item">
             <div>
                 <h1><a href="/queue/{{.ProjectName}}"
-                       :class="{'text-orange':stop}">{{"{{basic.queue|numberFormat}}"}}</a></h1>
+                       :class="{'text-orange':stop}">{{"{{basic.queue.numFormat()}}"}}</a></h1>
                 <small>All url in redis</small>
                 <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong></span>
             </div>
@@ -124,13 +125,13 @@
                         Request
                     </td>
                     <td>
-                        <strong>{{"{{basic.access_count|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.access_count.numFormat()}}"}}</strong>
                     </td>
                     <td>
                         Failed
                     </td>
                     <td>
-                        <strong>{{"{{basic.failure_count|numberFormat}}"}}</strong>
+                        <strong>{{"{{basic.failure_count.numFormat()}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -144,7 +145,7 @@
                         Failure All
                     </td>
                     <td>
-                        <strong>{{"{{ basic.access_count?(basic.failure_count/basic.access_count)*100:0 |numberFormat }}"}}
+                        <strong>{{"{{ (basic.access_count?(basic.failure_count/basic.access_count)*100:0).numFormat() }}"}}
                             %</strong>
                     </td>
                 </tr>
@@ -305,7 +306,7 @@
             <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
         </div>
         <div>
@@ -420,12 +421,7 @@
                     }
                 },
                 filters: {
-                    numberFormat: function (v) {
-                        if (v === undefined) {
-                            return "0"
-                        }
-                        return new Intl.NumberFormat().format(v)
-                    }, urlTruncate: function (str) {
+                    urlTruncate: function (str) {
                         if (str.length > 40) {
                             return str.substring(0, 40) + "..(" + str.length + ")"
                         }

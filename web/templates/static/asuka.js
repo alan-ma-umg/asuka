@@ -200,17 +200,26 @@ Number.prototype.fileSizeH = function () {
     return (this.valueOf() / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'k', 'M', 'G', 'T'][i];
 };
 
-Number.prototype.timestamp2date = function () {
-    return new Date(this.valueOf() * 1000).toISOString().slice(5,19).split("T").join(" ");
-    // return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
-    //     timeStyle: "medium",
-    //     hour12: false,
-    //     dateStyle: "short"
-    // });
+function pad2(n) {
+    return (n < 10 ? '0' : '') + n;
+}
 
-    // return new Date(this.valueOf() * 1000).toLocaleDateString("en-US", {
-    //     timeStyle: "medium",
-    //     hour12: false,
-    //     dateStyle: "short"
-    // })
+Number.prototype.timestamp2date = function () {
+    const d = new Date(this.valueOf() * 1000);
+    return pad2(d.getMonth() + 1) + "/" + pad2(d.getDate()) + "," + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
 };
+
+Number.prototype.numFormat = function () {
+    return numFormat(this.valueOf())
+};
+
+String.prototype.numFormat = function () {
+    return numFormat(this.valueOf())
+};
+
+function numFormat(v) {
+    if (v === undefined || isNaN(v)) {
+        return "0"
+    }
+    return new Intl.NumberFormat().format(v)
+}
