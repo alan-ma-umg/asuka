@@ -468,7 +468,13 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 			}
 
 			summary.FindUrls++
-			if spider.GetQueue().BlTestAndAddString(enqueueUrl) {
+			exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
+			if err != nil {
+				log.Println(err)
+				project.StopTime = time.Now()
+				return //return and stop the project
+			}
+			if exists {
 				continue
 			}
 			summary.NewUrls++

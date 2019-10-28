@@ -87,7 +87,7 @@ func (my *Pixiv) Init(d *Dispatcher) {
 				helper.SendTextToWXDoOnceDurationHour("url convert failed: https://px.flysay.com/" + item.Url + " \nIllustId: " + item.IllustId)
 			}
 
-			if d.GetQueue().BlTestAndAddString(rawUrl) {
+			if exists, _ := d.GetQueue().BlTestAndAddString(rawUrl); exists {
 				continue
 			}
 			addCount++
@@ -168,7 +168,7 @@ func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl stri
 	//404丢弃原链接,Retries.F不会增加.插入新格式的链接
 	if spider.CurrentResponse().StatusCode == 404 {
 		newUrl := regexp.MustCompile(`(?i)\.[^\.]{2,5}$`).ReplaceAllString(rawUrl, ".png")
-		if spider.GetQueue().BlTestAndAddString(newUrl) {
+		if exists, _ := spider.GetQueue().BlTestAndAddString(newUrl); exists {
 			return
 		}
 		spider.GetQueue().Enqueue(newUrl)

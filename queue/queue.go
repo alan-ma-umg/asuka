@@ -96,7 +96,7 @@ func (my *Queue) BlCleanUp() {
 	my.getBloomFilterInstance().ClearAll()
 }
 
-func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
+func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool, err error) {
 	buf, err := GetTcpFilterInstance().Cmd(10, &Cmd10{
 		Db:   db,
 		Size: size,
@@ -107,39 +107,39 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 		TcpErrorPrintDoOnce.Do(func() {
 			log.Println(err)
 		})
-		//todo 失败一定次数后停止项目
-		return true
+		//失败一定次数后停止项目
+		return true, err
 	}
 
 	var result []byte
 	json.Unmarshal(buf, &result)
 	if len(result) == 0 || result[0] == 1 {
-		return true
+		return true, nil
 	}
 
-	return false
+	return false, nil
 }
 
 //BlTestString if exists return true
-func (my *Queue) BlTestString(s string) bool {
+func (my *Queue) BlTestString(s string) (bool, error) {
 	if helper.Env().BloomFilterClient != "" {
 		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 10, s)
 	}
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-	return my.getBloomFilterInstance().TestString(s)
+	return my.getBloomFilterInstance().TestString(s), nil
 }
 
 //BlTestAndAddString if exists return true
-func (my *Queue) BlTestAndAddString(s string) bool {
+func (my *Queue) BlTestAndAddString(s string) (bool, error) {
 	if helper.Env().BloomFilterClient != "" {
 		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 20, s)
 	}
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-	return my.getBloomFilterInstance().TestAndAddString(s)
+	return my.getBloomFilterInstance().TestAndAddString(s), nil
 }
 
 func (my *Queue) Enqueue(rawUrl string) {
