@@ -35,7 +35,7 @@ type IProject interface {
 	RequestBefore(spider *spider.Spider)
 
 	// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-	EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int)
+	EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int)
 
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
@@ -75,10 +75,11 @@ func (my *Implement) InitBloomFilterCapacity() uint { return 7000000 }
 func (my *Implement) Init(d *Dispatcher)            {}
 func (my *Implement) Showing() string               { return "Have a nice day !" }
 
-// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
-	spider.GetQueue().EnqueueForFailure(rawUrl, retryTimes)
+// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
+func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
+	return spider.GetQueue().EnqueueForFailure(rawUrl, retryTimes)
 }
+
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 
 // ResponseAfter HTTP请求失败/成功之后
@@ -100,21 +101,23 @@ const RecentFetchCount = 50
 type Dispatcher struct {
 	IProject
 	*helper.Counting
-	queue                *queue.Queue
-	spiders              []*spider.Spider //write this slice need to under spiderSliceMutex.lock
-	spidersWaiting       []*spider.Spider //waiting for execute, write this slice need to under spiderSliceMutex.lock
-	StartTime            time.Time
-	StopTime             time.Time
-	recentFetchMutex     sync.Mutex
-	spiderSliceMutex     sync.Mutex
+	queue            *queue.Queue
+	spiders          []*spider.Spider //write this slice need to under spiderSliceMutex.lock
+	spidersWaiting   []*spider.Spider //waiting for execute, write this slice need to under spiderSliceMutex.lock
+	StartTime        time.Time
+	StopTime         time.Time
+	recentFetchMutex sync.Mutex
+	spiderSliceMutex sync.Mutex
+	//queueRetriesCapMutex sync.Mutex
 	RecentFetchLastIndex int64
 	RecentFetchList      []*spider.Summary
 	TrafficIn            uint64
 	TrafficOut           uint64
+	QueueRetries         []int
 }
 
 func New(project IProject, stopTime time.Time) *Dispatcher {
-	d := &Dispatcher{IProject: project, StopTime: stopTime, Counting: &helper.Counting{}, StartTime: time.Now()}
+	d := &Dispatcher{IProject: project, StopTime: stopTime, Counting: &helper.Counting{}, StartTime: time.Now(), QueueRetries: make([]int, 1)}
 	gob.Register(project)
 
 	// kill signal handing
@@ -272,6 +275,24 @@ func (my *Dispatcher) addSpidersWaiting(s *spider.Spider, checkLock bool) {
 	if checkLock {
 		my.spiderSliceMutex.Unlock()
 	}
+}
+
+func (my *Dispatcher) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
+	go func() {
+		success, tries := my.IProject.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+		if !success {
+			my.QueueRetries[0]++
+			return
+		}
+
+		if len(my.QueueRetries) <= tries {
+			//my.queueRetriesCapMutex.Lock()
+			my.QueueRetries = append(my.QueueRetries, make([]int, 1+tries-len(my.QueueRetries))...)
+			//my.queueRetriesCapMutex.Unlock()
+		}
+
+		my.QueueRetries[tries]++
+	}()
 }
 
 func (my *Dispatcher) runSpider(s *spider.Spider) {

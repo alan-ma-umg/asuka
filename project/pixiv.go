@@ -151,7 +151,7 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
+func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
 
 	//没有响应直接入正常的队列, fixme 如果一直没有响应意味着会无限下去
 	if spider.CurrentResponse() == nil || spider.CurrentResponse().StatusCode == 0 {
@@ -176,7 +176,7 @@ func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl stri
 	}
 
 	//常规加入失败队列
-	my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+	return my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

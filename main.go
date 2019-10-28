@@ -38,7 +38,6 @@ func main() {
 		go func() {
 			queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
 		}()
-
 		asuka()
 	} else if helper.Env().BloomFilterServer != "" {
 		queue.GetTcpFilterInstance().ServerListen(helper.Env().BloomFilterServer)
@@ -58,7 +57,7 @@ func asuka() {
 		//project.New(&project.JianShu{}, time.Now()).Run(),
 		//project.New(&project.Www{}, time.Now()).Run(),
 		project.New(&project.Forever{}, time.Now().Add(time.Minute*30)).CleanUp().Run(),
-		project.New(&project.Test{}, time.Time{}).CleanUp().Run(),
+		project.New(&project.Test{}, time.Now().Add(time.Minute*10)).CleanUp().Run(),
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
 		project.New(&project.ZhiHu{}, time.Now().Add(time.Minute*15)).CleanUp().Run(),

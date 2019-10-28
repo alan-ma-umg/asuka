@@ -11,7 +11,6 @@ import (
 )
 
 type Queue struct {
-	Retries                   []int
 	name                      string
 	bloomFilterMutex          sync.Mutex
 	bloomFilterInstance       *bloom.BloomFilter
@@ -20,7 +19,7 @@ type Queue struct {
 }
 
 func NewQueue(name string, size uint) (q *Queue) {
-	return &Queue{name: name, Retries: make([]int, 1), bloomFilterInstanceDoOnce: new(sync.Once), bloomFilterSize: size}
+	return &Queue{name: name, bloomFilterInstanceDoOnce: new(sync.Once), bloomFilterSize: size}
 }
 
 //ResetBloomFilterInstance purpose for release memory usage
@@ -151,28 +150,16 @@ func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
 }
 
-func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
-	retryTimes *= 3 //control by project
+func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) (success bool, tries int) {
+	retryTimes *= 3 //todo control by project
 
 	incrInt := int(database.Redis().HIncrBy(my.GetFailureKey(), rawUrl, 1).Val()) //incr failure
-
 	if incrInt > retryTimes {
 		//final failure
-		my.Retries[0]++
-		return false
+		return false, incrInt
 	}
-
-	for {
-		if len(my.Retries) <= incrInt {
-			my.Retries = append(my.Retries, 0) //put 0 instead of 1
-		} else {
-			break
-		}
-	}
-
-	my.Retries[incrInt]++
 	my.Enqueue(rawUrl)
-	return true
+	return true, incrInt
 }
 
 func (my *Queue) BlSave(checkLock bool) {

@@ -931,7 +931,7 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		if spiders[len(spiders)-1].TransportUrl.Scheme == "direct" {
 			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(101, len(spiders))-1]...)
 		} else {
-			spiders = spiders[0:helper.MinInt(100, len(spiders))]
+			spiders = spiders[0:helper.MinInt(19, len(spiders))]
 		}
 	}
 	for index, s := range spiders {
@@ -1074,7 +1074,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 		if len(p.GetSpiders()) > 0 {
 			//ugly
-			for ii, vv := range p.GetQueue().Retries {
+			for ii, vv := range p.QueueRetries {
 				if len(jsonMap["basic"].(map[string]interface{})["queue_retries"].([]int)) <= ii {
 					jsonMap["basic"].(map[string]interface{})["queue_retries"] = append(jsonMap["basic"].(map[string]interface{})["queue_retries"].([]int), 0)
 				}
@@ -1095,11 +1095,11 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 		//redis retries
 		//redisRetriesQueueCount += database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
-		redisRetriesQueueCount += getInt64ValueFromCache(p.GetQueueKey()+"3", time.Second*8*time.Duration(len(ps)), func() int64 {
+		redisRetriesQueueCount += getInt64ValueFromCache(p.GetQueue().GetFailureKey()+"3", time.Second*8*time.Duration(len(ps)), func() int64 {
 			return database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
 		})
 		//redisRetriesMem += database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
-		redisRetriesMem += getInt64ValueFromCache(p.GetQueueKey()+"4", time.Second*8*time.Duration(len(ps)), func() int64 {
+		redisRetriesMem += getInt64ValueFromCache(p.GetQueue().GetFailureKey()+"4", time.Second*8*time.Duration(len(ps)), func() int64 {
 			return database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
 		})
 
