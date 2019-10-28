@@ -108,6 +108,7 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool) {
 		TcpErrorPrintDoOnce.Do(func() {
 			log.Println(err)
 		})
+		//todo 失败一定次数后停止项目
 		return true
 	}
 

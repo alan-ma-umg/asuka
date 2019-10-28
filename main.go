@@ -25,6 +25,9 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo js解析
+	//todo 通过project.go gob退出保存retries
+	//todo tcp filter失败一定次数后停止当前项目
 	//todo WEB输入频率限制
 	//todo mysql/oracle 数据库写入支持
 	//todo chrome 插件 => pixiv.net js自动抓取报送
