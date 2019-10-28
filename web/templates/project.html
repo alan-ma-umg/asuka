@@ -453,9 +453,9 @@
                     handlerSocket();
                     document.getElementById('vue-content').style.display = "block";
                     loadScript('{{FileCacheCtl "/static/Chart.min.js"}}', function () {
-                        setTimeout(function () {
-                            isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
-                        }, 5000)
+                        setInterval(function () {
+                            isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
+                        }, 5432)
                     });
                 }
             });
