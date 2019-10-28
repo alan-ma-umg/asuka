@@ -342,6 +342,10 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var sleepSecondTimes int64 = 1
+	if !check {
+		sleepSecondTimes = 3
+	}
+
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
@@ -350,6 +354,9 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		if messageType == 1 && check {
 			input := strings.TrimSpace(string(b))
 			switch input {
+			case "parse":
+				helper.ParseTemplates()
+				fmt.Println("refresh templates")
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
@@ -422,6 +429,9 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 	responseContent := "home"
 	var recentFetchIndex int64 = 0
 	var sleepSecondTimes int64 = 1
+	if !check {
+		sleepSecondTimes = 3
+	}
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {

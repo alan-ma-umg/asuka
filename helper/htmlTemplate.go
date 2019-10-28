@@ -23,15 +23,15 @@ var fileCacheCtlMapMutex sync.Mutex
 func GetTemplates() *template.Template {
 	if runtime.GOOS == "linux" {
 		templatesOnce.Do(func() {
-			templates = getTemplates()
+			templates = ParseTemplates()
 		})
 		return templates
 	} else {
-		return getTemplates()
+		return ParseTemplates()
 	}
 }
 
-func getTemplates() *template.Template {
+func ParseTemplates() *template.Template {
 	//templatesOnce.Do(func() {
 	templates = template.Must(template.Must(template.New("").Funcs(template.FuncMap{
 		"FilePathBase": filepath.Base,
