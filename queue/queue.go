@@ -161,9 +161,14 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) bool {
 		return false
 	}
 
-	if len(my.Retries) <= incrInt {
-		my.Retries = append(my.Retries, 0) //put 0 instead of 1
+	for {
+		if len(my.Retries) <= incrInt {
+			my.Retries = append(my.Retries, 0) //put 0 instead of 1
+		} else {
+			break
+		}
 	}
+
 	my.Retries[incrInt]++
 	my.Enqueue(rawUrl)
 	return true
