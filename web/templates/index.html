@@ -267,6 +267,10 @@
             <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                    style="margin-bottom: 10px;max-width: 160px">
         {{end}}
+        <a href="https://asuka.flysay.com" class="text-orange" style="margin-left:10px"
+           v-if="location.host.toLowerCase().indexOf('asuka') == -1">ASUKA</a>
+        <a href="https://kumiko.flysay.com" class="text-orange" style="margin-left:10px"
+           v-if="location.host.toLowerCase().indexOf('asuka') == -1">KUMIKO</a>
     </div>
 </div>
 <script src="{{FileCacheCtl "/static/asuka.js"}}"></script>
