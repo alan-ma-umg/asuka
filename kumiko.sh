@@ -14,4 +14,4 @@ go build -ldflags "-s -w" -o kumiko
 
 sleep 5
 
-nohup ./kumiko  -bloomFilterServer :17654 -bloomFilterClient &
+nohup ./kumiko  -bloomFilterServer ":17654" -bloomFilterClient "" &
