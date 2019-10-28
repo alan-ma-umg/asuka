@@ -169,7 +169,7 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 
 				l := make(map[string]string)
 				if err := json.Unmarshal([]byte(v), &l); err == nil {
-					io.WriteString(w, l["title"]+"\nhttps://v2ex.com"+l["url"]+"\n")
+					io.WriteString(w, "\\"+strconv.Itoa(i+1)+" "+l["title"]+"\nhttps://v2ex.com"+l["url"]+"\n")
 				}
 			}
 		}
