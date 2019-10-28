@@ -58,8 +58,8 @@ func asuka() {
 		project.New(&project.Test{}, time.Now()).CleanUp().Run(),
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
-		project.New(&project.ZhiHu{}, time.Now()).CleanUp().Run(),
-		project.New(&project.JianShu{}, time.Now()).CleanUp().Run(),
+		//project.New(&project.ZhiHu{}, time.Now()).CleanUp().Run(),
+		//project.New(&project.JianShu{}, time.Now()).CleanUp().Run(),
 		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
 		project.New(&project.Death{}, time.Now()).CleanUp().Run(),
 	}, helper.Env().WEBListen))
