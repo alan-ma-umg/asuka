@@ -110,6 +110,7 @@ type Dispatcher struct {
 	spiderSliceMutex sync.Mutex
 	//queueRetriesCapMutex sync.Mutex
 	RecentFetchLastIndex int64
+	tcpFilterErrorCount  int
 	RecentFetchList      []*spider.Summary
 	TrafficIn            uint64
 	TrafficOut           uint64
@@ -349,11 +350,18 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}
 	}()
 
+	//empty tcpFilterErrorCount
+	go func() {
+		time.Sleep(time.Minute * 32)
+		my.tcpFilterErrorCount = 0
+	}()
+
 	//release queue.BloomFilterInstance
 	go func() {
 		for {
 			time.Sleep(time.Second * 500)
 
+			//release queue.BloomFilterInstance
 			//if all of spiders are idle, release queue.BloomFilterInstance after durations of stop
 			if my.IsStop() && time.Since(my.StopTime).Seconds() > 300 {
 				for _, s := range my.GetSpiders() {
@@ -471,7 +479,10 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 			exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
 			if err != nil {
 				log.Println(err)
-				project.StopTime = time.Now()
+				project.tcpFilterErrorCount++
+				if project.tcpFilterErrorCount > 5 {
+					project.StopTime = time.Now()
+				}
 				return //return and stop the project
 			}
 			if exists {
