@@ -98,7 +98,7 @@ func (my *Queue) BlCleanUp() {
 
 func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool, err error) {
 	buf, err := GetTcpFilterInstance().Cmd(10, &Cmd10{
-		Db:   db + "_tcp",
+		Db:   db,
 		Size: size,
 		Fun:  fun,
 		Urls: []string{s},
