@@ -14,7 +14,7 @@
     <h2><a href="https://v2ex.com/?tab=all">ALL</a>&nbsp;<a href="/website/{{.ProjectName}}?tab=all"
                                                             class="text-orange">TEXT</a></h2>
     {{range $index, $element := .ListTitleAll}}
-        <a href="https://v2ex.com{{index $.ListUrlAll $index}}" target="_blank">\{{$index+1}} {{$element}}</a><br>
+        <a href="https://v2ex.com{{index $.ListUrlAll $index}}" target="_blank">\{{$index}} {{$element}}</a><br>
     {{end}}
 </div>
 
@@ -22,7 +22,7 @@
     <h2><a href="https://v2ex.com/?tab=hot">HOT</a>&nbsp;<a href="/website/{{.ProjectName}}?tab=hot"
                                                             class="text-orange">TEXT</a></h2>
     {{range $index, $element := .ListTitleHot}}
-        <a href="https://v2ex.com{{index $.ListUrlHot $index}}" target="_blank">\{{$index+1}} {{$element}}</a><br>
+        <a href="https://v2ex.com{{index $.ListUrlHot $index}}" target="_blank">\{{$index}} {{$element}}</a><br>
     {{end}}
 </div>
 
