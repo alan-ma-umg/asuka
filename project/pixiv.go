@@ -118,7 +118,7 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 		spider.ResetSleep() //无视spider的限制
 	}
 
-	spider.AddSleep(time.Duration(rand.Float64() * 10e9))
+	//spider.AddSleep(time.Duration(rand.Float64() * 10e9))
 
 	if spider.FailureLevel > 40 {
 		spider.Delete = true
@@ -136,6 +136,10 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 	if !spider.RequestStartTime.IsZero() && time.Since(spider.RequestStartTime).Seconds() > 180 {
 		spider.Delete = true
 		spider.FailureLevel = 100
+	}
+
+	if spider.CurrentResponse().StatusCode == 0 {
+		spider.Delete = true
 	}
 
 	//} else if spider.CurrentResponse().StatusCode == 404 && spider.FailureLevel <= 10 { //404 is normal
