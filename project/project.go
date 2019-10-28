@@ -209,10 +209,11 @@ func (my *Dispatcher) initProject() {
 
 	my.Init(my)
 
-	for _, l := range my.EntryUrl() {
-		//if !my.GetQueue().BlTestString(l) {
-		my.GetQueue().Enqueue(l)
-		//}
+	rawUrls := my.EntryUrl()
+	if int64(len(rawUrls)) > my.GetQueue().QueueLen() {
+		for _, l := range rawUrls {
+			my.GetQueue().Enqueue(l)
+		}
 	}
 }
 

@@ -146,6 +146,10 @@ func (my *Queue) Enqueue(rawUrl string) {
 	database.Redis().RPush(my.GetKey(), rawUrl)
 }
 
+func (my *Queue) QueueLen() int64 {
+	return database.Redis().LLen(my.GetKey()).Val()
+}
+
 func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
 }

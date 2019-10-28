@@ -1095,7 +1095,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		//redis
 		//queueCount += database.Redis().LLen(p.GetQueueKey()).Val()
 		queueCount += getInt64ValueFromCache(p.GetQueueKey()+"1", time.Second*2*time.Duration(len(ps)), func() int64 {
-			return database.Redis().LLen(p.GetQueueKey()).Val()
+			return p.GetQueue().QueueLen()
 		})
 
 		//redisMem += database.Redis().MemoryUsage(p.GetQueueKey()).Val()
