@@ -108,7 +108,8 @@
                 <tr>
                     <td>Retries</td>
                     <td colspan="3">
-                        <strong style="display:block;white-space: nowrap; width: 195px; overflow: hidden; text-overflow: ellipsis;" :title="retries">{{"{{retries}}"}}</strong>
+                        <strong style="display:block;white-space: nowrap; width: 195px; overflow: hidden; text-overflow: ellipsis;"
+                                :title="retries">{{"{{retries}}"}}</strong>
                     </td>
                 </tr>
                 </tbody>
@@ -454,8 +455,8 @@
                     document.getElementById('vue-content').style.display = "block";
                     loadScript('{{FileCacheCtl "/static/Chart.min.js"}}', function () {
                         setInterval(function () {
-                            isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
-                        }, 5432)
+                            isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
+                        }, 6543)
                     });
                 }
             });
