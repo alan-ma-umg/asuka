@@ -119,7 +119,7 @@ func GetTcpFilterInstance() *TcpFilter {
 						if time.Since(blItem.LastUse).Seconds() > 3600 {
 							delete(tcpFilterInstance.blsItems, name)
 
-							log.Println("RELEASE: " + name)
+							//log.Println("RELEASE: " + name)
 						}
 					}
 
@@ -484,7 +484,7 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 
 		my.blsItems[cmd10.Db] = blItem
 
-		log.Println("NEW: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))
+		//log.Println("NEW: " + cmd10.Db + " size :" + strconv.Itoa(int(cmd10.Size)))
 	}
 
 	blItem.LastUse = time.Now()
