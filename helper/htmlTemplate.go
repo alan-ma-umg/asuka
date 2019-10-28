@@ -36,6 +36,9 @@ func ParseTemplates() *template.Template {
 	templates = template.Must(template.Must(template.New("").Funcs(template.FuncMap{
 		"FilePathBase": filepath.Base,
 		"FileCacheCtl": fileCacheCtl,
+		"Incr": func(i int) int {
+			return i + 1
+		},
 	}).ParseGlob("web/templates/*/*.html")).ParseGlob("web/templates/*.html"))
 	//})
 	return templates
