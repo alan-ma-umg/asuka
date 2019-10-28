@@ -138,7 +138,7 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 		spider.FailureLevel = 100
 	}
 
-	if spider.CurrentResponse().StatusCode != 404 && spider.CurrentResponse().StatusCode != 200 {
+	if spider.CurrentResponse() != nil && spider.CurrentResponse().StatusCode != 404 && spider.CurrentResponse().StatusCode != 200 {
 		spider.Delete = true
 	}
 
