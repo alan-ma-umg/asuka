@@ -391,20 +391,16 @@ func (my *Dispatcher) Run() *Dispatcher {
 	return my
 }
 
-//func (my *Dispatcher) SearchSpider(serverName string) *spider.Spider {
-//	for _, e := range my.GetSpiders() {
-//		if e.Transport.S.Name == serverName {
-//			return e
-//		}
-//	}
-//	return nil
-//}
+func (my *Dispatcher) CleanFailure() {
+	my.GetQueue().CleanFailure()
+	my.QueueRetries = make([]int, 1)
+}
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
-	//database.Mysql().Exec("truncate asuka_dou_ban")
-	my.GetQueue().BlRemoveFile()
-	database.Redis().Del(my.getGOBKey())
-	database.Redis().Del(my.GetQueueKey())
+	my.GetQueue().BlCleanUp()              //bloom filter & tcp bloom filter
+	database.Redis().Del(my.getGOBKey())   //GOB
+	database.Redis().Del(my.GetQueueKey()) //queue
+	my.CleanFailure()                      //queue failure
 	return my
 }
 

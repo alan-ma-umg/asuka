@@ -452,13 +452,23 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						p.GetQueue().Enqueue(l)
 					}
 				}
-				log.Println("enqueue")
+				log.Println(p.Name() + ": Enqueue")
 			case "clear":
 				if check {
-					p.GetQueue().BlCleanUp()
-					break
+					p.CleanUp()
 				}
-				log.Println("bloomFilter clearAll")
+				log.Println(p.Name() + ": Clear All")
+			case "reset":
+				if check {
+					for _, i := range p.GetSpiders() {
+						if i != nil {
+							i.Delete = true
+						}
+					}
+
+					p.CleanUp()
+				}
+				log.Println(p.Name() + ": Reset")
 			case "stop":
 				if check {
 					for _, s := range p.GetSpiders() {
@@ -467,7 +477,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				log.Println("spider stop")
+				log.Println(p.Name() + ": Spiders Stop")
 			case "start":
 				if check {
 					for _, s := range p.GetSpiders() {

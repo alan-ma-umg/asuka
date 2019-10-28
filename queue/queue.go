@@ -162,6 +162,10 @@ func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) (success bool,
 	return true, incrInt
 }
 
+func (my *Queue) CleanFailure() {
+	database.Redis().Del(my.GetFailureKey())
+}
+
 func (my *Queue) BlSave(checkLock bool) {
 	if checkLock {
 		my.bloomFilterMutex.Lock()
