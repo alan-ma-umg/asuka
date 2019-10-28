@@ -441,6 +441,9 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 		if messageType == 1 {
 			input := strings.TrimSpace(string(b))
 			switch input {
+			case "parse":
+				helper.ParseTemplates()
+				fmt.Println("refresh templates")
 			case "free":
 				debug.FreeOSMemory()
 				fmt.Println("debug.FreeOsMemory")
