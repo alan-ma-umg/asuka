@@ -391,16 +391,12 @@ func (my *Dispatcher) Run() *Dispatcher {
 	return my
 }
 
-func (my *Dispatcher) CleanFailure() {
-	my.GetQueue().CleanFailure()
-	my.QueueRetries = make([]int, 1)
-}
-
 func (my *Dispatcher) CleanUp() *Dispatcher {
 	my.GetQueue().BlCleanUp()              //bloom filter & tcp bloom filter
 	database.Redis().Del(my.getGOBKey())   //GOB
 	database.Redis().Del(my.GetQueueKey()) //queue
-	my.CleanFailure()                      //queue failure
+	my.GetQueue().CleanFailure()           //queue failure
+	my.QueueRetries = make([]int, 1)       //queue failure
 	return my
 }
 
