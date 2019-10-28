@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"github.com/chenset/asuka/helper"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
@@ -37,7 +36,7 @@ func init() {
 			}
 
 			if len(MysqlDelayInsertQueue) > 0 {
-				fmt.Println("MysqlDelayInsertQueue: ", len(MysqlDelayInsertQueue))
+				log.Println("MysqlDelayInsertQueue: ", len(MysqlDelayInsertQueue))
 			}
 
 		}

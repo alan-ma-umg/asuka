@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/project"
@@ -356,10 +355,10 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			switch input {
 			case "parse":
 				helper.ParseTemplates()
-				fmt.Println("refresh templates")
+				log.Println("refresh templates")
 			case "free":
 				debug.FreeOSMemory()
-				fmt.Println("debug.FreeOsMemory")
+				log.Println("debug.FreeOsMemory")
 			case "stop":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
@@ -368,7 +367,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				fmt.Println("spider stop")
+				log.Println("spider stop")
 			case "start":
 				for _, d := range dispatchers {
 					for _, s := range d.GetSpiders() {
@@ -377,7 +376,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				fmt.Println("spider start")
+				log.Println("spider start")
 			default:
 				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
 					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
@@ -443,23 +442,23 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			switch input {
 			case "parse":
 				helper.ParseTemplates()
-				fmt.Println("refresh templates")
+				log.Println("refresh templates")
 			case "free":
 				debug.FreeOSMemory()
-				fmt.Println("debug.FreeOsMemory")
+				log.Println("debug.FreeOsMemory")
 			case "enqueue":
 				if check {
 					for _, l := range p.EntryUrl() {
 						p.GetQueue().Enqueue(l)
 					}
 				}
-				fmt.Println("enqueue")
+				log.Println("enqueue")
 			case "clear":
 				if check {
 					p.GetQueue().BlCleanUp()
 					break
 				}
-				fmt.Println("bloomFilter clearAll")
+				log.Println("bloomFilter clearAll")
 			case "stop":
 				if check {
 					for _, s := range p.GetSpiders() {
@@ -468,7 +467,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				fmt.Println("spider stop")
+				log.Println("spider stop")
 			case "start":
 				if check {
 					for _, s := range p.GetSpiders() {
@@ -477,7 +476,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				fmt.Println("spider start")
+				log.Println("spider start")
 			case "home":
 				responseContent = strings.TrimSpace(string(b))
 			case "recent":
@@ -805,7 +804,7 @@ func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchInde
 	responseJsonCommon(check, []*project.Dispatcher{p}, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
@@ -911,7 +910,7 @@ func indexJson(check bool) []byte {
 	responseJsonCommon(check, dispatchers, jsonMap, start)
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	return b
 }

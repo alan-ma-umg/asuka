@@ -3,7 +3,6 @@ package project
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/queue"
@@ -121,8 +120,8 @@ func New(project IProject, stopTime time.Time) *Dispatcher {
 	// kill signal handing
 	helper.ExitHandleFuncSlice = append(helper.ExitHandleFuncSlice, func() {
 		if r := recover(); r != nil {
-			fmt.Println("Exit error")
-			fmt.Println(r)
+			log.Println("Exit error")
+			log.Println(r)
 		}
 
 		for _, sp := range d.GetSpiders() {
@@ -152,7 +151,7 @@ func New(project IProject, stopTime time.Time) *Dispatcher {
 			database.Redis().Set(GOBRedisKey, encBuf.String(), 0)
 		}
 
-		fmt.Println(projectName + " status saved")
+		log.Println(projectName + " status saved")
 	})
 
 	return d
