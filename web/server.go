@@ -83,9 +83,8 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		//intent no httpOnly, js need it
 		if r.Method == "GET" && strings.ToLower(r.URL.String()) != "/login" && r.Header.Get("X-Requested-With") == "" {
-			http.SetCookie(w, &http.Cookie{Name: "intent", Value: r.URL.String(), Path: "/", Expires: time.Now().Add(time.Hour), HttpOnly: false})
+			http.SetCookie(w, &http.Cookie{Name: "intent", Value: r.URL.String(), Path: "/", Expires: time.Now().Add(time.Hour), HttpOnly: true})
 		}
 
 		if w.Header().Get("Content-Type") == "" {
