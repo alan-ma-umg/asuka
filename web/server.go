@@ -16,6 +16,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -638,6 +639,10 @@ func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.D
 			} else if strings.HasPrefix(line, "socks5") {
 				for _, addr := range proxy.Socks5ProxyParse(line) {
 					dispatcher.AddSpider(addr)
+				}
+			} else if strings.HasPrefix(line, "direct") {
+				if u, err := url.Parse(line); err == nil {
+					dispatcher.AddSpider(u)
 				}
 			}
 		}

@@ -25,8 +25,6 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	//todo 线程池检测
-	//todo reset 后direct://localhost 无法add server
 	//todo http请求未完成, crawling 中也要显示出来
 	//todo js解析
 	//todo WEB输入频率限制
