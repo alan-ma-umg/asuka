@@ -467,7 +467,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				log.Println(p.Name() + ": Reset")
+				log.Println(p.Name() + ": Empty spider")
 			case "stop":
 				if check {
 					for _, s := range p.GetSpiders() {
