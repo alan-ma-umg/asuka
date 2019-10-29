@@ -18,12 +18,13 @@ import (
 
 type V2ex struct {
 	*Implement
-	queueUrlLen int64
-	showStr     string
-	speedMin    time.Duration
-	speedTotal  time.Duration
-	speedMax    time.Duration
-	itemRegex   *regexp.Regexp
+	queueUrlLen    int64
+	showStr        string
+	speedMin       time.Duration
+	speedTotal     time.Duration
+	speedMax       time.Duration
+	itemRegex      *regexp.Regexp
+	lastUpdateTime time.Time
 }
 
 func (my *V2ex) InitBloomFilterCapacity() uint { return 10000000 }
@@ -111,6 +112,7 @@ func (my *V2ex) ResponseSuccess(spider *spider.Spider) {
 		return
 	}
 
+	my.lastUpdateTime = time.Now()
 	cate := "all"
 	if strings.Contains(strings.ToLower(spider.CurrentRequest().URL.String()), "hot") {
 		cate = "hot"
@@ -161,7 +163,9 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 	if tab := r.URL.Query().Get("tab"); tab != "" {
 		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 		w.Header().Set("Content-type", "text/plain;charset=utf-8")
-		io.WriteString(w, time.Now().Format(time.Stamp)+"\n")
+		if !my.lastUpdateTime.IsZero() {
+			io.WriteString(w, my.lastUpdateTime.Format(time.Stamp)+"\n")
+		}
 		if m, err := database.Redis().LRange(my.resultRedisKeyName(strings.TrimSpace(strings.ToLower(tab))), 0, -1).Result(); err == nil {
 			for i, v := range m {
 				if limit > 0 && i >= limit {
