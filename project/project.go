@@ -350,11 +350,26 @@ func (my *Dispatcher) Run() *Dispatcher {
 		}
 	}()
 
-	//empty tcpFilterErrorCount
-	go func() {
-		time.Sleep(time.Minute * 32)
-		my.tcpFilterErrorCount = 0
-	}()
+	//tcp filter client mode
+	if helper.Env().BloomFilterClient != "" {
+		//empty tcpFilterErrorCount
+		go func() {
+			for {
+				time.Sleep(time.Minute * 32)
+				my.tcpFilterErrorCount = 0
+			}
+		}()
+		//Heartbeat check
+		go func() {
+			for {
+				time.Sleep(time.Second * 3)
+				_, err := queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+				if err != nil {
+					tcpFilterErrorHandle(my)
+				}
+			}
+		}()
+	}
 
 	//release queue.BloomFilterInstance
 	go func() {
@@ -479,10 +494,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 			exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
 			if err != nil {
 				log.Println(err)
-				project.tcpFilterErrorCount++
-				if project.tcpFilterErrorCount > 5 {
-					project.StopTime = time.Now()
-				}
+				tcpFilterErrorHandle(project)
 				return //return and stop the project
 			}
 			if exists {
@@ -491,5 +503,12 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 			summary.NewUrls++
 			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 		}
+	}
+}
+
+func tcpFilterErrorHandle(project *Dispatcher) {
+	project.tcpFilterErrorCount++
+	if project.tcpFilterErrorCount > 5 {
+		project.StopTime = time.Now()
 	}
 }
