@@ -31,10 +31,6 @@ func main() {
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
 
-	//s,err:=queue.GetTcpFilterInstance().Cmd(0, nil)
-	//log.Println(string(s),err)
-
-	//return
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {
 		go func() {

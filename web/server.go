@@ -942,9 +942,9 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 	spiders := p.GetSpiders()
 	if len(spiders) > 1 {
 		if spiders[len(spiders)-1].TransportUrl.Scheme == "direct" {
-			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(101, len(spiders))-1]...)
+			spiders = append([]*spider.Spider{spiders[len(spiders)-1]}, spiders[0:helper.MinInt(19, len(spiders))-1]...)
 		} else {
-			spiders = spiders[0:helper.MinInt(19, len(spiders))]
+			spiders = spiders[0:helper.MinInt(20, len(spiders))]
 		}
 	}
 	for index, s := range spiders {
