@@ -459,15 +459,13 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 					p.CleanUp()
 				}
 				log.Println(p.Name() + ": Clear All")
-			case "reset":
+			case "empty":
 				if check {
 					for _, i := range p.GetSpiders() {
 						if i != nil {
 							i.Delete = true
 						}
 					}
-
-					p.CleanUp()
 				}
 				log.Println(p.Name() + ": Reset")
 			case "stop":
