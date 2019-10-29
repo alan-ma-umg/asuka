@@ -161,6 +161,7 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 	if tab := r.URL.Query().Get("tab"); tab != "" {
 		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 		w.Header().Set("Content-type", "text/plain;charset=utf-8")
+		io.WriteString(w, time.Now().Format(time.Stamp)+"\n")
 		if m, err := database.Redis().LRange(my.resultRedisKeyName(strings.TrimSpace(strings.ToLower(tab))), 0, -1).Result(); err == nil {
 			for i, v := range m {
 				if limit > 0 && i >= limit {
@@ -169,7 +170,13 @@ func (my *V2ex) WEBSite(w http.ResponseWriter, r *http.Request) {
 
 				l := make(map[string]string)
 				if err := json.Unmarshal([]byte(v), &l); err == nil {
-					io.WriteString(w, "\\"+strconv.Itoa(i+1)+" "+l["title"]+"\nhttps://v2ex.com"+l["url"]+"\n")
+					u := strings.Split(l["url"], "#")
+					//https://www.v2ex.com/t/613922#reply19
+					replay := ""
+					if len(u) > 1 {
+						replay = strings.TrimLeft(u[1], "replay")
+					}
+					io.WriteString(w, "\\"+strconv.Itoa(i+1)+" "+l["title"]+"["+replay+"]"+"\nhttps://v2ex.com"+u[0]+"\n")
 				}
 			}
 		}
