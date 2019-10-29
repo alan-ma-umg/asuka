@@ -8,6 +8,7 @@ import (
 	"github.com/chenset/asuka/web"
 	"log"
 	"math/rand"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -49,7 +50,9 @@ func main() {
 }
 
 func asuka() {
-	fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
+	if runtime.GOOS != "linux" {
+		fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
+	}
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}, time.Now()).Run(),
 		project.New(&project.Pixiv{}, time.Time{}).Run(),
