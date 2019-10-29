@@ -326,7 +326,6 @@
         {{/*            <span v-if="basic.tcp_filter.MemSys">Sys/Alloc: {{"{{basic.tcp_filter.MemSys.fileSizeH()}}"}}/{{"{{basic.tcp_filter.MemAlloc.fileSizeH()}}"}}</span>*/}}
         {{/*        </div>*/}}
         <div>
-            <span v-if="basic.tcp_filter.MemRss">Rss: {{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
             <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>
