@@ -25,7 +25,6 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	//todo http请求未完成, crawling 中也要显示出来
 	//todo js解析
 	//todo WEB输入频率限制
 	//todo mysql/oracle 数据库写入支持

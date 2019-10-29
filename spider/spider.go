@@ -273,6 +273,8 @@ func (spider *Spider) SetRequest(url *url.URL) *Spider {
 		if spider.currentRequest.UserAgent() == "" {
 			spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 		}
+	} else {
+		spider.currentRequest.URL = url
 	}
 
 	//if r.Header.Get("Accept-Encoding") == "" {
