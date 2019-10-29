@@ -1159,13 +1159,14 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	jsonMap["basic"].(map[string]interface{})["log_mod"] = 0
 	jsonMap["basic"].(map[string]interface{})["log_check"] = 0
+	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = 0
+	jsonMap["basic"].(map[string]interface{})["pool_size"] = 0
 	if check {
 		jsonMap["basic"].(map[string]interface{})["log_mod"] = helper.GetFileLogInstance().GetLogModifyTime().Unix()
 		jsonMap["basic"].(map[string]interface{})["log_check"] = helper.GetFileLogInstance().GetLogCheckTime().Unix()
+		jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
+		jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
 	}
-
-	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
-	jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
