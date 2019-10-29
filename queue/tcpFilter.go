@@ -114,12 +114,11 @@ func GetTcpFilterInstance() *TcpFilter {
 					tcpFilterInstance.bloomFilterMutex.Lock()
 
 					for name, blItem := range tcpFilterInstance.blsItems {
+						s := time.Now()
 						tcpFilterInstance.blSave(name, blItem)
-
 						if time.Since(blItem.LastUse).Seconds() > 3600 {
 							delete(tcpFilterInstance.blsItems, name)
-
-							//log.Println("RELEASE: " + name)
+							log.Println("Release: " + name + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
 						}
 					}
 
@@ -491,21 +490,3 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 	blItem.UseCount++
 	return blItem.Bl
 }
-
-//func (my *TcpFilter) otherCmd(data []byte) (result []byte, err error) {
-//	var cmdMap map[string]interface{}
-//	err = json.Unmarshal(data, &cmdMap)
-//	if err != nil {
-//		log.Println(err)
-//		return
-//	}
-//
-//	//todo implement
-//	result, err = json.Marshal(cmdMap)
-//	if err != nil {
-//		log.Println(err)
-//		//return
-//	}
-//	//log.Println(string(res))
-//	//return
-//}
