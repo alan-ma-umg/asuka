@@ -243,6 +243,8 @@ func PrintMemUsage(m runtime.MemStats) (str string) {
 	runtime.ReadMemStats(&m)
 	// General statistics.
 
+	str += stringAlign("RSS", ByteCountBinary(GetProgramRss()))
+
 	// Alloc is bytes of allocated heap objects.
 	//
 	// This is the same as HeapAlloc (see below).
