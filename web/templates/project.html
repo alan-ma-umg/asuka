@@ -467,7 +467,7 @@
                 mounted: function () {
                     handlerSocket();
                     document.getElementById('vue-content').style.display = "block";
-                    loadScript('{{FileCacheCtl "https://cdn.bootcss.com/Chart.js/2.8.0-rc.1/Chart.min.js"}}', function () {
+                    loadScript('https://cdn.bootcss.com/Chart.js/2.8.0-rc.1/Chart.min.js', function () {
                         setInterval(function () {
                             isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
                         }, 6543)
