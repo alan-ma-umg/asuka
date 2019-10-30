@@ -240,6 +240,7 @@ func stringAlign(field string, value interface{}) string {
 }
 
 func PrintMemUsage(m runtime.MemStats) (str string) {
+	s := time.Now()
 	runtime.ReadMemStats(&m)
 	// General statistics.
 
@@ -449,6 +450,8 @@ func PrintMemUsage(m runtime.MemStats) (str string) {
 	str += stringAlign("NumGC", m.NumGC)
 	str += stringAlign("NumForcedGC", m.NumForcedGC)
 	str += stringAlign("GCCPUFraction", strconv.FormatFloat(m.GCCPUFraction, 'f', 8, 64))
+
+	str += stringAlign("Time", time.Since(s).String())
 	return
 }
 
