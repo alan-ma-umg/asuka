@@ -308,7 +308,7 @@ func (my *Dispatcher) runSpider(s *spider.Spider) {
 
 		for {
 			if spider.Delete {
-				my.RemoveSpider(spider)
+				my.RemoveSpider(spider) //上级调用也有锁, 这里也有所. 但是隔着一层Go Goroutine
 				return
 			}
 			if my.IsStop() {
@@ -369,26 +369,26 @@ func (my *Dispatcher) Run() *Dispatcher {
 				}
 			}
 		}()
-	}
+	} else {
+		//release queue.BloomFilterInstance
+		go func() {
+			for {
+				time.Sleep(time.Second * 500)
 
-	//release queue.BloomFilterInstance
-	go func() {
-		for {
-			time.Sleep(time.Second * 500)
-
-			//release queue.BloomFilterInstance
-			//if all of spiders are idle, release queue.BloomFilterInstance after durations of stop
-			if my.IsStop() && time.Since(my.StopTime).Seconds() > 300 {
-				for _, s := range my.GetSpiders() {
-					if s != nil && !s.IsIdle() {
-						return //it's not idle
+				//release queue.BloomFilterInstance
+				//if all of spiders are idle, release queue.BloomFilterInstance after durations of stop
+				if my.IsStop() && time.Since(my.StopTime).Seconds() > 300 {
+					for _, s := range my.GetSpiders() {
+						if s != nil && !s.IsIdle() {
+							return //it's not idle
+						}
 					}
-				}
 
-				my.GetQueue().ResetBloomFilterInstance()
+					my.GetQueue().ResetBloomFilterInstance()
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	//watching and run SpidersWaiting
 	go func() {
