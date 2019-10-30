@@ -441,12 +441,12 @@ func PrintMemUsage(m runtime.MemStats) (str string) {
 	//
 	// During a stop-the-world pause, all goroutines are paused
 	// and only the garbage collector can run.
-	str += stringAlign("PauseTotalNs", m.PauseTotalNs)
+	str += stringAlign("PauseTotalNs", time.Duration(m.PauseTotalNs).String())
 
 	// NumGC is the number of completed GC cycles.
 	str += stringAlign("NumGC", m.NumGC)
 	str += stringAlign("NumForcedGC", m.NumForcedGC)
-	str += stringAlign("GCCPUFraction", m.GCCPUFraction)
+	str += stringAlign("GCCPUFraction", strconv.FormatFloat(m.GCCPUFraction, 'f', 8, 64))
 	return
 }
 
