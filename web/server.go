@@ -353,6 +353,8 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		if messageType == 1 && check {
 			input := strings.TrimSpace(string(b))
 			switch input {
+			case "mem":
+				log.Println("\n" + helper.PrintMemUsage(mem))
 			case "parse":
 				helper.ParseTemplates()
 				log.Println("refresh templates")

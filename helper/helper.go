@@ -235,13 +235,219 @@ func Ping(ip *net.IPAddr, times int) (avgRtt time.Duration, failureTimes int) {
 	return
 }
 
-func PrintMemUsage() {
-	var m runtime.MemStats
+func stringAlign(field string, value interface{}) string {
+	return field + strings.Repeat(" ", 20-len(field)) + fmt.Sprintln(value)
+}
+
+func PrintMemUsage(m runtime.MemStats) (str string) {
 	runtime.ReadMemStats(&m)
-	fmt.Printf("Alloc = %v MiB", ByteCountBinary(m.Alloc))
-	fmt.Printf("\tTotalAlloc = %v MiB", ByteCountBinary(m.TotalAlloc))
-	fmt.Printf("\tSys = %v MiB", ByteCountBinary(m.Sys))
-	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+	// General statistics.
+
+	// Alloc is bytes of allocated heap objects.
+	//
+	// This is the same as HeapAlloc (see below).
+	str += stringAlign("Alloc", ByteCountBinary(m.Alloc))
+
+	// TotalAlloc is cumulative bytes allocated for heap objects.
+	//
+	// TotalAlloc increases as heap objects are allocated, but
+	// unlike Alloc and HeapAlloc, it does not decrease when
+	// objects are freed.
+	str += stringAlign("TotalAlloc", ByteCountBinary(m.TotalAlloc))
+
+	// Sys is the total bytes of memory obtained from the OS.
+	//
+	// Sys is the sum of the XSys fields below. Sys measures the
+	// virtual address space reserved by the Go runtime for the
+	// heap, stacks, and other internal data structures. It's
+	// likely that not all of the virtual address space is backed
+	// by physical memory at any given moment, though in general
+	// it all was at some point.
+	str += stringAlign("Sys", ByteCountBinary(m.Sys))
+
+	// Lookups is the number of pointer lookups performed by the
+	// runtime.
+	//
+	// This is primarily useful for debugging runtime internals.
+	str += stringAlign("Lookups", m.Lookups)
+
+	// Mallocs is the cumulative count of heap objects allocated.
+	// The number of live objects is Mallocs - Frees.
+	str += stringAlign("Mallocs", m.Mallocs)
+
+	// Frees is the cumulative count of heap objects freed.
+	str += stringAlign("Frees", m.Frees)
+
+	// Heap memory statistics.
+	//
+	// Interpreting the heap statistics requires some knowledge of
+	// how Go organizes memory. Go divides the virtual address
+	// space of the heap into "spans", which are contiguous
+	// regions of memory 8K or larger. A span may be in one of
+	// three states:
+	//
+	// An "idle" span contains no objects or other data. The
+	// physical memory backing an idle span can be released back
+	// to the OS (but the virtual address space never is), or it
+	// can be converted into an "in use" or "stack" span.
+	//
+	// An "in use" span contains at least one heap object and may
+	// have free space available to allocate more heap objects.
+	//
+	// A "stack" span is used for goroutine stacks. Stack spans
+	// are not considered part of the heap. A span can change
+	// between heap and stack memory; it is never used for both
+	// simultaneously.
+
+	// HeapAlloc is bytes of allocated heap objects.
+	//
+	// "Allocated" heap objects include all reachable objects, as
+	// well as unreachable objects that the garbage collector has
+	// not yet freed. Specifically, HeapAlloc increases as heap
+	// objects are allocated and decreases as the heap is swept
+	// and unreachable objects are freed. Sweeping occurs
+	// incrementally between GC cycles, so these two processes
+	// occur simultaneously, and as a result HeapAlloc tends to
+	// change smoothly (in contrast with the sawtooth that is
+	// typical of stop-the-world garbage collectors).
+	str += stringAlign("HeapAlloc", ByteCountBinary(m.HeapAlloc))
+
+	// HeapSys is bytes of heap memory obtained from the OS.
+	//
+	// HeapSys measures the amount of virtual address space
+	// reserved for the heap. This includes virtual address space
+	// that has been reserved but not yet used, which consumes no
+	// physical memory, but tends to be small, as well as virtual
+	// address space for which the physical memory has been
+	// returned to the OS after it became unused (see HeapReleased
+	// for a measure of the latter).
+	//
+	// HeapSys estimates the largest size the heap has had.
+	str += stringAlign("HeapSys", ByteCountBinary(m.HeapSys))
+
+	// HeapIdle is bytes in idle (unused) spans.
+	//
+	// Idle spans have no objects in them. These spans could be
+	// (and may already have been) returned to the OS, or they can
+	// be reused for heap allocations, or they can be reused as
+	// stack memory.
+	//
+	// HeapIdle minus HeapReleased estimates the amount of memory
+	// that could be returned to the OS, but is being retained by
+	// the runtime so it can grow the heap without requesting more
+	// memory from the OS. If this difference is significantly
+	// larger than the heap size, it indicates there was a recent
+	// transient spike in live heap size.
+	str += stringAlign("HeapIdle", ByteCountBinary(m.HeapIdle))
+
+	// HeapInuse is bytes in in-use spans.
+	//
+	// In-use spans have at least one object in them. These spans
+	// can only be used for other objects of roughly the same
+	// size.
+	//
+	// HeapInuse minus HeapAlloc estimates the amount of memory
+	// that has been dedicated to particular size classes, but is
+	// not currently being used. This is an upper bound on
+	// fragmentation, but in general this memory can be reused
+	// efficiently.
+	str += stringAlign("HeapInuse", ByteCountBinary(m.HeapInuse))
+
+	// HeapReleased is bytes of physical memory returned to the OS.
+	//
+	// This counts heap memory from idle spans that was returned
+	// to the OS and has not yet been reacquired for the heap.
+	str += stringAlign("HeapReleased", ByteCountBinary(m.HeapReleased))
+
+	// HeapObjects is the number of allocated heap objects.
+	//
+	// Like HeapAlloc, this increases as objects are allocated and
+	// decreases as the heap is swept and unreachable objects are
+	// freed.
+	str += stringAlign("HeapObjects", m.HeapObjects)
+
+	// Stack memory statistics.
+	//
+	// Stacks are not considered part of the heap, but the runtime
+	// can reuse a span of heap memory for stack memory, and
+	// vice-versa.
+
+	// StackInuse is bytes in stack spans.
+	//
+	// In-use stack spans have at least one stack in them. These
+	// spans can only be used for other stacks of the same size.
+	//
+	// There is no StackIdle because unused stack spans are
+	// returned to the heap (and hence counted toward HeapIdle).
+	str += stringAlign("StackInuse", ByteCountBinary(m.StackInuse))
+
+	// StackSys is bytes of stack memory obtained from the OS.
+	//
+	// StackSys is StackInuse, plus any memory obtained directly
+	// from the OS for OS thread stacks (which should be minimal).
+	str += stringAlign("StackSys", ByteCountBinary(m.StackSys))
+
+	// Off-heap memory statistics.
+	//
+	// The following statistics measure runtime-internal
+	// structures that are not allocated from heap memory (usually
+	// because they are part of implementing the heap). Unlike
+	// heap or stack memory, any memory allocated to these
+	// structures is dedicated to these structures.
+	//
+	// These are primarily useful for debugging runtime memory
+	// overheads.
+
+	// MSpanInuse is bytes of allocated mspan structures.
+	str += stringAlign("MSpanInuse", ByteCountBinary(m.MSpanInuse))
+
+	// MSpanSys is bytes of memory obtained from the OS for mspan
+	// structures.
+	str += stringAlign("MSpanSys", ByteCountBinary(m.MSpanSys))
+
+	// MCacheInuse is bytes of allocated mcache structures.
+	str += stringAlign("MCacheInuse", ByteCountBinary(m.MCacheInuse))
+
+	// MCacheSys is bytes of memory obtained from the OS for
+	// mcache structures.
+	str += stringAlign("MCacheSys", ByteCountBinary(m.MCacheSys))
+
+	// BuckHashSys is bytes of memory in profiling bucket hash tables.
+	str += stringAlign("BuckHashSys", ByteCountBinary(m.BuckHashSys))
+
+	// GCSys is bytes of memory in garbage collection metadata.
+	str += stringAlign("GCSys", ByteCountBinary(m.GCSys))
+
+	// OtherSys is bytes of memory in miscellaneous off-heap
+	// runtime allocations.
+	str += stringAlign("OtherSys", ByteCountBinary(m.OtherSys))
+
+	// Garbage collector statistics.
+
+	// NextGC is the target heap size of the next GC cycle.
+	//
+	// The garbage collector's goal is to keep HeapAlloc ≤ NextGC.
+	// At the end of each GC cycle, the target for the next cycle
+	// is computed based on the amount of reachable data and the
+	// value of GOGC.
+	str += stringAlign("NextGC", ByteCountBinary(m.NextGC))
+
+	// LastGC is the time the last garbage collection finished, as
+	// nanoseconds since 1970 (the UNIX epoch).
+	str += stringAlign("LastGC", time.Unix(0, int64(m.LastGC)).String())
+
+	// PauseTotalNs is the cumulative nanoseconds in GC
+	// stop-the-world pauses since the program started.
+	//
+	// During a stop-the-world pause, all goroutines are paused
+	// and only the garbage collector can run.
+	str += stringAlign("PauseTotalNs", m.PauseTotalNs)
+
+	// NumGC is the number of completed GC cycles.
+	str += stringAlign("NumGC", m.NumGC)
+	str += stringAlign("NumForcedGC", m.NumForcedGC)
+	str += stringAlign("GCCPUFraction", m.GCCPUFraction)
+	return
 }
 
 func KDF(password string, keyLen int) []byte {
