@@ -446,8 +446,14 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 				helper.ParseTemplates()
 				log.Println("refresh templates")
 			case "free":
-				debug.FreeOSMemory()
-				log.Println("debug.FreeOsMemory")
+				if check {
+					debug.FreeOSMemory()
+					log.Println("debug.FreeOsMemory")
+				}
+			case "mem":
+				if check {
+					log.Println("\n" + helper.PrintMemUsage(mem))
+				}
 			case "enqueue":
 				if check {
 					for _, l := range p.EntryUrl() {
