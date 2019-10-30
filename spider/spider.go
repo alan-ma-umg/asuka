@@ -587,7 +587,7 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 							continue
 						}
 
-						if len(addUrl.Hostname()) < 4 || strings.Index(addUrl.Hostname(), ".") == -1 || !helper.OnlyDomainCharacter(addUrl.Hostname()) {
+						if len(addUrl.Hostname()) < 4 || strings.Index(addUrl.Hostname(), ".") == -1 || !helper.OnlyDomainCharacter(addUrl.Hostname()) { //todo !!!!!!!!!!!!!!! do not use regex in helper.OnlyDomainCharacter !!!!!!!!!!!!!!!!!!!!!!
 							continue
 						}
 

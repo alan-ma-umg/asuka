@@ -640,6 +640,22 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	}
 }
 
+// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
+func (my *DouBan) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
+
+	if u, err := url.Parse(rawUrl); err == nil {
+		// removing scheme & host to reduce redis memory usage
+		if u.Fragment == "" {
+			rawUrl = u.Path
+		} else {
+			rawUrl = u.Path + "#" + u.Fragment
+		}
+	}
+
+	//常规加入失败队列
+	return my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+}
+
 // queue
 func (my *DouBan) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if !strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/subject") && !strings.HasPrefix(strings.ToLower(l.String()), "https://book.douban.com/subject") && !strings.HasPrefix(strings.ToLower(l.String()), "https://book.douban.com/tag") && !strings.HasPrefix(strings.ToLower(l.String()), "https://movie.douban.com/tag") {
