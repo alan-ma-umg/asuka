@@ -27,7 +27,6 @@ func main() {
 
 	//todo js解析
 	//todo WEB输入频率限制
-	//todo mysql/oracle 数据库写入支持
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
 
