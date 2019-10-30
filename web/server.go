@@ -467,6 +467,12 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				log.Println(p.Name() + ": Empty spider")
+			case "retry":
+				if check {
+					p.GetQueue().CleanFailure()     //clean queue failure
+					p.QueueRetries = make([]int, 1) //clean queue failure
+				}
+				log.Println(p.Name() + ": Empty retries")
 			case "stop":
 				if check {
 					for _, s := range p.GetSpiders() {
