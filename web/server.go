@@ -488,7 +488,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 						log.Println(err)
 						return
 					}
-					log.Println(p.Name() + " " + p.GetQueue().GetBlKey() + "\n" + string(reportBuf))
+					log.Println(p.Name() + " : " + p.GetQueue().GetBlKey() + "\n" + string(reportBuf))
 				}
 			case "stop":
 				if check {
