@@ -179,27 +179,28 @@
             </thead>
             <tbody>
             <tr v-for="item,index in projects" style="cursor: pointer"
+                v-on:click="goToUrl('/' +item.name)"
                 :class="{ stop: item.stop}">
-                <td class="center" v-on:click="goTo(item.name)">{{"{{index+1}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)"><a :href="item.name"
-                                                                   :class="{'text-orange':item.stop}">{{"{{item.name}}"}}</a>
+                <td class="center">{{"{{index+1}}"}}</td>
+                <td class="center"><a :href="item.name"
+                                      :class="{'text-orange':item.stop}">{{"{{item.name}}"}}</a>
                 </td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.server_run}}"}}
+                <td class="center">{{"{{item.server_run}}"}}
                     / {{"{{item.server_enable}}"}}
                 </td>
                 <td class="center"
-                    v-on:click="goTo(item.name)">{{"{{item.server_enable?((item.server_enable-item.server_run)/item.server_enable*100).toFixed(2):0}}"}}
+                >{{"{{item.server_enable?((item.server_enable-item.server_run)/item.server_enable*100).toFixed(2):0}}"}}
                     %
                 </td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.failure_period.numFormat()}}"}}%
+                <td class="center">{{"{{item.failure_period.numFormat()}}"}}%
                     / {{"{{item.failure_all.numFormat()}}"}}%
                 </td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.access_count}}"}}
+                <td class="center">{{"{{item.access_count}}"}}
                     / {{"{{item.failure_count}}"}}</td>
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.loads['60'].numFormat()}}"}}
+                <td class="center">{{"{{item.loads['60'].numFormat()}}"}}
                     / {{"{{item.loads['900'].numFormat()}}"}}</td>
-                {{/*<td class="center" v-on:click="goTo(item.name)">{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>*/}}
-                <td class="center" v-on:click="goTo(item.name)">{{"{{item.traffic_in}}"}}
+                {{/*<td class="center" >{{"{{item.waiting}}"}} / {{"{{item.sleep}}"}}</td>*/}}
+                <td class="center">{{"{{item.traffic_in}}"}}
                     / {{"{{item.traffic_out}}"}}</td>
                 <td class="right ctl">
                      <span v-if="!item.stop && item.stop_time > 0" style="margin-right: 10px" class="text-orange"
@@ -293,9 +294,6 @@
                     action: "",
                 },
                 methods: {
-                    goTo: function (name) {
-                        location.href = "/" + name
-                    },
                     switchProject: function (item) {
                         this.$set(item, '_btnDisabled', true);
                         ajax({

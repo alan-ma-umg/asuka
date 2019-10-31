@@ -223,3 +223,22 @@ function numFormat(v) {
     }
     return new Intl.NumberFormat().format(v)
 }
+
+//listen for a link
+document.addEventListener('click', function (evt) {
+    for (let i = 0; i < evt.path.length; i++) {
+        if (evt.path[i] && evt.path[i].tagName === 'A' && evt.path[i].href.trim() !== "") {
+            evt.preventDefault();
+            goToUrl(evt.path[i].href);
+            return
+        }
+    }
+});
+
+function goToUrl(dstUrl) {
+    if (document.referrer.replace(location.origin, '') === dstUrl.replace(location.origin, '')) {
+        history.back();// Browser cache
+    } else {
+        location.href = dstUrl
+    }
+}
