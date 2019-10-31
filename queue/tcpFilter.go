@@ -39,6 +39,11 @@ type Cmd11 struct {
 	Db string
 }
 
+//Cmd12 BlsItem status
+type Cmd12 struct {
+	Db string
+}
+
 //Cmd21 fileLog.TailFile
 type Cmd21 struct {
 	TailSize int64
@@ -70,9 +75,10 @@ type Cmd20Response struct {
 }
 
 type BlsItem struct {
-	Bl       *bloom.BloomFilter
-	LastUse  time.Time
-	UseCount int
+	Bl        *bloom.BloomFilter
+	LastUse   time.Time
+	TestCount int // TestString & TestAddString
+	AddCount  int // TestAddString
 }
 
 type TcpFilter struct {
@@ -118,7 +124,7 @@ func GetTcpFilterInstance() *TcpFilter {
 						tcpFilterInstance.blSave(name, blItem)
 						if time.Since(blItem.LastUse).Seconds() > 3600 {
 							delete(tcpFilterInstance.blsItems, name)
-							log.Println("Release: " + name + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
+							log.Println("Release: " + name + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.TestCount) + " addCount:" + strconv.Itoa(blItem.AddCount) + " time:" + time.Since(s).String())
 						}
 					}
 
@@ -350,6 +356,8 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			replyData, err = my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 		case 11: //bloomFilter clear & remove file.db
 			replyData, err = my.serverBlClear(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+		case 12: //blItem status
+			replyData, err = my.serverBlStatus(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 		case 20: //system report
 			replyData, err = my.serverReport()
 		case 21: //fileLog.TailFile
@@ -423,18 +431,20 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	defer my.bloomFilterMutex.Unlock()
 
 	//fun 10=TestString 20=TestAndAddString
-	bl := my.getBl(cmd10)
+	blItem := my.getBlItem(cmd10)
 	var list []byte
 	for _, u := range cmd10.Urls {
 		my.blTestCount++
+		blItem.TestCount++
 		var b byte
 		if cmd10.Fun == 10 {
-			if bl.TestString(u) {
+			if blItem.Bl.TestString(u) {
 				b = 1
 			}
 			list = append(result, b)
 		} else {
-			if bl.TestAndAddString(u) {
+			blItem.AddCount++
+			if blItem.Bl.TestAndAddString(u) {
 				b = 1
 			}
 			list = append(result, b)
@@ -442,6 +452,21 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 	}
 
 	return json.Marshal(list)
+}
+
+func (my *TcpFilter) serverBlStatus(buf []byte) (result []byte, err error) {
+	//db, fun byte, data []byte
+	var cmd *Cmd12
+	err = json.Unmarshal(buf, &cmd)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	my.bloomFilterMutex.Lock()
+	defer my.bloomFilterMutex.Unlock()
+
+	return json.Marshal(my.blsItems[cmd.Db])
 }
 
 func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
@@ -462,7 +487,7 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 	if blItem, ok := my.blsItems[cmd.Db]; ok {
 		blItem.Bl.ClearAll()
 
-		log.Println("DEL: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.UseCount) + " time:" + time.Since(s).String())
+		log.Println("DEL: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.TestCount) + " addCount:" + strconv.Itoa(blItem.AddCount) + " time:" + time.Since(s).String())
 
 		blItem.Bl = nil
 		delete(my.blsItems, cmd.Db)
@@ -472,7 +497,7 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 }
 
 //getBl using with lock
-func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
+func (my *TcpFilter) getBlItem(cmd10 *Cmd10) *BlsItem {
 	blItem, ok := my.blsItems[cmd10.Db]
 	if !ok {
 		blItem = &BlsItem{}
@@ -487,6 +512,5 @@ func (my *TcpFilter) getBl(cmd10 *Cmd10) *bloom.BloomFilter {
 	}
 
 	blItem.LastUse = time.Now()
-	blItem.UseCount++
-	return blItem.Bl
+	return blItem
 }
