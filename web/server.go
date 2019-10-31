@@ -459,13 +459,13 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 					for _, l := range p.EntryUrl() {
 						p.GetQueue().Enqueue(l)
 					}
+					log.Println(p.Name() + ": Enqueue")
 				}
-				log.Println(p.Name() + ": Enqueue")
 			case "clear":
 				if check {
 					p.CleanUp()
+					log.Println(p.Name() + ": Clear All")
 				}
-				log.Println(p.Name() + ": Clear All")
 			case "empty":
 				if check {
 					for _, i := range p.GetSpiders() {
@@ -473,14 +473,23 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 							i.Delete = true
 						}
 					}
+					log.Println(p.Name() + ": Empty spider")
 				}
-				log.Println(p.Name() + ": Empty spider")
 			case "retry":
 				if check {
 					p.GetQueue().CleanFailure()     //clean queue failure
 					p.QueueRetries = make([]int, 1) //clean queue failure
+					log.Println(p.Name() + ": Empty retries")
 				}
-				log.Println(p.Name() + ": Empty retries")
+			case "bl":
+				if check {
+					reportBuf, err := queue.GetTcpFilterInstance().Cmd(12, &queue.Cmd12{Db: p.GetQueue().GetBlKey()})
+					if err != nil {
+						log.Println(err)
+						return
+					}
+					log.Println(p.Name() + "\n" + p.GetQueue().GetBlKey() + "\n" + string(reportBuf))
+				}
 			case "stop":
 				if check {
 					for _, s := range p.GetSpiders() {
@@ -488,8 +497,8 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 							s.Stop = true
 						}
 					}
+					log.Println(p.Name() + ": Spiders Stop")
 				}
-				log.Println(p.Name() + ": Spiders Stop")
 			case "start":
 				if check {
 					for _, s := range p.GetSpiders() {
@@ -497,8 +506,8 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 							s.Stop = false
 						}
 					}
+					log.Println("spider start")
 				}
-				log.Println("spider start")
 			case "home":
 				responseContent = strings.TrimSpace(string(b))
 			case "recent":
