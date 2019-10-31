@@ -479,8 +479,9 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 	}
 
 	s := time.Now()
-	os.Remove(my.getBlFileName(cmd.Db))
-	log.Println("Remove File: " + my.getBlFileName(cmd.Db))
+	if os.Remove(my.getBlFileName(cmd.Db)) == nil {
+		log.Println("Remove File: " + my.getBlFileName(cmd.Db))
+	}
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
