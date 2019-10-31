@@ -159,23 +159,23 @@ func (my *Pixiv) ResponseAfter(spider *spider.Spider) {
 }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
+func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUr string, retryTimes int) (success bool, tries int) {
 
 	//没有响应直接入正常的队列, fixme 如果一直没有响应意味着会无限下去
 	if spider.CurrentResponse() == nil || spider.CurrentResponse().StatusCode == 0 {
-		spider.GetQueue().Enqueue(rawUrl)
+		spider.GetQueue().Enqueue(spiderEnqueueUr)
 		return
 	}
 
 	//响应状态200,但是读取body失败. 这种情况一般时代理超时/错误之类的情况直接无限重试下去
 	if spider.CurrentResponse().StatusCode == 200 && err != nil && strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
-		spider.GetQueue().Enqueue(rawUrl)
+		spider.GetQueue().Enqueue(spiderEnqueueUr)
 		return
 	}
 
 	//404丢弃原链接,Retries.F不会增加.插入新格式的链接
 	if spider.CurrentResponse().StatusCode == 404 {
-		newUrl := regexp.MustCompile(`(?i)\.[^\.]{2,5}$`).ReplaceAllString(rawUrl, ".png")
+		newUrl := regexp.MustCompile(`(?i)\.[^\.]{2,5}$`).ReplaceAllString(spiderEnqueueUr, ".png")
 		if exists, _ := spider.GetQueue().BlTestAndAddString(newUrl); exists {
 			return
 		}
@@ -184,7 +184,7 @@ func (my *Pixiv) EnqueueForFailure(spider *spider.Spider, err error, rawUrl stri
 	}
 
 	//常规加入失败队列
-	return my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+	return my.Implement.EnqueueForFailure(spider, err, retryEnqueueUrl, spiderEnqueueUr, retryTimes)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

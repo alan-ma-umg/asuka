@@ -58,7 +58,7 @@ type DouBan struct {
 	lastInsertError string
 }
 
-func (my *DouBan) InitBloomFilterCapacity() uint { return 50000000 }
+func (my *DouBan) InitBloomFilterCapacity() uint { return 100000000 }
 func (my *DouBan) Name() string {
 	return "Hitagi"
 }
@@ -602,7 +602,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 	}
 
 	if model.Title == "页面不存在" && model.Name == "" {
-		spider.GetQueue().EnqueueForFailure(spider.CurrentRequest().URL.String(), 3)
+		my.EnqueueForFailure(spider, nil, spider.CurrentRequest().URL.String(), spider.CurrentRequest().URL.String(), 3)
 	}
 
 	//clear
@@ -641,19 +641,19 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-func (my *DouBan) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
+func (my *DouBan) EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
 
-	if u, err := url.Parse(rawUrl); err == nil {
+	if u, err := url.Parse(retryEnqueueUrl); err == nil {
 		// removing scheme & host to reduce redis memory usage
 		if u.Fragment == "" {
-			rawUrl = u.Path
+			retryEnqueueUrl = u.Path
 		} else {
-			rawUrl = u.Path + "#" + u.Fragment
+			retryEnqueueUrl = u.Path + "#" + u.Fragment
 		}
 	}
 
 	//常规加入失败队列
-	return my.Implement.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+	return my.Implement.EnqueueForFailure(spider, err, retryEnqueueUrl, spiderEnqueueUrl, retryTimes)
 }
 
 // queue

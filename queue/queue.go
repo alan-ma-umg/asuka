@@ -154,15 +154,15 @@ func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
 }
 
-func (my *Queue) EnqueueForFailure(rawUrl string, retryTimes int) (success bool, tries int) {
+func (my *Queue) EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
 	retryTimes *= 3 //todo control by project
 
-	incrInt := int(database.Redis().HIncrBy(my.GetFailureKey(), rawUrl, 1).Val()) //incr failure
+	incrInt := int(database.Redis().HIncrBy(my.GetFailureKey(), retryEnqueueUrl, 1).Val()) //incr failure
 	if incrInt > retryTimes {
 		//final failure
 		return false, incrInt
 	}
-	my.Enqueue(rawUrl)
+	my.Enqueue(spiderEnqueueUrl)
 	return true, incrInt
 }
 

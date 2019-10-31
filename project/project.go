@@ -34,8 +34,11 @@ type IProject interface {
 	// Thirdly
 	RequestBefore(spider *spider.Spider)
 
-	// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现
-	EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int)
+	// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
+	// retryEnqueueUrl & spiderEnqueueUrl 两者一般一致即可
+	// retryEnqueueUrl 用于检测失败次数,后加入retries计数. retryEnqueueUrl是为了缩短url长度减少retries的空间, 比如去掉HOST部分, 只保存与检测PATH部分
+	// spiderEnqueueUrl 用于重新加入正常抓取队列.
+	EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int)
 
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
@@ -76,8 +79,11 @@ func (my *Implement) Init(d *Dispatcher)            {}
 func (my *Implement) Showing() string               { return "Have a nice day !" }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
-func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) (success bool, tries int) {
-	return spider.GetQueue().EnqueueForFailure(rawUrl, retryTimes)
+// retryEnqueueUrl & spiderEnqueueUrl 两者一般一致即可
+// retryEnqueueUrl 用于检测失败次数,后加入retries计数. retryEnqueueUrl是为了缩短url长度减少retries的空间, 比如去掉HOST部分, 只保存与检测PATH部分
+// spiderEnqueueUrl 用于重新加入正常抓取队列.
+func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
+	return spider.GetQueue().EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl, retryTimes)
 }
 
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
@@ -281,7 +287,7 @@ func (my *Dispatcher) addSpidersWaiting(s *spider.Spider, checkLock bool) {
 
 func (my *Dispatcher) EnqueueForFailure(spider *spider.Spider, err error, rawUrl string, retryTimes int) {
 	go func() {
-		success, tries := my.IProject.EnqueueForFailure(spider, err, rawUrl, retryTimes)
+		success, tries := my.IProject.EnqueueForFailure(spider, err, rawUrl, rawUrl, retryTimes)
 		if !success {
 			my.QueueRetries[0]++
 			return
