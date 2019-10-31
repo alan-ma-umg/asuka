@@ -75,7 +75,7 @@ type Cmd20Response struct {
 }
 
 type BlsItem struct {
-	Bl        *bloom.BloomFilter
+	bl        *bloom.BloomFilter //must be private to Cmd12.json.Marshal
 	LastUse   time.Time
 	TestCount int // TestString & TestAddString
 	AddCount  int // TestAddString
@@ -150,7 +150,7 @@ func GetTcpFilterInstance() *TcpFilter {
 }
 func (my *TcpFilter) blSave(name string, blItem *BlsItem) {
 	f, _ := os.Create(tcpFilterInstance.getBlFileName(name))
-	blItem.Bl.WriteTo(f)
+	blItem.bl.WriteTo(f)
 	f.Close()
 }
 
@@ -438,13 +438,13 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 		blItem.TestCount++
 		var b byte
 		if cmd10.Fun == 10 {
-			if blItem.Bl.TestString(u) {
+			if blItem.bl.TestString(u) {
 				b = 1
 			}
 			list = append(result, b)
 		} else {
 			blItem.AddCount++
-			if blItem.Bl.TestAndAddString(u) {
+			if blItem.bl.TestAndAddString(u) {
 				b = 1
 			}
 			list = append(result, b)
@@ -485,11 +485,11 @@ func (my *TcpFilter) serverBlClear(buf []byte) (result []byte, err error) {
 	defer my.bloomFilterMutex.Unlock()
 
 	if blItem, ok := my.blsItems[cmd.Db]; ok {
-		blItem.Bl.ClearAll()
+		blItem.bl.ClearAll()
 
 		log.Println("DEL: " + cmd.Db + " lastUse:" + blItem.LastUse.Format(time.Stamp) + " useCount:" + strconv.Itoa(blItem.TestCount) + " addCount:" + strconv.Itoa(blItem.AddCount) + " time:" + time.Since(s).String())
 
-		blItem.Bl = nil
+		blItem.bl = nil
 		delete(my.blsItems, cmd.Db)
 	}
 
@@ -501,9 +501,9 @@ func (my *TcpFilter) getBlItem(cmd10 *Cmd10) *BlsItem {
 	blItem, ok := my.blsItems[cmd10.Db]
 	if !ok {
 		blItem = &BlsItem{}
-		blItem.Bl = bloom.NewWithEstimates(cmd10.Size, 0.003)
+		blItem.bl = bloom.NewWithEstimates(cmd10.Size, 0.003)
 		f, _ := os.Open(my.getBlFileName(cmd10.Db))
-		blItem.Bl.ReadFrom(f)
+		blItem.bl.ReadFrom(f)
 		f.Close()
 
 		my.blsItems[cmd10.Db] = blItem
