@@ -15,7 +15,8 @@ function ajax(option) {
         headers = option.headers || {},
         timeout = option.timeout || 10000,
         success = option.success,
-        error = option.error;
+        error = option.error,
+        complete = option.complete;
 
     let xhr = new XMLHttpRequest();
 
@@ -29,6 +30,7 @@ function ajax(option) {
         } else {
             error && error(this);
         }
+        complete && complete(this);
     };
     xhr.open(method, url, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -83,8 +85,25 @@ function timestampHumanReadable(timestamp) {
     return timestamp / 86400 + 'd';
 }
 
+function showLoading() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('layer').style.display = 'block';
+}
+
+function hideLoading() {
+    setTimeout(function () {
+        document.getElementById('layer').style.display = 'none';
+        document.getElementById('loading').style.display = 'none';
+    }, 400);
+}
+
 function sendCommand(cmd, projectName) {
-    ajax({method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}})
+    showLoading();
+    ajax({
+        method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}, complete: function () {
+            hideLoading()
+        }
+    })
 }
 
 function sendMessage(msg) {

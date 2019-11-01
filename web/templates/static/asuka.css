@@ -233,3 +233,35 @@ tr:hover {
 .ws-closed {
     background: #dcdcdc
 }
+
+.lds-dual-ring {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1000;
+    margin-left: -18px;
+    margin-top: -18px;
+}
+
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin: 1px;
+    border-radius: 50%;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #ff9c38 transparent #ff9c38 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

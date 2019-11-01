@@ -362,6 +362,8 @@
         {{end}}
     </div>
 </div>
+<div style="display:none;position:fixed;z-index: 999;width: 100%;height: 100%;background: none;" id="layer"></div>
+<div class="lds-dual-ring" id="loading"></div>
 <script src="{{FileCacheCtl "/static/asuka.js"}}"></script>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
@@ -382,6 +384,7 @@
                 },
                 methods: {
                     switchServer: function (server) {
+                        showLoading();
                         this.$set(server, '_btnDisabled', true);
                         ajax({
                             url: "/switchServer",
@@ -390,36 +393,49 @@
                                 if (res.status === 401) {
                                     location.href = "/login"
                                 }
+                            },
+                            complete: function () {
+                                hideLoading()
                             }
                         });
                     },
                     switchProject: function (item) {
+                        showLoading();
                         ajax({
                             url: "/switchProject", data: {name: '{{.ProjectName}}'}, error: function (res) {
                                 if (res.status === 401) {
                                     location.href = "/login"
                                 }
+                            }, complete: function () {
+                                hideLoading()
                             }
                         });
                     },
                     logout: function () {
+                        showLoading();
                         ajax({
                             url: "/logout", success: function () {
                                 location.reload()
+                            }, complete: function () {
+                                hideLoading();
                             }
                         });
                     },
                     sendCommand: function (evt) {
                         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-                            sendCommand(evt.target.value,'{{.ProjectName}}');
+                            sendCommand(evt.target.value, '{{.ProjectName}}');
                         }
                     },
                     wsPageSwitch: function () {
                         vueContent.$data.action = vueContent.$data.action === "recent" ? "home" : "recent";
+                        showLoading();
                         sendMessage(vueContent.$data.action);
+                        hideLoading()
                     }, wsOpenClose: function () {
+                        showLoading();
                         manualOpen();
                         manualClose();
+                        hideLoading()
                     }
                 },
                 computed: {
