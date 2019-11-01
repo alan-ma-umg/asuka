@@ -48,6 +48,7 @@ func Server(d []*project.Dispatcher, address string) error {
 		}
 	}()
 
+	http.HandleFunc("/cmd", commonHandleFunc(cmd))
 	http.HandleFunc("/log", commonHandleFunc(fileLog))
 	http.HandleFunc("/log/tcp", commonHandleFunc(fileLogTcpFilter))
 	http.HandleFunc("/add/", commonHandleFunc(addServer))
@@ -352,37 +353,8 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 		}
 		if messageType == 1 && check {
 			input := strings.TrimSpace(string(b))
-			switch input {
-			case "mem":
-				log.Println("\n" + helper.PrintMemUsage(mem))
-			case "parse":
-				helper.ParseTemplates()
-				log.Println("refresh templates")
-			case "free":
-				debug.FreeOSMemory()
-				log.Println("debug.FreeOsMemory")
-			case "stop":
-				for _, d := range dispatchers {
-					for _, s := range d.GetSpiders() {
-						if s != nil {
-							s.Stop = true
-						}
-					}
-				}
-				log.Println("spider stop")
-			case "start":
-				for _, d := range dispatchers {
-					for _, s := range d.GetSpiders() {
-						if s != nil {
-							s.Stop = false
-						}
-					}
-				}
-				log.Println("spider start")
-			default:
-				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
-					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
-				}
+			if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
+				sleepSecondTimes = helper.MaxInt64(speedInt, 1)
 			}
 		}
 
@@ -395,6 +367,83 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func cmd(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	post := make(map[string]interface{})
+	if json.NewDecoder(r.Body).Decode(&post) != nil {
+		http.Error(w, "decode failed", 500)
+		return
+	}
+	projectName, _ := post["projectName"].(string)
+	cmd, _ := post["cmd"].(string)
+
+	switch cmd {
+	case "mem":
+		log.Println("\n" + helper.PrintMemUsage(mem))
+	case "parse":
+		helper.ParseTemplates()
+		log.Println("refresh templates")
+	case "free":
+		debug.FreeOSMemory()
+		log.Println("debug.FreeOsMemory")
+	}
+
+	p := getDispatcher(projectName)
+	if p == nil {
+		io.WriteString(w, "{success:true}")
+		return
+	}
+
+	switch cmd {
+	case "enqueue":
+		for _, l := range p.EntryUrl() {
+			p.GetQueue().Enqueue(l)
+		}
+		log.Println(p.Name() + ": Enqueue")
+	case "clear":
+		p.CleanUp()
+		log.Println(p.Name() + ": Clear All")
+	case "empty":
+		for _, i := range p.GetSpiders() {
+			if i != nil {
+				i.Delete = true
+			}
+		}
+		log.Println(p.Name() + ": Empty spider")
+	case "retry":
+		p.GetQueue().CleanFailure()     //clean queue failure
+		p.QueueRetries = make([]int, 1) //clean queue failure
+		log.Println(p.Name() + ": Empty retries")
+	case "bl":
+		reportBuf, err := queue.GetTcpFilterInstance().Cmd(12, &queue.Cmd12{Db: p.GetQueue().GetBlKey()})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println(p.Name() + " : " + p.GetQueue().GetBlKey() + "\n" + string(reportBuf))
+	case "stop":
+		for _, s := range p.GetSpiders() {
+			if s != nil {
+				s.Stop = true
+			}
+		}
+		log.Println(p.Name() + ": Spiders Stop")
+	case "start":
+		for _, s := range p.GetSpiders() {
+			if s != nil {
+				s.Stop = false
+			}
+		}
+		log.Println("spider start")
+	}
+
+	io.WriteString(w, "{success:true}")
+}
+
 func projectIO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
@@ -442,72 +491,6 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 		if messageType == 1 {
 			input := strings.TrimSpace(string(b))
 			switch input {
-			case "parse":
-				helper.ParseTemplates()
-				log.Println("refresh templates")
-			case "free":
-				if check {
-					debug.FreeOSMemory()
-					log.Println("debug.FreeOsMemory")
-				}
-			case "mem":
-				if check {
-					log.Println("\n" + helper.PrintMemUsage(mem))
-				}
-			case "enqueue":
-				if check {
-					for _, l := range p.EntryUrl() {
-						p.GetQueue().Enqueue(l)
-					}
-					log.Println(p.Name() + ": Enqueue")
-				}
-			case "clear":
-				if check {
-					p.CleanUp()
-					log.Println(p.Name() + ": Clear All")
-				}
-			case "empty":
-				if check {
-					for _, i := range p.GetSpiders() {
-						if i != nil {
-							i.Delete = true
-						}
-					}
-					log.Println(p.Name() + ": Empty spider")
-				}
-			case "retry":
-				if check {
-					p.GetQueue().CleanFailure()     //clean queue failure
-					p.QueueRetries = make([]int, 1) //clean queue failure
-					log.Println(p.Name() + ": Empty retries")
-				}
-			case "bl":
-				if check {
-					reportBuf, err := queue.GetTcpFilterInstance().Cmd(12, &queue.Cmd12{Db: p.GetQueue().GetBlKey()})
-					if err != nil {
-						log.Println(err)
-						return
-					}
-					log.Println(p.Name() + " : " + p.GetQueue().GetBlKey() + "\n" + string(reportBuf))
-				}
-			case "stop":
-				if check {
-					for _, s := range p.GetSpiders() {
-						if s != nil {
-							s.Stop = true
-						}
-					}
-					log.Println(p.Name() + ": Spiders Stop")
-				}
-			case "start":
-				if check {
-					for _, s := range p.GetSpiders() {
-						if s != nil {
-							s.Stop = false
-						}
-					}
-					log.Println("spider start")
-				}
 			case "home":
 				responseContent = strings.TrimSpace(string(b))
 			case "recent":

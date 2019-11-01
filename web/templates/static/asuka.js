@@ -83,6 +83,9 @@ function timestampHumanReadable(timestamp) {
     return timestamp / 86400 + 'd';
 }
 
+function sendCommand(cmd, projectName) {
+    ajax({method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}})
+}
 
 function sendMessage(msg) {
     if (!ws) {
