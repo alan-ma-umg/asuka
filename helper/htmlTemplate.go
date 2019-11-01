@@ -32,6 +32,9 @@ func GetTemplates() *template.Template {
 }
 
 func ParseTemplates() *template.Template {
+	fileCacheCtlMapMutex.Lock()
+	fileCacheCtlMap = make(map[string]string)
+	fileCacheCtlMapMutex.Unlock()
 	//templatesOnce.Do(func() {
 	templates = template.Must(template.Must(template.New("").Funcs(template.FuncMap{
 		"FilePathBase": filepath.Base,
