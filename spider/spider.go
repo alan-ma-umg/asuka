@@ -344,7 +344,7 @@ func (spider *Spider) ResetRequest() {
 	spider.currentRequest = nil
 }
 
-func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
+func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
 	//spider.SetRequest(u)
 	//time
 	spider.RequestStartTime = time.Now()
@@ -397,7 +397,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	return summary, err
 }
 
-func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
+func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	spider.SetRequest(u) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
