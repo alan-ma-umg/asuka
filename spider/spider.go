@@ -120,6 +120,7 @@ type Spider struct {
 	startTime        time.Time
 	RequestStartTime time.Time
 	RequestEndTime   time.Time
+	requestTimeout   time.Duration
 	Stop             bool
 	Delete           bool
 	sleepDuration    time.Duration
@@ -136,10 +137,7 @@ type Spider struct {
 }
 
 func New(transportUrl *url.URL, getQueue func() *queue.Queue) *Spider {
-	return &Spider{TransportUrl: transportUrl, GetQueue: getQueue, startTime: time.Now(), Counting: &helper.Counting{}, RecentSeveralTimesResultCap: 5}
-	//spider.ResetRequest()
-	//spider.updateClient()
-	//return spider
+	return &Spider{TransportUrl: transportUrl, GetQueue: getQueue, startTime: time.Now(), Counting: &helper.Counting{}, RecentSeveralTimesResultCap: 5, requestTimeout: time.Minute}
 }
 
 // ResetSpider remove http.Client,http.Request,http.Client.Transport and http.Response than release memory
@@ -162,7 +160,11 @@ func (spider *Spider) ResetResponse() {
 	spider.currentResponse = nil
 }
 
-func (spider *Spider) Client() *http.Client {
+func (spider *Spider) SetRequestTimeout(duration time.Duration) {
+	spider.requestTimeout = duration
+}
+
+func (spider *Spider) httpClient() *http.Client {
 	if spider.client == nil || spider.client.Transport == nil || spider.transport == nil || spider.client.Transport.(*http.Transport) != spider.transport.Connect(spider.TransportUrl) {
 		spider.ResetClient()
 
@@ -170,7 +172,7 @@ func (spider *Spider) Client() *http.Client {
 		spider.transport = proxy.NewTransport(spider.TransportUrl)
 		j, _ := cookiejar.New(nil)
 		//todo 要支持无需重置spider而单独刷新cookie
-		spider.client = &http.Client{Transport: spider.transport.Connect(spider.TransportUrl), Jar: j, Timeout: time.Second * 30}
+		spider.client = &http.Client{Transport: spider.transport.Connect(spider.TransportUrl), Jar: j, Timeout: spider.requestTimeout}
 	}
 
 	return spider.client
@@ -344,8 +346,7 @@ func (spider *Spider) ResetRequest() {
 	spider.currentRequest = nil
 }
 
-func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
-	//spider.SetRequest(u)
+func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 	//time
 	spider.RequestStartTime = time.Now()
 	spider.RequestEndTime = time.Time{} //empty
@@ -355,14 +356,6 @@ func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
 	spider.AddAccess()
 	defer func() {
 		spider.RequestEndTime = time.Now()
-		if err != nil {
-			spider.AddFailure()
-		}
-
-		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
-			spider.FailureLevel = 10
-			spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 2)
-		}
 
 		//A few times result of http request
 		spider.recentFewTimesResult = append(spider.recentFewTimesResult, spider.FailureLevel == 0)
@@ -377,7 +370,7 @@ func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
 	dom := ""
 	ctx, ctxCancel := chromedp.NewContext(getAllocCtx())
 	defer ctxCancel()
-	ctx, timeoutCancel := context.WithTimeout(ctx, 10e9)
+	ctx, timeoutCancel := context.WithTimeout(ctx, spider.requestTimeout)
 	defer timeoutCancel()
 	err = chromedp.Run(ctx,
 		chromedp.Navigate(u.String()),
@@ -391,13 +384,20 @@ func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
 		} else {
 			log.Println(err)
 		}
+
+		spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 3)
+		if spider.FailureLevel == 0 {
+			spider.FailureLevel = 10
+		}
+
+		spider.AddFailure()
 	}
 
 	spider.ResponseByte = []byte(dom)
 	return summary, err
 }
 
-func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
+func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 	spider.SetRequest(u) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {
@@ -441,7 +441,7 @@ func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
 	summary.TrafficOut = uint64(len(dump))
 
 	// HTTP request
-	spider.currentResponse, err = spider.Client().Do(spider.currentRequest)
+	spider.currentResponse, err = spider.httpClient().Do(spider.currentRequest)
 	if err != nil {
 		summary.ErrType = spider.requestErrorHandler(err)
 		return summary, err

@@ -222,7 +222,7 @@
                 <th>Load 5s/60s/15m</th>
                 {{/*<th style="min-width:70px">Time</th>*/}}
                 <th>Pass / Sleep</th>
-                <th style="max-width:130px;">Idle</th>
+                <th style="width:130px;">Idle</th>
                 {{/*<th>Traffic I/O</th>*/}}
                 <th></th>
             </tr>
@@ -272,7 +272,7 @@
                 </td>
                 <td class="center">
                     <a :class="server.idle? 'text-green': 'text-orange'" :href="server.current" :title="server.current"
-                       style="display:inline-block;max-width: 130px;overflow: hidden;text-overflow: ellipsis;">
+                       style="display:inline-block;width: 130px;overflow: hidden;text-overflow: ellipsis;">
                         {{"{{server.idle?'Idle':(server.current?(server.current.substring(server.current.length-20)):'run')}}"}}
                     </a>
                 </td>

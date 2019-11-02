@@ -71,7 +71,7 @@ func (my *V2ex) Throttle(spider *spider.Spider) {
 }
 
 func (my *V2ex) RequestBefore(spider *spider.Spider) {
-	spider.Client().Timeout = time.Minute
+	spider.SetRequestTimeout(time.Minute)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

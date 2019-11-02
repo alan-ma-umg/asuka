@@ -57,7 +57,7 @@ func (my *Forever) Throttle(spider *spider.Spider) {
 }
 
 func (my *Forever) RequestBefore(spider *spider.Spider) {
-	spider.Client().Timeout = time.Second * 10
+	spider.SetRequestTimeout(time.Second * 10)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

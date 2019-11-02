@@ -74,7 +74,7 @@ func (my *Www) RequestBefore(spider *spider.Spider) {
 		spider.CurrentRequest().Header.Set("Accept", "text/html")
 	}
 
-	spider.Client().Timeout = 4 * time.Second
+	spider.SetRequestTimeout(time.Second * 10)
 }
 
 // RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载

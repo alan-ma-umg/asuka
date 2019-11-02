@@ -128,7 +128,7 @@ func (my *Pixiv) Throttle(spider *spider.Spider) {
 func (my *Pixiv) RequestBefore(spider *spider.Spider) {
 	rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
 	spider.CurrentRequest().Header.Set("Referer", "https://www.pixiv.net/artworks/"+strconv.Itoa(rand.Intn(71245413)))
-	spider.Client().Timeout = time.Minute * 10
+	spider.SetRequestTimeout(time.Minute * 10)
 }
 
 func (my *Pixiv) ResponseAfter(spider *spider.Spider) {

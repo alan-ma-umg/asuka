@@ -34,6 +34,8 @@ type IProject interface {
 	// Thirdly
 	RequestBefore(spider *spider.Spider)
 
+	Fetch(spider *spider.Spider, u *url.URL) (summary *spider.Summary, err error)
+
 	// EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
 	// retryEnqueueUrl & spiderEnqueueUrl 两者一般一致即可
 	// retryEnqueueUrl 用于检测失败次数,后加入retries计数. retryEnqueueUrl是为了缩短url长度减少retries的空间, 比如去掉HOST部分, 只保存与检测PATH部分
@@ -77,6 +79,10 @@ type Implement struct{}
 func (my *Implement) InitBloomFilterCapacity() uint { return 7000000 }
 func (my *Implement) Init(d *Dispatcher)            {}
 func (my *Implement) Showing() string               { return "Have a nice day !" }
+
+func (my *Implement) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.Summary, err error) {
+	return spider.HttpFetch(u)
+}
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
 // retryEnqueueUrl & spiderEnqueueUrl 两者一般一致即可
@@ -453,7 +459,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	}()
 
 	project.AddAccess()
-	summary, err := spider.Fetch(u)
+	summary, err := spider.HttpFetch(u)
 	if err != nil || summary.StatusCode != 200 {
 		project.AddFailure()
 	}
