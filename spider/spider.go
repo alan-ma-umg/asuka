@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/flate"
 	"compress/gzip"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -11,6 +12,7 @@ import (
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/proxy"
 	"github.com/chenset/asuka/queue"
+	"github.com/chromedp/chromedp"
 	"golang.org/x/net/html"
 	"io"
 	"io/ioutil"
@@ -24,8 +26,62 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+var opts = []chromedp.ExecAllocatorOption{
+	chromedp.NoFirstRun,
+	chromedp.NoDefaultBrowserCheck,
+	chromedp.Headless,
+
+	chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"),
+
+	//chromedp.ProxyServer("socks5://127.0.0.1:1080"),
+	// After Puppeteer's default behavior.
+	chromedp.Flag("blink-settings", "imagesEnabled=false"),
+	chromedp.Flag("disable-background-networking", true),
+	chromedp.Flag("enable-features", "NetworkService,NetworkServiceInProcess"),
+	chromedp.Flag("disable-background-timer-throttling", true),
+	chromedp.Flag("disable-backgrounding-occluded-windows", true),
+	chromedp.Flag("disable-breakpad", true),
+	chromedp.Flag("disable-client-side-phishing-detection", true),
+	chromedp.Flag("disable-default-apps", true),
+	chromedp.Flag("disable-dev-shm-usage", true),
+	chromedp.Flag("disable-extensions", true),
+	chromedp.Flag("disable-features", "site-per-process,TranslateUI,BlinkGenPropertyTrees"),
+	chromedp.Flag("disable-hang-monitor", true),
+	chromedp.Flag("disable-ipc-flooding-protection", true),
+	chromedp.Flag("disable-popup-blocking", true),
+	chromedp.Flag("disable-prompt-on-repost", true),
+	chromedp.Flag("disable-renderer-backgrounding", true),
+	chromedp.Flag("disable-sync", true),
+	chromedp.Flag("force-color-profile", "srgb"),
+	chromedp.Flag("metrics-recording-only", true),
+	chromedp.Flag("safebrowsing-disable-auto-update", true),
+	chromedp.Flag("enable-automation", true),
+	chromedp.Flag("password-store", "basic"),
+	chromedp.Flag("use-mock-keychain", true),
+}
+
+var allocCtx context.Context
+var allocCtxCancel context.CancelFunc
+var allocCtxDoOnce = &sync.Once{}
+
+func resetAllocCtx() {
+	if allocCtxCancel != nil {
+		allocCtxCancel()
+	}
+	allocCtxDoOnce = new(sync.Once)
+}
+
+func getAllocCtx() context.Context {
+	allocCtxDoOnce.Do(func() {
+		//allocCtx, allocCtxCancel = chromedp.NewRemoteAllocator(context.Background(), "ws://10.0.0.2:9223/devtools/browser/ea74c89b-f787-4b1d-89d7-dace64d8b605")
+		allocCtx, allocCtxCancel = chromedp.NewExecAllocator(context.Background(), opts...)
+	})
+	return allocCtx
+}
 
 const PeriodOfFailureSecond = 86400 / 2
 
@@ -265,11 +321,9 @@ func (spider *Spider) SetRequest(url *url.URL) *Spider {
 
 	if spider.currentRequest == nil {
 		spider.currentRequest, _ = http.NewRequest("GET", url.String(), nil)
-
 		if spider.currentRequest.Header.Get("Accept-Encoding") == "" {
 			spider.currentRequest.Header.Set("Accept-Encoding", "gzip")
 		}
-
 		if spider.currentRequest.UserAgent() == "" {
 			spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 		}
@@ -291,6 +345,59 @@ func (spider *Spider) ResetRequest() {
 }
 
 func (spider *Spider) Fetch(u *url.URL) (summary *Summary, err error) {
+	//spider.SetRequest(u)
+	//time
+	spider.RequestStartTime = time.Now()
+	spider.RequestEndTime = time.Time{} //empty
+
+	summary = &Summary{RawUrl: u.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
+
+	spider.AddAccess()
+	defer func() {
+		spider.RequestEndTime = time.Now()
+		if err != nil {
+			spider.AddFailure()
+		}
+
+		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
+			spider.FailureLevel = 10
+			spider.EnqueueForFailure(spider, err, spider.currentRequest.URL.String(), 2)
+		}
+
+		//A few times result of http request
+		spider.recentFewTimesResult = append(spider.recentFewTimesResult, spider.FailureLevel == 0)
+
+		//recover
+		if r := recover(); r != nil {
+			spider.AddFailure()
+			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
+		}
+	}()
+
+	dom := ""
+	ctx, ctxCancel := chromedp.NewContext(getAllocCtx())
+	defer ctxCancel()
+	ctx, timeoutCancel := context.WithTimeout(ctx, 10e9)
+	defer timeoutCancel()
+	err = chromedp.Run(ctx,
+		chromedp.Navigate(u.String()),
+		chromedp.WaitReady("html"), //disable images
+		chromedp.OuterHTML("html", &dom, chromedp.ByQuery),
+	)
+
+	if err != nil {
+		if err == context.Canceled {
+			resetAllocCtx()
+		} else {
+			log.Println(err)
+		}
+	}
+
+	spider.ResponseByte = []byte(dom)
+	return summary, err
+}
+
+func (spider *Spider) Fetch2(u *url.URL) (summary *Summary, err error) {
 	spider.SetRequest(u) //setting spider.currentRequest
 
 	if spider.RequestBefore != nil {

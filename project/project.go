@@ -483,7 +483,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	}
 
 	//非图片才抓取links, todo 还需要处理为更准确的类型
-	if !strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
+	if spider.CurrentResponse() != nil && !strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
 		for _, l := range spider.GetLinksByTokenizer() {
 			enqueueUrl := ""
 			if project != nil {
