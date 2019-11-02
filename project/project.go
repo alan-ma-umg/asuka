@@ -459,7 +459,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	}()
 
 	project.AddAccess()
-	summary, err := spider.HttpFetch(u)
+	summary, err := project.Fetch(spider, u)
 	if err != nil || summary.StatusCode != 200 {
 		project.AddFailure()
 	}
@@ -467,6 +467,15 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	if summary == nil {
 		return
 	}
+
+	contentType := ""
+	if spider.CurrentResponse() != nil {
+		contentType = strings.ToLower(spider.CurrentResponse().Header.Get("Content-type"))
+	} else {
+		contentType = strings.ToLower(http.DetectContentType(spider.ResponseByte))
+	}
+
+	summary.ContentType = contentType
 
 	//IO
 	project.TrafficIn += summary.TrafficIn
@@ -488,33 +497,34 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		project.ResponseSuccess(spider)
 	}
 
-	//非图片才抓取links, todo 还需要处理为更准确的类型
-	if spider.CurrentResponse() != nil && !strings.Contains(spider.CurrentResponse().Header.Get("Content-type"), "image") {
-		for _, l := range spider.GetLinksByTokenizer() {
-			enqueueUrl := ""
-			if project != nil {
-				enqueueUrl = project.EnqueueFilter(spider, l)
-			} else {
-				enqueueUrl = l.String()
-			}
+	if !strings.Contains(contentType, "html") {
+		return
+	}
 
-			if enqueueUrl == "" {
-				continue
-			}
-
-			summary.FindUrls++
-			exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
-			if err != nil {
-				log.Println(err)
-				tcpFilterErrorHandle(project)
-				return //return and stop the project
-			}
-			if exists {
-				continue
-			}
-			summary.NewUrls++
-			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
+	for _, l := range spider.GetLinksByTokenizer() {
+		enqueueUrl := ""
+		if project != nil {
+			enqueueUrl = project.EnqueueFilter(spider, l)
+		} else {
+			enqueueUrl = l.String()
 		}
+
+		if enqueueUrl == "" {
+			continue
+		}
+
+		summary.FindUrls++
+		exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
+		if err != nil {
+			log.Println(err)
+			tcpFilterErrorHandle(project)
+			return //return and stop the project
+		}
+		if exists {
+			continue
+		}
+		summary.NewUrls++
+		spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 	}
 }
 

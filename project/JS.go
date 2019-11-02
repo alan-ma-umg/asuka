@@ -46,6 +46,10 @@ func (my *JS) Showing() string {
 	return my.showStr
 }
 
+func (my *JS) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.Summary, err error) {
+	return spider.ChromeFetch(u)
+}
+
 func (my *JS) Name() string {
 	return "JS"
 }

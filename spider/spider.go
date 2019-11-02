@@ -347,6 +347,7 @@ func (spider *Spider) ResetRequest() {
 }
 
 func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
+	spider.SetRequest(u) //setting spider.currentRequest
 	//time
 	spider.RequestStartTime = time.Now()
 	spider.RequestEndTime = time.Time{} //empty
@@ -355,14 +356,16 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 
 	spider.AddAccess()
 	defer func() {
-		spider.RequestEndTime = time.Now()
+		if err == nil {
+			summary.StatusCode = 200
+		}
 
+		spider.RequestEndTime = time.Now()
 		//A few times result of http request
 		spider.recentFewTimesResult = append(spider.recentFewTimesResult, spider.FailureLevel == 0)
 
 		//recover
 		if r := recover(); r != nil {
-			spider.AddFailure()
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
 		}
 	}()
@@ -389,10 +392,12 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 		if spider.FailureLevel == 0 {
 			spider.FailureLevel = 10
 		}
-
+		summary.ErrType = err.Error()
 		spider.AddFailure()
 	}
-
+	//log.Println(helper.ByteCountBinary(uint64(len(dom))))
+	summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dom)))
+	summary.TrafficIn = uint64(len(dom))
 	spider.ResponseByte = []byte(dom)
 	return summary, err
 }
@@ -430,7 +435,6 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 
 		//recover
 		if r := recover(); r != nil {
-			spider.AddFailure()
 			err = errors.New("spider.Fetch panic:" + fmt.Sprint(r))
 		}
 	}()
@@ -449,7 +453,6 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 	defer spider.currentResponse.Body.Close()
 
 	summary.StatusCode = spider.currentResponse.StatusCode
-	summary.ContentType = spider.currentResponse.Header.Get("Content-type")
 
 	if spider.DownloadFilter != nil {
 		filter, err := spider.DownloadFilter(spider, spider.currentResponse)
