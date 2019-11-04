@@ -503,7 +503,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		project.ResponseSuccess(spider)
 	}
 
-	if len(spider.ResponseByte) > 10 && !strings.Contains(contentType, "html") {
+	if len(spider.ResponseByte) <= 10 || !strings.Contains(contentType, "html") {
 		return
 	}
 
