@@ -465,6 +465,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		project.AddFailure()
 	} else {
 		go func() {
+			// remove from retries queue
 			project.GetQueue().DequeueForFailure(link)
 		}()
 	}
