@@ -179,7 +179,7 @@ function handlerSocket() {
             }
             if (cacheKey !== window.chartUpdatecacheCheck) {
                 window.chartUpdatecacheCheck = cacheKey;
-                lineChart(document.getElementById("chart-rate"), data.basic.loads)
+                lineChart(vueContent.$data.canvas, data.basic.loads);
             }
         }
     };

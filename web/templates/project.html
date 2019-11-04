@@ -378,6 +378,7 @@
                     action: "home",
                     stop: preloadJson.stop,
                     stopTime: preloadJson.stop_time,
+                    canvas: null,
                 },
                 methods: {
                     switchServer: function (server) {
@@ -457,7 +458,8 @@
                 },
                 mounted: function () {
                     document.getElementById('vue-content').style.display = "block";
-                    lineChart(document.getElementById("chart-rate"), preloadJson.basic.loads);
+                    vueContent.$data.canvas = document.getElementById("chart-rate");
+                    lineChart(vueContent.$data.canvas, preloadJson.basic.loads);
                     handlerSocket();
                     setInterval(function () {
                         isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate

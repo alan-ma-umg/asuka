@@ -271,6 +271,7 @@
                     basic: preloadJson.basic,
                     projects: preloadJson.projects,
                     action: "",
+                    canvas: null,
                 },
                 methods: {
                     switchProject: function (item) {
@@ -316,7 +317,8 @@
                 },
                 mounted: function () {
                     document.getElementById('vue-content').style.display = "block";
-                    lineChart(document.getElementById("chart-rate"), preloadJson.basic.loads);
+                    vueContent.$data.canvas = document.getElementById("chart-rate");
+                    lineChart(vueContent.$data.canvas, preloadJson.basic.loads);
                     handlerSocket();
                     setInterval(function () {
                         isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
