@@ -172,18 +172,8 @@ function handlerSocket() {
         ws.send(vueContent.$data.action);
 
         //chart
-        if (vueContent.chart1) {
-            vueContent.chart1.data.datasets[0].data = [];
-            for (let s in data.basic.loads) {
-                vueContent.chart1.data.datasets[0].data.push(data.basic.loads[s]);
-            }
-            vueContent.chart1.update();
-        } else if (data.basic.loads && typeof Chart !== 'undefined') {
-            let labels = [];
-            for (let k in data.basic.loads) {
-                labels.push(timestampHumanReadable(k));
-            }
-            vueContent.chart1 = new Chart(document.getElementById('chart-legend-top').getContext('2d'), createConfig(labels))
+        if (data.basic.loads) {
+            lineChart(document.getElementById("chart-rate"), data.basic.loads)
         }
     };
     ws.onopen = function () {
@@ -264,4 +254,43 @@ function goToUrl(dstUrl) {
     } else {
         location.href = dstUrl
     }
+}
+
+function lineChart(canvasElement, loads) {
+    //偏移量类似padding/margin的作用
+    let lineOffset = 50;
+    let context = canvasElement.getContext("2d");
+    canvasElement.width = canvasElement.offsetWidth;
+    canvasElement.height = canvasElement.offsetHeight;
+
+    let lineCanvasWidth = canvasElement.width - lineOffset;
+    let lineCanvasHeight = canvasElement.height - lineOffset;
+    let minValue = Math.min(...Object.values(loads));
+    let maxValue = Math.max(...Object.values(loads));
+    let heightUnitPX = lineCanvasHeight / (maxValue - minValue);
+    let len = (Object.values(loads).length - 1);
+    let widthUnitPx = lineCanvasWidth / len;
+    let fontSize = 10;
+    context.font = fontSize + "px 'open sans'";
+    context.fillStyle = "#dadada";
+    context.lineWidth = 1;
+    context.strokeStyle = "#aeaeae";
+
+    let i = 0;
+    for (let k in loads) {
+        //line chart
+        let x = i * widthUnitPx, y = (maxValue - loads[k]) * heightUnitPX;
+        x += lineOffset / 2;
+        y += lineOffset / 2;
+        context.lineTo(x, y);
+        context.arc(x, y, 1.5, 0, 2 * Math.PI);
+        i++;
+
+        //y text
+        context.fillText(loads[k].toFixed(2), x - fontSize, y - fontSize);
+
+        //x text
+        context.fillText(timestampHumanReadable(k), x - fontSize / 2, canvasElement.height);
+    }
+    context.stroke();
 }
