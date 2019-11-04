@@ -456,6 +456,7 @@
                     }
                 },
                 mounted: function () {
+                    lineChart(document.getElementById("chart-rate"), preloadJson.basic.loads);
                     handlerSocket();
                     document.getElementById('vue-content').style.display = "block";
                     setInterval(function () {
