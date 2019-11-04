@@ -304,7 +304,7 @@ function lineChart(canvasElement, loads) {
         i++;
 
         //y text
-        context.fillText(loads[k].toFixed(2), x - fontSize, y - fontSize);
+        context.fillText(loads[k].toFixed(3), x - fontSize, y - fontSize);
 
         //x text
         context.fillText(timestampHumanReadable(k), x - fontSize / 2, canvasElement.height);
