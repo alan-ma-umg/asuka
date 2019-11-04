@@ -166,6 +166,10 @@ func (my *Queue) EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl string, ret
 	return true, incrInt
 }
 
+func (my *Queue) DequeueForFailure(rawUrl string) {
+	database.Redis().HDel(rawUrl)
+}
+
 func (my *Queue) CleanFailure() {
 	database.Redis().Del(my.GetFailureKey())
 }

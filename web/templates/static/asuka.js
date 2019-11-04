@@ -264,12 +264,11 @@ function goToUrl(dstUrl) {
 }
 
 function lineChart(canvasElement, loads) {
-    //偏移量类似padding/margin的作用
-    let lineOffset = 50;
-    let context = canvasElement.getContext("2d");
     canvasElement.width = canvasElement.offsetWidth;
     canvasElement.height = canvasElement.offsetHeight;
 
+    let lineOffset = 50; //偏移量类似padding/margin的作用
+    let context = canvasElement.getContext("2d");
     let lineCanvasWidth = canvasElement.width - lineOffset;
     let lineCanvasHeight = canvasElement.height - lineOffset;
     let minValue = Math.min(...Object.values(loads));

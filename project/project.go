@@ -460,8 +460,13 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 
 	project.AddAccess()
 	summary, err := project.Fetch(spider, u)
+
 	if err != nil || summary.StatusCode != 200 {
 		project.AddFailure()
+	} else {
+		go func() {
+			project.GetQueue().DequeueForFailure(link)
+		}()
 	}
 
 	if summary == nil {
