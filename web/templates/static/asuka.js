@@ -303,8 +303,17 @@ function lineChart(canvasElement, loads) {
         context.arc(x, y, 1.5, 0, 2 * Math.PI);
         i++;
 
+        let toFixedValue = 4;
+        if (maxValue > 0.1) {
+            toFixedValue = 1
+        } else if (maxValue > 0.01) {
+            toFixedValue = 2
+        } else if (maxValue > 0.001) {
+            toFixedValue = 3
+        }
+
         //y text
-        context.fillText(loads[k].toFixed(3), x - fontSize - 3, y - fontSize);
+        context.fillText(loads[k].toFixed(toFixedValue), x - fontSize - toFixedValue / 2 + 1, y - fontSize);
 
         //x text
         context.fillText(timestampHumanReadable(k), x - fontSize / 2, canvasElement.height);
