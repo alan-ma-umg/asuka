@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo retires 重试成功后删除,  douban 的 url比较特殊
 	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
