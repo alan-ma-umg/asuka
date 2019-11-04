@@ -304,11 +304,11 @@ function lineChart(canvasElement, loads) {
         i++;
 
         let toFixedValue = 4;
-        if (maxValue > 0.1) {
+        if (loads[k] > 0.1) {
             toFixedValue = 1
-        } else if (maxValue > 0.01) {
+        } else if (loads[k] > 0.01) {
             toFixedValue = 2
-        } else if (maxValue > 0.001) {
+        } else if (loads[k] > 0.001) {
             toFixedValue = 3
         }
 
