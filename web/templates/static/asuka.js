@@ -172,8 +172,15 @@ function handlerSocket() {
         ws.send(vueContent.$data.action);
 
         //chart
-        if (data.basic.loads) {
-            lineChart(document.getElementById("chart-rate"), data.basic.loads)
+        if (data.basic.hasOwnProperty("loads")) {
+            let cacheKey = "";
+            for (let k in data.basic.loads) {
+                cacheKey += data.basic.loads[k].toFixed(3) + k
+            }
+            if (cacheKey !== window.chartUpdatecacheCheck) {
+                window.chartUpdatecacheCheck = cacheKey;
+                lineChart(document.getElementById("chart-rate"), data.basic.loads)
+            }
         }
     };
     ws.onopen = function () {
@@ -282,6 +289,12 @@ function lineChart(canvasElement, loads) {
         let x = i * widthUnitPx, y = (maxValue - loads[k]) * heightUnitPX;
         x += lineOffset / 2;
         y += lineOffset / 2;
+
+        // when minValue === maxValue
+        if (heightUnitPX === Infinity) {
+            y = canvasElement.height / 2
+        }
+
         context.lineTo(x, y);
         context.arc(x, y, 1.5, 0, 2 * Math.PI);
         i++;
