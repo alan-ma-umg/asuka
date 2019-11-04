@@ -76,7 +76,7 @@ type IProject interface {
 
 type Implement struct{}
 
-func (my *Implement) InitBloomFilterCapacity() uint { return 7000000 }
+func (my *Implement) InitBloomFilterCapacity() uint { return 5000000 }
 func (my *Implement) Init(d *Dispatcher)            {}
 func (my *Implement) Showing() string               { return "Have a nice day !" }
 

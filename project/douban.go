@@ -58,7 +58,7 @@ type DouBan struct {
 	lastInsertError string
 }
 
-func (my *DouBan) InitBloomFilterCapacity() uint { return 100000000 }
+func (my *DouBan) InitBloomFilterCapacity() uint { return 10000000 }
 func (my *DouBan) Name() string {
 	return "Hitagi"
 }

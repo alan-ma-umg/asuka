@@ -25,8 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	//todo js解析
-	//todo WEB输入频率限制
+	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
 

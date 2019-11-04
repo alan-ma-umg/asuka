@@ -27,7 +27,7 @@ type V2ex struct {
 	lastUpdateTime time.Time
 }
 
-func (my *V2ex) InitBloomFilterCapacity() uint { return 10000000 }
+func (my *V2ex) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *V2ex) Init(d *Dispatcher) {
 
 	database.Redis().Del(my.Name() + "_" + helper.Env().Redis.URLQueueKey)
