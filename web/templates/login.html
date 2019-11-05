@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Asuka Login</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <script async defer src="{{FileCacheCtl "/static/asuka.js"}}"></script>
+<head>{{template "head" "Asuka Login"}}
     <style>
         * {
             padding: 0;
@@ -77,5 +72,6 @@
         }
     }, false)
 </script>
+{{template "common"}}
 </body>
 </html>

@@ -40,35 +40,6 @@ function ajax(option) {
     data ? xhr.send(typeof data == "string" ? data : JSON.stringify(data)) : xhr.send();
 }
 
-function createConfig(labels) {
-    return {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{label: '', data: [], borderColor: 'rgb(97, 100, 102)', borderWidth: 0.5, fill: false}]
-        },
-        options: {
-            layout: {padding: {left: 10, right: 10, top: 5, bottom: 0}},
-            elements: {point: {pointStyle: "crossRot"}, line: {tension: 0.2}},
-            responsive: false,
-            legend: {display: false},
-            scales: {
-                xAxes: [{
-                    display: true,
-                    gridLines: {display: false, drawBorder: false},
-                    ticks: {fontColor: "#dadada", fontSize: 10,}
-                }],
-                yAxes: [{
-                    display: true,
-                    gridLines: {display: false, drawBorder: false},
-                    ticks: {fontColor: "#dadada", fontSize: 10,}
-                }]
-            },
-            title: {display: false,}
-        }
-    };
-}
-
 function timestampHumanReadable(timestamp) {
     if (timestamp < 60) {
         return timestamp + 's';
@@ -150,9 +121,11 @@ function manualClose() {
 
 function handlerSocket() {
     try {
+        document.title = "Asuka connecting...";
         ws = new WebSocket(wsUrl);
     } catch (e) {
         console.log(e);
+        document.title = "Asuka exception";
         reconnectSocket();
         return
     }

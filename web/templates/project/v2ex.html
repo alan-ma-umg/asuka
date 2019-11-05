@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{.ProjectName}}</title>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <link href="{{FileCacheCtl "/static/asuka.css"}}" rel="stylesheet" type="text/css"/>
-    <script src="{{FileCacheCtl "/static/asuka.js"}}"></script>
-</head>
+<head>{{template "head" .ProjectName}}</head>
 <body>
 <h3><a href="/{{.ProjectName}}">{{.ProjectName}}</a></h3>
 <br>
@@ -41,6 +34,6 @@
         }
     })
 </script>
-
+{{template "common"}}
 </body>
 </html>

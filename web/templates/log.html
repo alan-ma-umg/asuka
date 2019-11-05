@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Asuka Log</title>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <link href="{{FileCacheCtl "/static/asuka.css"}}" rel="stylesheet" type="text/css"/>
-</head>
+<head>{{template "head" "Asuka Log"}}</head>
 <body>
 <div id="btn" style="position: fixed;bottom: 20px;right:20px;text-align: center">
     <strong style="display:block;font-size: 16px" class="text-orange">{{.mod}}</strong>
@@ -30,5 +24,6 @@
         }
     })
 </script>
+{{template "common"}}
 </body>
 </html>

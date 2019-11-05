@@ -1,0 +1,45 @@
+{{define "head"}}<title>{{if .}}{{.}}{{else}}Asuka{{end}}</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<link href="{{FileCacheCtl "/static/asuka.css"}}" rel="stylesheet" type="text/css"/>
+<script src="{{FileCacheCtl "/static/asuka.js"}}"></script>{{end}}
+
+{{define "foot"}}
+    <div class="text-gray" style="padding:20px 20px 40px">
+        <div>
+            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>
+            <a href="/log" v-if="basic.log_mod > 0"
+               :class="{'text-orange':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
+                LOG: {{"{{basic.log_mod.timestamp2date()}}"}}
+            </a>
+            <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
+               :class="{'text-orange':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
+                LOG: {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
+            </a>
+        </div>
+        <div>
+            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>
+            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
+            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
+        </div>
+    </div>
+{{end}}
+
+{{define "common"}}
+    <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;" id="layer"></div>
+    <div class="lds-dual-ring" id="loading"></div>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-71822351-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+        gtag('config', 'UA-71822351-2');
+    </script>
+{{end}}
