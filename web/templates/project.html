@@ -245,7 +245,7 @@
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/project.io?project=" + {{.ProjectName}};
     const preloadJson = {{.PreloadJson}}
 
-        loadScript("https://cdn.jsdelivr.net/gh/vuejs/vue@2.6.10/dist/vue.min.js", function () {
+        loadScript("https://cdn.jsdelivr.net/gh/vuejs/vue@2/dist/vue.min.js", function () {
             vueContent = new Vue({
                 el: "#vue-content",
                 data: {
