@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo MUX
 	//todo servers/crawling 切换使用ajax
 	//todo tcp filter 支持压缩加密多个链接查询
 	//todo TCP filter 链接池空闲释放
