@@ -34,7 +34,7 @@ func (my *Death) Init(d *Dispatcher) {
 		d.RemoveSpider(s)
 	}
 
-	for i := 0; i < helper.MaxInt(20, runtime.NumCPU()*10); i++ {
+	for i := 0; i < helper.MaxInt(10, runtime.NumCPU()*10); i++ {
 		uu, _ := url.Parse("direct://thread-" + strconv.Itoa(i))
 		d.AddSpider(uu)
 	}
