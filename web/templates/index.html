@@ -14,58 +14,7 @@
                 <small>Memory usage</small>
             </div>
             <br>
-            <table>
-                <tbody>
-                <tr>
-                    <td>
-                        Time
-                    </td>
-                    <td>
-                        <strong>{{"{{basic.time}}"}}</strong>
-                    </td>
-                    <template v-if="basic.sys_load">
-                        <td>
-                            Load
-                        </td>
-                        <td style="line-height: 10px" v-if="basic.tcp_filter.Load">
-                            <strong style="font-size: 10px">{{"{{basic.sys_load}}"}} <span
-                                        :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(0)}}"}}%</span></strong>
-                            <br>
-                            <strong style="font-size: 10px">{{"{{basic.tcp_filter.Load}}"}} <span
-                                        :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(0)}}"}}%</span></strong>
-                        </td>
-                        <td v-else>
-                            <strong>{{"{{basic.sys_load}}"}}</strong>
-                        </td>
-                    </template>
-                    <template v-else>
-                        <td>
-                            Uptime
-                        </td>
-                        <td>
-                            <strong>{{"{{basic.uptime}}"}}</strong>
-                        </td>
-                    </template>
-                </tr>
-                <tr>
-                    <td>
-                        Servers
-                    </td>
-                    <td>
-                        <strong>{{"{{basic.server_enable}}"}}</strong>
-                    </td>
-                    <td>
-                        Offline
-                    </td>
-                    <td>
-                        <strong>
-                            {{"{{basic.server_enable?((basic.server_enable-basic.server_run)/basic.server_enable*100).toFixed(2):0}}"}}
-                            %
-                        </strong>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            {{template "sectionOne"}}
         </div>
 
         <div class="head-item">
@@ -108,51 +57,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="head-item">
-            <div style="float:right">
-                <h1>{{"{{basic.traffic_out}}"}}</h1>
-                <small>TCP traffic out</small>
-            </div>
-            <div>
-                <h1>{{"{{basic.traffic_in}}"}}</h1>
-                <small>TCP traffic in</small>
-            </div>
-            <br>
-            <table>
-                <tbody>
-                <tr>
-                    <td>
-                        Request
-                    </td>
-                    <td>
-                        <strong>{{"{{basic.access_count.numFormat()}}"}}</strong>
-                    </td>
-                    <td>
-                        Failed
-                    </td>
-                    <td>
-                        <strong>{{"{{basic.failure_count.numFormat()}}"}}</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Failure Recent
-                    </td>
-                    <td>
-                        <strong>{{"{{ (projects.length?(basic.failure_period/projects.length):0).numFormat()}}"}}
-                            %</strong>
-                    </td>
-                    <td>
-                        Failure All
-                    </td>
-                    <td>
-                        <strong>{{"{{ (basic.access_count?(basic.failure_count/basic.access_count)*100:0).numFormat()}}"}}
-                            %</strong>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        {{template "sectionThree"}}
     </div>
     <canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-rate"></canvas>
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto" v-if='projects.length'>
