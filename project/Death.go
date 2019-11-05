@@ -21,7 +21,7 @@ type Death struct {
 	speedMax    time.Duration
 }
 
-func (my *Death) InitBloomFilterCapacity() uint { return 1000000 }
+func (my *Death) InitBloomFilterCapacity() uint { return 10000000 }
 func (my *Death) Init(d *Dispatcher) {
 	go func() {
 		for {
