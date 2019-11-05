@@ -540,5 +540,6 @@ func tcpFilterErrorHandle(project *Dispatcher) {
 	project.tcpFilterErrorCount++
 	if project.tcpFilterErrorCount > 5 {
 		project.StopTime = time.Now()
+		log.Println("too many failures, stop")
 	}
 }
