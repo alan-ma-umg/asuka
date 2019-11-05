@@ -142,7 +142,7 @@
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
     const preloadJson = {{.PreloadJson}}
-        loadScript("https://cdn.bootcss.com/vue/2.6.10/vue.min.js", function () {
+        loadScript("https://cdn.jsdelivr.net/gh/vuejs/vue@2.6.10/dist/vue.min.js", function () {
             vueContent = new Vue({
                 el: "#vue-content",
                 data: {
