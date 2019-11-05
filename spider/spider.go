@@ -354,7 +354,6 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 
 	summary = &Summary{RawUrl: u.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
 
-	spider.AddAccess()
 	defer func() {
 		if err == nil {
 			summary.StatusCode = 200
@@ -393,7 +392,6 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 			spider.FailureLevel = 10
 		}
 		summary.ErrType = err.Error()
-		spider.AddFailure()
 	}
 	//log.Println(helper.ByteCountBinary(uint64(len(dom))))
 	summary.TrafficInStr = helper.ByteCountBinary(uint64(len(dom)))
@@ -415,13 +413,8 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 
 	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
 
-	spider.AddAccess()
-
 	defer func() {
 		spider.RequestEndTime = time.Now()
-		if err != nil {
-			spider.AddFailure()
-		}
 
 		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
 			spider.FailureLevel = 10
@@ -498,11 +491,6 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 	summary.ErrType = spider.responseErrorHandler(err)
 	if err != nil {
 		return summary, err
-	}
-
-	//http status
-	if spider.currentResponse.StatusCode != 200 {
-		spider.AddFailure()
 	}
 
 	spider.ResponseByte = res

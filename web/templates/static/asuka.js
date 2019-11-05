@@ -257,8 +257,8 @@ function lineChart(canvasElement, loads) {
     let fontSize = 10;
     context.font = fontSize + "px 'open sans'";
     context.fillStyle = "#dadada";
-    context.lineWidth = 1;
-    context.strokeStyle = "#aeaeae";
+    context.lineWidth = 0.5;
+    context.strokeStyle = "#666666";
 
     let i = 0;
     for (let k in loads) {
