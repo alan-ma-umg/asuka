@@ -4,7 +4,6 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"net/http"
 	"net/url"
 	"runtime"
 	"strconv"
@@ -15,20 +14,22 @@ import (
 type Death struct {
 	*Implement
 	queueUrlLen int64
-	showStr     string
-	speedCount  uint
-	speedTotal  time.Duration
-	speedMin    time.Duration
-	speedAvgDiv time.Duration
-	speedMax    time.Duration
-	urlPrefix   string
+
+	DefaultShowingEnable bool //todo 通过组合方式加入进来
+	DefaultShowing       string
+	DefaultSpeedCount    uint
+	DefaultSpeedTotal    time.Duration
+	DefaultSpeedMin      time.Duration
+	DefaultSpeedAvgDiv   time.Duration
+	DefaultSpeedMax      time.Duration
 }
 
-func (my *Death) InitBloomFilterCapacity() uint { return 10000000 }
+func (my *Death) Showing() string { my.DefaultShowingEnable = true; return my.DefaultShowing }
+
 func (my *Death) Init(d *Dispatcher) {
 	go func() {
 		for {
-			time.Sleep(2e9)
+			time.Sleep(5e9)
 			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
@@ -41,72 +42,19 @@ func (my *Death) Init(d *Dispatcher) {
 		uu, _ := url.Parse("direct://thread-" + strconv.Itoa(i))
 		d.AddSpider(uu)
 	}
-
-	my.speedMin = time.Hour
-	my.showStr = "Waiting"
-
-	my.urlPrefix = "http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1] + "/forever/"
-}
-
-func (my *Death) Showing() string {
-	return my.showStr
-}
-
-func (my *Death) Name() string {
-	return "L"
 }
 
 func (my *Death) EntryUrl() []string {
 	var links []string
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, my.urlPrefix)
+		links = append(links, "http://127.0.0.1:"+strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1]+"/forever/")
 	}
 
 	return links
 }
-func (my *Death) Throttle(spider *spider.Spider) {
-	//if spider.LoadRate(5) > 1000 {
-	//	spider.AddSleep(time.Duration(rand.Float64() * 1e9))
-	//}
-}
-
-func (my *Death) RequestBefore(spider *spider.Spider) {
-	spider.SetRequestTimeout(time.Second * 10)
-}
-
-// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
-// 一般用于根据Header过滤不想继续下载的response.content_type
-func (my *Death) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
-	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
-		return false, nil
-	}
-
-	return true, nil
-}
 
 func (my *Death) ResponseAfter(spider *spider.Spider) {
-	if spider.CurrentResponse() != nil && spider.CurrentResponse().StatusCode == 200 {
-		duration := spider.RequestEndTime.Sub(spider.RequestStartTime)
-		if duration < my.speedMin {
-			my.speedMin = duration
-		}
-		if duration > my.speedMax {
-			my.speedMax = duration
-		}
-		if my.speedAvgDiv == 0 {
-			my.speedAvgDiv = duration
-		}
-		my.speedAvgDiv = (my.speedAvgDiv + duration) / 2
-
-		my.speedTotal += duration
-		my.speedCount++
-		if spider.GetAccessCount() > spider.GetFailureCount() {
-			my.showStr = "MIN: " + my.speedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.speedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.speedTotal / time.Duration(my.speedCount)).Truncate(time.Microsecond).String() + "/" + my.speedAvgDiv.Truncate(time.Microsecond).String()
-		}
-	}
-
-	//my.Implement.ResponseAfter(spider)
 }
 
 // queue
@@ -116,4 +64,28 @@ func (my *Death) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 	}
 
 	return l.String()
+}
+
+func (my *Death) ResponseSuccess(spider *spider.Spider) {
+	if my.DefaultShowingEnable {
+		if my.DefaultShowing == "" {
+			my.DefaultSpeedMin = time.Hour
+		}
+		duration := spider.RequestEndTime.Sub(spider.RequestStartTime)
+		if duration < my.DefaultSpeedMin {
+			my.DefaultSpeedMin = duration
+		}
+		if duration > my.DefaultSpeedMax {
+
+			my.DefaultSpeedMax = duration
+		}
+		if my.DefaultSpeedAvgDiv == 0 {
+			my.DefaultSpeedAvgDiv = duration
+		}
+		my.DefaultSpeedAvgDiv = (my.DefaultSpeedAvgDiv + duration) / 2
+
+		my.DefaultSpeedTotal += duration
+		my.DefaultSpeedCount++
+		my.DefaultShowing = "MIN: " + my.DefaultSpeedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.DefaultSpeedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.DefaultSpeedTotal / time.Duration(my.DefaultSpeedCount)).Truncate(time.Microsecond).String() + " / " + my.DefaultSpeedAvgDiv.Truncate(time.Microsecond).String()
+	}
 }

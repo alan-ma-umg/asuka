@@ -77,12 +77,16 @@ type IProject interface {
 
 type Implement struct{}
 
-func (my *Implement) InitBloomFilterCapacity() uint { return 5000000 }
-func (my *Implement) Init(d *Dispatcher)            {}
-func (my *Implement) Showing() string               { return "Have a nice day !" }
-
+func (my *Implement) InitBloomFilterCapacity() uint       { return 5000000 }
+func (my *Implement) Init(d *Dispatcher)                  {}
+func (my *Implement) Showing() string                     { return "Have a nice day !" }
+func (my *Implement) Throttle(spider *spider.Spider)      {}
+func (my *Implement) RequestBefore(spider *spider.Spider) {}
 func (my *Implement) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.Summary, err error) {
 	return spider.HttpFetch(u)
+}
+func (my *Implement) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
+	return true, nil
 }
 
 // EnqueueForFailure 请求或者响应失败时重新入失败队列, 可以修改这里修改加入失败队列的实现. 会在 Goroutine 中被异步调用
@@ -93,6 +97,7 @@ func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, retryEn
 	return spider.GetQueue().EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl, retryTimes)
 }
 
+// ResponseSuccess HTTP成功之后
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 
 // ResponseAfter HTTP请求失败/成功之后

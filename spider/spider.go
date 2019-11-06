@@ -113,7 +113,8 @@ type Spider struct {
 	currentResponse *http.Response
 
 	//ResponseStr  string
-	ResponseByte []byte
+	ResponseByte       []byte
+	ResponseStatusCode int
 
 	FailureLevel int
 
@@ -352,6 +353,8 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 	spider.RequestStartTime = time.Now()
 	spider.RequestEndTime = time.Time{} //empty
 
+	spider.ResponseStatusCode = 0
+
 	summary = &Summary{RawUrl: u.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
 
 	defer func() {
@@ -359,6 +362,7 @@ func (spider *Spider) ChromeFetch(u *url.URL) (summary *Summary, err error) {
 			summary.StatusCode = 200
 		}
 
+		spider.ResponseStatusCode = summary.StatusCode
 		spider.RequestEndTime = time.Now()
 		//A few times result of http request
 		spider.recentFewTimesResult = append(spider.recentFewTimesResult, spider.FailureLevel == 0)
@@ -411,10 +415,13 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 	spider.RequestStartTime = time.Now()
 	spider.RequestEndTime = time.Time{} //empty
 
+	spider.ResponseStatusCode = 0
+
 	summary = &Summary{RawUrl: spider.currentRequest.URL.String(), AddTime: time.Now().Format("01-02 15:04:05"), TransportName: spider.TransportUrl.Host}
 
 	defer func() {
 		spider.RequestEndTime = time.Now()
+		spider.ResponseStatusCode = summary.StatusCode
 
 		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
 			spider.FailureLevel = 10
