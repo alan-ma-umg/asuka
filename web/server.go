@@ -355,6 +355,7 @@ func indexIO(w http.ResponseWriter, r *http.Request) {
 			input := strings.TrimSpace(string(b))
 			if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
 				sleepSecondTimes = helper.MaxInt64(speedInt, 1)
+				continue
 			}
 		}
 
@@ -485,7 +486,6 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, b, err := c.ReadMessage()
 		if err != nil {
-			//log.Println("read:", err)
 			break
 		}
 		if messageType == 1 {
@@ -498,6 +498,7 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			default:
 				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
 					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
+					continue
 				}
 			}
 		}

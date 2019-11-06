@@ -17,8 +17,8 @@ var templates *template.Template
 
 var templatesOnce sync.Once
 
-var fileCacheCtlMap = make(map[string]string)
-var fileCacheCtlMapMutex sync.Mutex
+var fileVersionCtlMap = make(map[string]string)
+var fileVersionCtlMapMutex sync.Mutex
 
 func GetTemplates() *template.Template {
 	if runtime.GOOS == "linux" {
@@ -32,26 +32,36 @@ func GetTemplates() *template.Template {
 }
 
 func ParseTemplates() *template.Template {
-	fileCacheCtlMapMutex.Lock()
-	fileCacheCtlMap = make(map[string]string)
-	fileCacheCtlMapMutex.Unlock()
-	//templatesOnce.Do(func() {
+	fileVersionCtlMapMutex.Lock()
+	fileVersionCtlMap = make(map[string]string)
+	fileVersionCtlMapMutex.Unlock()
 	templates = template.Must(template.Must(template.New("").Funcs(template.FuncMap{
-		"FilePathBase": filepath.Base,
-		"FileCacheCtl": fileCacheCtl,
+		"FilePathBase":   filepath.Base,
+		"FileVersionCtl": fileVersionCtl,
+		"FileCdnCtl":     fileCdnCtl,
 		"Incr": func(i int) int {
 			return i + 1
 		},
 	}).ParseGlob("web/templates/*/*.html")).ParseGlob("web/templates/*.html"))
-	//})
 	return templates
 }
 
-func fileCacheCtl(src string) template.URL {
-	fileCacheCtlMapMutex.Lock()
-	defer fileCacheCtlMapMutex.Unlock()
+func fileCdnCtl(src string) template.URL {
+	versionSrc := fileVersionCtl(src)
+	if runtime.GOOS == "linux" {
+		if src == "/static/asuka.css" || src == "/static/asuka.js" {
+			return "https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates" + versionSrc
+		}
+	}
 
-	if m, ok := fileCacheCtlMap[src]; ok {
+	return versionSrc
+}
+
+func fileVersionCtl(src string) template.URL {
+	fileVersionCtlMapMutex.Lock()
+	defer fileVersionCtlMapMutex.Unlock()
+
+	if m, ok := fileVersionCtlMap[src]; ok {
 		return template.URL(m)
 	}
 
@@ -76,7 +86,7 @@ func fileCacheCtl(src string) template.URL {
 	query.Add("v", hex.EncodeToString(h.Sum(nil)))
 	u.RawQuery = query.Encode()
 
-	fileCacheCtlMap[src] = u.String()
+	fileVersionCtlMap[src] = u.String()
 
-	return template.URL(fileCacheCtlMap[src])
+	return template.URL(fileVersionCtlMap[src])
 }

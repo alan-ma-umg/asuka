@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>{{template "head" .ProjectName}}
-    <script src="{{FileCacheCtl "/static/echo.min.js"}}"></script>
+    <script src="{{FileVersionCtl "/static/echo.min.js"}}"></script>
     <style>
         * {
             padding: 0;
@@ -28,7 +28,7 @@
 (function () {
     let script = document.createElement('script');
     let domain = "<span id='link-append'></span>";
-    script.src = domain + "{{FileCacheCtl "/static/pixiv2asuka.js"}}";
+    script.src = domain + "{{FileVersionCtl "/static/pixiv2asuka.js"}}";
     script.onload = function () {
         script = null;
         pixivHenTaiStart_(domain);
