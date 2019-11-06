@@ -55,7 +55,7 @@ type IProject interface {
 	// Fifth
 	ResponseSuccess(spider *spider.Spider)
 
-	// EnqueueFilter HTTP完成并成功后, 从HTML中解析的每条URL都会经过这个筛选和处理. 空字符串则不入队列
+	// EnqueueFilter HTTP完成并成功后, 从HTML中解析的每条URL都会经过这个筛选和处理. 空字符串则不入队列. 异步执行
 	// Sixth
 	EnqueueFilter(spider *spider.Spider, l *url.URL) string
 
@@ -514,31 +514,33 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		return
 	}
 
-	for _, l := range spider.GetLinksByTokenizer() {
-		enqueueUrl := ""
-		if project != nil {
-			enqueueUrl = project.EnqueueFilter(spider, l)
-		} else {
-			enqueueUrl = l.String()
-		}
+	go func(urls []*url.URL) {
+		for _, l := range urls {
+			enqueueUrl := ""
+			if project != nil {
+				enqueueUrl = project.EnqueueFilter(spider, l)
+			} else {
+				enqueueUrl = l.String()
+			}
 
-		if enqueueUrl == "" {
-			continue
-		}
+			if enqueueUrl == "" {
+				continue
+			}
 
-		summary.FindUrls++
-		exists, err := spider.GetQueue().BlTestAndAddString(project.BloomFilterTestString(enqueueUrl))
-		if err != nil {
-			log.Println(err)
-			tcpFilterErrorHandle(project)
-			return //return and stop the project
+			summary.FindUrls++
+			exists, err := spider.GetQueue().BlTestAndAddString(project.BloomFilterTestString(enqueueUrl))
+			if err != nil {
+				log.Println(err)
+				tcpFilterErrorHandle(project)
+				return //return and stop the project
+			}
+			if exists {
+				continue
+			}
+			summary.NewUrls++
+			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
 		}
-		if exists {
-			continue
-		}
-		summary.NewUrls++
-		spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
-	}
+	}(spider.GetLinksByTokenizer())
 }
 
 func tcpFilterErrorHandle(project *Dispatcher) {
