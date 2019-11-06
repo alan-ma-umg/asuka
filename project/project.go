@@ -539,7 +539,9 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 func tcpFilterErrorHandle(project *Dispatcher) {
 	project.tcpFilterErrorCount++
 	if project.tcpFilterErrorCount > 5 {
+		if !project.IsStop() {
+			log.Println("too many failures, stop")
+		}
 		project.StopTime = time.Now()
-		log.Println("too many failures, stop")
 	}
 }
