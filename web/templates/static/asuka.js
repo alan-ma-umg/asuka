@@ -65,7 +65,7 @@ function hideLoading() {
     setTimeout(function () {
         document.getElementById('layer').style.display = 'none';
         document.getElementById('loading').style.display = 'none';
-    }, 200);
+    }, 300);
 }
 
 function sendCommand(cmd, projectName) {
