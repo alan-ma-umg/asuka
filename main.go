@@ -75,10 +75,7 @@ func main() {
 	//todo google fonts with jsdelivr
 	//todo AVG
 	//todo systemd
-	//todo MUX
-	//todo tcp filter 支持压缩加密多个链接查询
 	//todo TCP filter 链接池空闲释放
-	//todo retires 重试成功后删除,  douban 的 url比较特殊
 	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
