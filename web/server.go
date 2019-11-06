@@ -321,53 +321,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 	helper.GetTemplates().ExecuteTemplate(w, "project.html", data)
 }
 
-func indexIO(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrade.Upgrade(w, r, nil)
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
-
-	webSocketConnections++
-
-	defer func() {
-		webSocketConnections--
-		c.Close()
-	}()
-
-	check := false
-	//login check
-	if cookie, err := r.Cookie("id"); err == nil {
-		check = authCheck(cookie.Value)
-	}
-
-	var sleepSecondTimes int64 = 1
-	if !check {
-		sleepSecondTimes = 3
-	}
-
-	for {
-		messageType, b, err := c.ReadMessage()
-		if err != nil {
-			break
-		}
-		if messageType == 1 && check {
-			input := strings.TrimSpace(string(b))
-			if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
-				sleepSecondTimes = helper.MaxInt64(speedInt, 1)
-				continue
-			}
-		}
-
-		err = c.WriteMessage(websocket.TextMessage, indexJson(check))
-		if err != nil {
-			//log.Println("write:", err)
-			break
-		}
-		time.Sleep(time.Second * time.Duration(sleepSecondTimes))
-	}
-
-}
 func cmd(w http.ResponseWriter, r *http.Request) {
 	//login check
 	if !authCheckOrRedirect(w, r) {
@@ -445,6 +398,54 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "{success:true}")
 }
 
+func indexIO(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+
+	webSocketConnections++
+
+	defer func() {
+		webSocketConnections--
+		c.Close()
+	}()
+
+	check := false
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		check = authCheck(cookie.Value)
+	}
+
+	var sleepSecondTimes int64 = 1
+	if !check {
+		sleepSecondTimes = 3
+	}
+
+	for {
+		messageType, b, err := c.ReadMessage()
+		if err != nil {
+			break
+		}
+		if messageType == 1 && check {
+			input := strings.TrimSpace(string(b))
+			if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
+				sleepSecondTimes = helper.MaxInt64(speedInt, 1)
+				continue
+			}
+		}
+
+		err = c.WriteMessage(websocket.TextMessage, indexJson(check))
+		if err != nil {
+			//log.Println("write:", err)
+			break
+		}
+		time.Sleep(time.Second * time.Duration(sleepSecondTimes))
+	}
+
+}
+
 func projectIO(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
@@ -493,8 +494,10 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			switch input {
 			case "home":
 				responseContent = strings.TrimSpace(string(b))
+				continue
 			case "recent":
 				responseContent = strings.TrimSpace(string(b))
+				continue
 			default:
 				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
 					sleepSecondTimes = helper.MaxInt64(speedInt, 1)

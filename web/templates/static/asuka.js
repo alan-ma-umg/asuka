@@ -142,7 +142,7 @@ function handlerSocket() {
         if (data.basic.loads) {
             document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
         }
-        ws.send(vueContent.$data.action);
+        ws.send("");
 
         //chart
         if (data.basic.hasOwnProperty("loads")) {
@@ -157,7 +157,7 @@ function handlerSocket() {
         }
     };
     ws.onopen = function () {
-        sendMessage(vueContent.$data.action);
+        sendMessage("");
         document.body.className = "";
         document.title = "Asuka connected";
     };
