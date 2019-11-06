@@ -147,9 +147,7 @@ func (my *V2ex) ResponseAfter(spider *spider.Spider) {
 func (my *V2ex) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 
 	if my.queueUrlLen < 1000 {
-		for _, l := range my.EntryUrl() {
-			spider.GetQueue().Enqueue(l)
-		}
+		spider.GetQueue().Enqueue(my.EntryUrl())
 	}
 
 	return
