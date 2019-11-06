@@ -19,6 +19,7 @@ type Death struct {
 	speedMin    time.Duration
 	speedTotal  time.Duration
 	speedMax    time.Duration
+	urlPrefix   string
 }
 
 func (my *Death) InitBloomFilterCapacity() uint { return 10000000 }
@@ -41,6 +42,8 @@ func (my *Death) Init(d *Dispatcher) {
 
 	my.speedMin = time.Hour
 	my.showStr = "Waiting"
+
+	my.urlPrefix = "http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1] + "/forever/"
 }
 
 func (my *Death) Showing() string {
@@ -55,7 +58,7 @@ func (my *Death) EntryUrl() []string {
 	var links []string
 
 	for i := 0; i < 1000; i++ {
-		links = append(links, "http://127.0.0.1:"+strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1]+"/forever/")
+		links = append(links, my.urlPrefix)
 	}
 
 	return links
@@ -106,4 +109,8 @@ func (my *Death) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 	}
 
 	return l.String()
+}
+
+func (my *Death) BloomFilterTestString(s string) string {
+	return strings.TrimPrefix(s, my.urlPrefix)
 }

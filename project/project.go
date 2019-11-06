@@ -42,6 +42,9 @@ type IProject interface {
 	// spiderEnqueueUrl 用于重新加入正常抓取队列.
 	EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int)
 
+	//todo make improvement
+	BloomFilterTestString(s string) string
+
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
 	// Fourth
@@ -91,6 +94,8 @@ func (my *Implement) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.S
 func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
 	return spider.GetQueue().EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl, retryTimes)
 }
+
+func (my *Implement) BloomFilterTestString(s string) string { return s }
 
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 
@@ -522,7 +527,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		}
 
 		summary.FindUrls++
-		exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
+		exists, err := spider.GetQueue().BlTestAndAddString(project.BloomFilterTestString(enqueueUrl))
 		if err != nil {
 			log.Println(err)
 			tcpFilterErrorHandle(project)
