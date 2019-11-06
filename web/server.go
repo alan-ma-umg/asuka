@@ -336,6 +336,8 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 	cmd, _ := post["cmd"].(string)
 
 	switch cmd {
+	case "tcpmem":
+		queue.GetTcpFilterInstance().Cmd(23, nil)
 	case "mem":
 		log.Println("\n" + helper.PrintMemUsage(mem))
 	case "parse":

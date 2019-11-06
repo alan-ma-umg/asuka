@@ -364,6 +364,9 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			replyData, err = my.serverTailFile(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
 		case 22: //fileLog.UpdateLogCheckTime
 			helper.GetFileLogInstance().UpdateLogCheckTime()
+		case 23: //mem report
+			var mem runtime.MemStats
+			log.Println("\n" + helper.PrintMemUsage(mem))
 		default:
 			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 		}
