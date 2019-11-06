@@ -72,6 +72,7 @@ func main() {
 	//w.Close()
 
 	//return
+	//todo google fonts with jsdelivr
 	//todo AVG
 	//todo systemd
 	//todo MUX

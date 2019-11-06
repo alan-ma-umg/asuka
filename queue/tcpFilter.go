@@ -1,14 +1,11 @@
 package queue
 
 import (
-	"bytes"
-	"compress/flate"
 	"encoding/binary"
 	"encoding/json"
 	"github.com/chenset/asuka/helper"
 	"github.com/willf/bloom"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
@@ -172,12 +169,14 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	}
 
 	//compression
-	//todo test , handle err
-	var compressionBuf bytes.Buffer
-	gw, _ := flate.NewWriter(&compressionBuf, flate.BestSpeed)
-	gw.Write(jsonBytes)
-	gw.Close()
-	jsonBytes = compressionBuf.Bytes()
+	//var compressionBuf bytes.Buffer
+	//gw, err := flate.NewWriter(&compressionBuf, flate.BestSpeed)
+	//if err != nil {
+	//	return res, err
+	//}
+	//gw.Write(jsonBytes)
+	//gw.Close()
+	//jsonBytes = compressionBuf.Bytes()
 	//compression end
 
 	dataLen := uint32(len(jsonBytes) + lenOfCmd)
@@ -365,10 +364,13 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		requestData := newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
 
 		//decompression
-		//todo test , handle err
-		gr := flate.NewReader(bytes.NewBuffer(requestData))
-		requestData, _ = ioutil.ReadAll(gr)
-		gr.Close()
+		//gr := flate.NewReader(bytes.NewBuffer(requestData))
+		//requestData, err = ioutil.ReadAll(gr)
+		//gr.Close()
+		//if err != nil {
+		//	log.Println(err)
+		//	return
+		//}
 		//decompression end
 
 		switch newBuf[lenOfDataLen] { //cmd
