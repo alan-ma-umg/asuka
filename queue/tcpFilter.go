@@ -22,7 +22,7 @@ import (
 //request: length[4],cmd[1],json[*]
 //response:length[4],json[*]
 const (
-	lenOfDataLen = 2
+	lenOfDataLen = 4
 	lenOfCmd     = 1
 )
 
@@ -169,7 +169,7 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	if err != nil {
 		return res, err
 	}
-	dataLen := uint16(len(jsonBytes) + lenOfCmd)
+	dataLen := uint32(len(jsonBytes) + lenOfCmd)
 
 	newBuf := buf
 	if int(dataLen+lenOfDataLen) > len(buf) {
@@ -180,7 +180,7 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 
 	copy(newBuf[lenOfDataLen+lenOfCmd:], jsonBytes[:])
 
-	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], dataLen)
+	binary.BigEndian.PutUint32(newBuf[:lenOfDataLen], dataLen)
 	result, err := my.client(newBuf, dataLen+lenOfDataLen)
 	if err != nil {
 		return res, err
@@ -225,7 +225,7 @@ func (my *TcpFilter) putConn(conn net.Conn) {
 	}
 }
 
-func (my *TcpFilter) client(buf []byte, writeLen uint16) (response []byte, err error) {
+func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err error) {
 	conn, err := my.getConn()
 	defer func() {
 		if err != nil {
@@ -330,7 +330,7 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 			return
 		}
 
-		dataLen := binary.BigEndian.Uint16(buf[:lenOfDataLen])
+		dataLen := binary.BigEndian.Uint32(buf[:lenOfDataLen])
 
 		newBuf := buf
 		if int(dataLen+lenOfDataLen) > len(buf) {
@@ -339,7 +339,7 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 		}
 
 		// read continue
-		if uint16(n) < lenOfDataLen+dataLen {
+		if uint32(n) < lenOfDataLen+dataLen {
 			_, err := io.ReadAtLeast(conn, newBuf[n:], int(lenOfDataLen+dataLen)-n)
 			if err != nil {
 				if err != io.EOF {
