@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo AVG
 	//todo systemd
 	//todo MUX
 	//todo servers/crawling 切换使用ajax

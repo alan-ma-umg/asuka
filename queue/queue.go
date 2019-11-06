@@ -96,45 +96,70 @@ func (my *Queue) BlCleanUp() {
 	my.getBloomFilterInstance().ClearAll()
 }
 
-func (my *Queue) blTcp(db string, size uint, fun byte, s string) (res bool, err error) {
+func (my *Queue) blTcp(db string, size uint, fun byte, s []string) (res []bool, err error) {
 	buf, err := GetTcpFilterInstance().Cmd(10, &Cmd10{
 		Db:   db,
 		Size: size,
 		Fun:  fun,
-		Urls: []string{s},
+		Urls: s,
 	})
 	if err != nil {
 		TcpErrorPrintDoOnce.Do(func() {
 			log.Println(err)
 		})
 		//失败一定次数后停止项目
-		return true, err
+		return res, err
 	}
 
 	var result []byte
-	json.Unmarshal(buf, &result)
-	if len(result) == 0 || result[0] == 1 {
-		return true, nil
+	err = json.Unmarshal(buf, &result)
+
+	for _, b := range result {
+		if b == 1 {
+			res = append(res, true)
+		} else {
+			res = append(res, false)
+		}
 	}
 
-	return false, nil
+	return
 }
 
 //BlTestString if exists return true
-func (my *Queue) BlTestString(s string) (bool, error) {
+//func (my *Queue) BlTestString(s string) (bool, error) {
+//	if helper.Env().BloomFilterClient != "" {
+//		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 10, []string{s})
+//	}
+//
+//	my.bloomFilterMutex.Lock()
+//	defer my.bloomFilterMutex.Unlock()
+//	return my.getBloomFilterInstance().TestString(s), nil
+//}
+
+//BlTestAndAddStrings if exists return true
+func (my *Queue) BlTestAndAddStrings(s []string) (res []bool, err error) {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 10, s)
+		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 20, s)
 	}
 
 	my.bloomFilterMutex.Lock()
 	defer my.bloomFilterMutex.Unlock()
-	return my.getBloomFilterInstance().TestString(s), nil
+	for _, e := range s {
+		res = append(res, my.getBloomFilterInstance().TestAndAddString(e))
+	}
+
+	return
 }
 
 //BlTestAndAddString if exists return true
 func (my *Queue) BlTestAndAddString(s string) (bool, error) {
 	if helper.Env().BloomFilterClient != "" {
-		return my.blTcp(my.GetBlKey(), my.bloomFilterSize, 20, s)
+		res, err := my.blTcp(my.GetBlKey(), my.bloomFilterSize, 20, []string{s})
+		if len(res) == 0 {
+			return true, err
+		}
+
+		return res[0], err
 	}
 
 	my.bloomFilterMutex.Lock()
