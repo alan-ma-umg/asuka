@@ -467,6 +467,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	} else {
 		go func() {
 			// remove from retries queue
+			// async , wil broke the system if too fast
 			project.GetQueue().DequeueForFailure(link)
 		}()
 	}
@@ -508,7 +509,7 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		return
 	}
 
-	// async
+	// async , wil broke the system if too fast
 	//go func(urls []*url.URL) {
 
 	var testUrls []string
