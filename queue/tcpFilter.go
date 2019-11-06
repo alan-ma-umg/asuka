@@ -255,7 +255,7 @@ func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err e
 		return nil, err
 	}
 
-	dataLen := binary.BigEndian.Uint16(buf[:lenOfDataLen])
+	dataLen := binary.BigEndian.Uint32(buf[:lenOfDataLen])
 
 	newBuf := buf
 	if int(dataLen+lenOfDataLen) > len(buf) {
@@ -264,7 +264,7 @@ func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err e
 	}
 
 	// read continue
-	if uint16(n) < lenOfDataLen+dataLen {
+	if uint32(n) < lenOfDataLen+dataLen {
 		nn, err := io.ReadAtLeast(conn, newBuf[n:], int(lenOfDataLen+dataLen)-n)
 		n += nn
 		if err != nil {
@@ -302,7 +302,7 @@ func (my *TcpFilter) serverReply(conn net.Conn, buf, data []byte) (err error) {
 
 	copy(newBuf[lenOfDataLen:], data[:])
 
-	binary.BigEndian.PutUint16(newBuf[:lenOfDataLen], uint16(dataLen))
+	binary.BigEndian.PutUint32(newBuf[:lenOfDataLen], uint32(dataLen))
 	_, err = conn.Write(newBuf[:lenOfDataLen+dataLen])
 	if err != nil {
 		log.Println(err)

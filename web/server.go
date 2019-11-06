@@ -263,7 +263,7 @@ func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 30000}) //返回的总内容不能超过int16的长度
+	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 65535})
 	if err != nil {
 		log.Println(err)
 		return
