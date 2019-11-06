@@ -549,7 +549,7 @@ func (my *DouBan) ResponseSuccess(spider *spider.Spider) {
 					if rawUrl, ok := m["url"]; ok {
 						u, _ := url.Parse(rawUrl.(string))
 						if enqueueUrl := my.EnqueueFilter(spider, u); enqueueUrl != "" {
-							if exists, _ := spider.GetQueue().BlTestAndAddString(my.BloomFilterTestString(enqueueUrl)); exists {
+							if exists, _ := spider.GetQueue().BlTestAndAddString(enqueueUrl); exists {
 								continue
 							}
 							spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))

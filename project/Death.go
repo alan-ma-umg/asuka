@@ -110,7 +110,3 @@ func (my *Death) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl st
 
 	return l.String()
 }
-
-func (my *Death) BloomFilterTestString(s string) string {
-	return strings.TrimPrefix(s, my.urlPrefix)
-}

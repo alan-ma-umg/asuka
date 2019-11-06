@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -41,9 +42,6 @@ type IProject interface {
 	// retryEnqueueUrl 用于检测失败次数,后加入retries计数. retryEnqueueUrl是为了缩短url长度减少retries的空间, 比如去掉HOST部分, 只保存与检测PATH部分
 	// spiderEnqueueUrl 用于重新加入正常抓取队列.
 	EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int)
-
-	//todo make improvement
-	BloomFilterTestString(s string) string
 
 	// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
 	// 一般用于根据Header过滤不想继续下载的response.content_type
@@ -94,8 +92,6 @@ func (my *Implement) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.S
 func (my *Implement) EnqueueForFailure(spider *spider.Spider, err error, retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
 	return spider.GetQueue().EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl, retryTimes)
 }
-
-func (my *Implement) BloomFilterTestString(s string) string { return s }
 
 func (my *Implement) ResponseSuccess(spider *spider.Spider) {}
 
@@ -229,9 +225,7 @@ func (my *Dispatcher) initProject() {
 
 	rawUrls := my.EntryUrl()
 	if int64(len(rawUrls)) > my.GetQueue().QueueLen() {
-		for _, l := range rawUrls {
-			my.GetQueue().Enqueue(l)
-		}
+		my.GetQueue().Enqueue(rawUrls)
 	}
 }
 
@@ -514,32 +508,70 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		return
 	}
 
+	// async
 	go func(urls []*url.URL) {
-		for _, l := range urls {
-			enqueueUrl := ""
-			if project != nil {
-				enqueueUrl = project.EnqueueFilter(spider, l)
-			} else {
-				enqueueUrl = l.String()
-			}
 
-			if enqueueUrl == "" {
+		var testUrls []string
+		for _, l := range urls {
+			testUrl := ""
+			if project != nil {
+				testUrl = project.EnqueueFilter(spider, l)
+			} else {
+				testUrl = l.String()
+			}
+			if testUrl == "" {
 				continue
 			}
-
+			testUrls = append(testUrls, strings.TrimSpace(testUrl))
 			summary.FindUrls++
-			exists, err := spider.GetQueue().BlTestAndAddString(project.BloomFilterTestString(enqueueUrl))
+		}
+
+		//bloom filter test
+		exists, err := spider.GetQueue().BlTestAndAddStrings(testUrls)
+		if err != nil || len(exists) != len(testUrls) {
+			log.Println("exists len: " + strconv.Itoa(len(exists)) + " testUrls len: " + strconv.Itoa(len(testUrls)))
 			if err != nil {
 				log.Println(err)
-				tcpFilterErrorHandle(project)
-				return //return and stop the project
 			}
-			if exists {
-				continue
-			}
-			summary.NewUrls++
-			spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
+			tcpFilterErrorHandle(project)
+			return
 		}
+
+		//enqueue
+		var enqueueUrls []string
+		for i, b := range exists {
+			if !b {
+				summary.NewUrls++
+				enqueueUrls = append(enqueueUrls, testUrls[i])
+			}
+		}
+		spider.GetQueue().Enqueue(enqueueUrls)
+
+		//for _, l := range urls {
+		//	enqueueUrl := ""
+		//	if project != nil {
+		//		enqueueUrl = project.EnqueueFilter(spider, l)
+		//	} else {
+		//		enqueueUrl = l.String()
+		//	}
+		//
+		//	if enqueueUrl == "" {
+		//		continue
+		//	}
+		//
+		//	summary.FindUrls++
+		//	exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
+		//	if err != nil {
+		//		log.Println(err)
+		//		tcpFilterErrorHandle(project)
+		//		return //return and stop the project
+		//	}
+		//	if exists {
+		//		continue
+		//	}
+		//	summary.NewUrls++
+		//	spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
+		//}
 	}(spider.GetLinksByTokenizer())
 }
 

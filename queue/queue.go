@@ -113,7 +113,6 @@ func (my *Queue) blTcp(db string, size uint, fun byte, s []string) (res []bool, 
 
 	var result []byte
 	err = json.Unmarshal(buf, &result)
-
 	for _, b := range result {
 		if b == 1 {
 			res = append(res, true)
@@ -167,8 +166,8 @@ func (my *Queue) BlTestAndAddString(s string) (bool, error) {
 	return my.getBloomFilterInstance().TestAndAddString(s), nil
 }
 
-func (my *Queue) Enqueue(rawUrl string) {
-	database.Redis().RPush(my.GetKey(), rawUrl)
+func (my *Queue) Enqueue(values interface{}) {
+	database.Redis().RPush(my.GetKey(), values)
 }
 
 func (my *Queue) QueueLen() int64 {
