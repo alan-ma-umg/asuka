@@ -24,6 +24,7 @@ func main() {
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
+	//todo LOG Notice
 	//todo network speed
 	//todo unload页面的时候update一次preloadJson
 	//todo google fonts with jsdelivr
