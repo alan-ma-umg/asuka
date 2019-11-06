@@ -25,6 +25,53 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//cmd10 := &queue.Cmd10{
+	//	Db:   "fsfdf_fsdf_210_",
+	//	Size: 10000000,
+	//	Fun:  20,
+	//	Urls: []string{"http://127.0.0.1:666/forever/2528737039883775986", "http://127.0.0.1:666/forever/5883825034260892491", ""},
+	//}
+	//for ii := 0; ii < 1000; ii++ {
+	//	cmd10.Urls = append(cmd10.Urls, strconv.Itoa(ii))
+	//}
+	//
+	//test, _ := json.Marshal(cmd10)
+	//
+	//// Write with BestSpeed.
+	//var buf bytes.Buffer
+	//
+	////compression
+	////gz := gzip.NewWriter(&buf)
+	////gw, _ := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	//
+	//gw, _ := flate.NewWriter(&buf, flate.BestSpeed)
+	//gw.Write(test)
+	//gw.Close()
+	//
+	//log.Println(len(buf.Bytes()), len([]byte(test)))
+	//
+	//// decompression
+	//zr := flate.NewReader(&buf)
+	////if err != nil {
+	////	log.Fatal(err)
+	////}
+	//
+	//if _, err := io.Copy(os.Stdout, zr); err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//if err := zr.Close(); err != nil {
+	//	log.Fatal(err)
+	//}
+
+	// Write with BestCompression.
+	//fmt.Println("BESTCOMPRESSION")
+	//f, _ = os.Create("C:\\programs\\file-bestcompression.gz")
+	//w, _ = gzip.NewWriterLevel(f, gzip.BestCompression)
+	//w.Write([]byte(test))
+	//w.Close()
+
+	//return
 	//todo AVG
 	//todo systemd
 	//todo MUX

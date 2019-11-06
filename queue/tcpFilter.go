@@ -1,11 +1,14 @@
 package queue
 
 import (
+	"bytes"
+	"compress/flate"
 	"encoding/binary"
 	"encoding/json"
 	"github.com/chenset/asuka/helper"
 	"github.com/willf/bloom"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
@@ -167,6 +170,16 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	if err != nil {
 		return res, err
 	}
+
+	//compression
+	//todo test , handle err
+	var compressionBuf bytes.Buffer
+	gw, _ := flate.NewWriter(&compressionBuf, flate.BestSpeed)
+	gw.Write(jsonBytes)
+	gw.Close()
+	jsonBytes = compressionBuf.Bytes()
+	//compression end
+
 	dataLen := uint32(len(jsonBytes) + lenOfCmd)
 
 	newBuf := buf
@@ -349,24 +362,33 @@ func (my *TcpFilter) handleServerConnection(conn net.Conn) {
 
 		//cmd
 		var replyData []byte
+		requestData := newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
+
+		//decompression
+		//todo test , handle err
+		gr := flate.NewReader(bytes.NewBuffer(requestData))
+		requestData, _ = ioutil.ReadAll(gr)
+		gr.Close()
+		//decompression end
+
 		switch newBuf[lenOfDataLen] { //cmd
 		case 10: //bloomFilter test
-			replyData, err = my.serverBl(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			replyData, err = my.serverBl(requestData)
 		case 11: //bloomFilter clear & remove file.db
-			replyData, err = my.serverBlClear(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			replyData, err = my.serverBlClear(requestData)
 		case 12: //blItem status
-			replyData, err = my.serverBlStatus(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			replyData, err = my.serverBlStatus(requestData)
 		case 20: //system report
 			replyData, err = my.serverReport()
 		case 21: //fileLog.TailFile
-			replyData, err = my.serverTailFile(newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen])
+			replyData, err = my.serverTailFile(requestData)
 		case 22: //fileLog.UpdateLogCheckTime
 			helper.GetFileLogInstance().UpdateLogCheckTime()
 		case 23: //mem report
 			var mem runtime.MemStats
 			log.Println("\n" + helper.PrintMemUsage(mem))
 		default:
-			replyData = newBuf[lenOfDataLen+lenOfCmd : lenOfDataLen+dataLen]
+			replyData = requestData
 		}
 		if err != nil {
 			log.Println(err)
