@@ -159,8 +159,6 @@ func (my *TcpFilter) getBlFileName(name string) string {
 }
 
 //ClientOtherCmd db 0~255, fun 10=TestString 20=TestAndAddString
-//请求不超过len(buf)的长度~4000
-//响应不超过uint16的长度~65535
 func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) {
 	buf := helper.LeakyBuf().Get()
 	defer helper.LeakyBuf().Put(buf)

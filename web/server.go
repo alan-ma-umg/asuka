@@ -263,7 +263,7 @@ func fileLogTcpFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 65535})
+	buf, err := queue.GetTcpFilterInstance().Cmd(21, &queue.Cmd21{TailSize: 102400})
 	if err != nil {
 		log.Println(err)
 		return
