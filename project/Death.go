@@ -16,8 +16,10 @@ type Death struct {
 	*Implement
 	queueUrlLen int64
 	showStr     string
-	speedMin    time.Duration
+	speedCount  uint
 	speedTotal  time.Duration
+	speedMin    time.Duration
+	speedAvgDiv time.Duration
 	speedMax    time.Duration
 	urlPrefix   string
 }
@@ -92,10 +94,15 @@ func (my *Death) ResponseAfter(spider *spider.Spider) {
 		if duration > my.speedMax {
 			my.speedMax = duration
 		}
+		if my.speedAvgDiv == 0 {
+			my.speedAvgDiv = duration
+		}
+		my.speedAvgDiv = (my.speedAvgDiv + duration) / 2
 
 		my.speedTotal += duration
+		my.speedCount++
 		if spider.GetAccessCount() > spider.GetFailureCount() {
-			my.showStr = "MIN: " + my.speedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.speedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.speedTotal / time.Duration(spider.GetAccessCount()-spider.GetFailureCount())).Truncate(time.Microsecond).String()
+			my.showStr = "MIN: " + my.speedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.speedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.speedTotal / time.Duration(my.speedCount)).Truncate(time.Microsecond).String() + "/" + my.speedAvgDiv.Truncate(time.Microsecond).String()
 		}
 	}
 
