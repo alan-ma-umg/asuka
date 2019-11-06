@@ -442,14 +442,14 @@ func (my *TcpFilter) serverBl(buf []byte) (result []byte, err error) {
 			if blItem.bl.TestString(u) {
 				b = 1
 			}
-			list = append(result, b)
+			list = append(list, b)
 		} else {
 			if blItem.bl.TestAndAddString(u) {
 				b = 1
 			} else {
 				blItem.AddCount++
 			}
-			list = append(result, b)
+			list = append(list, b)
 		}
 	}
 
