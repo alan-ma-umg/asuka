@@ -509,70 +509,70 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	}
 
 	// async
-	go func(urls []*url.URL) {
+	//go func(urls []*url.URL) {
 
-		var testUrls []string
-		for _, l := range urls {
-			testUrl := ""
-			if project != nil {
-				testUrl = project.EnqueueFilter(spider, l)
-			} else {
-				testUrl = l.String()
-			}
-			if testUrl == "" {
-				continue
-			}
-			testUrls = append(testUrls, strings.TrimSpace(testUrl))
-			summary.FindUrls++
+	var testUrls []string
+	for _, l := range spider.GetLinksByTokenizer() {
+		testUrl := ""
+		if project != nil {
+			testUrl = project.EnqueueFilter(spider, l)
+		} else {
+			testUrl = l.String()
 		}
-
-		//bloom filter test
-		exists, err := spider.GetQueue().BlTestAndAddStrings(testUrls)
-		if err != nil || len(exists) != len(testUrls) {
-			log.Println("exists len: " + strconv.Itoa(len(exists)) + " testUrls len: " + strconv.Itoa(len(testUrls)))
-			if err != nil {
-				log.Println(err)
-			}
-			tcpFilterErrorHandle(project)
-			return
+		if testUrl == "" {
+			continue
 		}
+		testUrls = append(testUrls, strings.TrimSpace(testUrl))
+		summary.FindUrls++
+	}
 
-		//enqueue
-		var enqueueUrls []string
-		for i, b := range exists {
-			if !b {
-				summary.NewUrls++
-				enqueueUrls = append(enqueueUrls, testUrls[i])
-			}
+	//bloom filter test
+	exists, err := spider.GetQueue().BlTestAndAddStrings(testUrls)
+	if err != nil || len(exists) != len(testUrls) {
+		log.Println("exists len: " + strconv.Itoa(len(exists)) + " testUrls len: " + strconv.Itoa(len(testUrls)))
+		if err != nil {
+			log.Println(err)
 		}
-		spider.GetQueue().Enqueue(enqueueUrls)
+		tcpFilterErrorHandle(project)
+		return
+	}
 
-		//for _, l := range urls {
-		//	enqueueUrl := ""
-		//	if project != nil {
-		//		enqueueUrl = project.EnqueueFilter(spider, l)
-		//	} else {
-		//		enqueueUrl = l.String()
-		//	}
-		//
-		//	if enqueueUrl == "" {
-		//		continue
-		//	}
-		//
-		//	summary.FindUrls++
-		//	exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
-		//	if err != nil {
-		//		log.Println(err)
-		//		tcpFilterErrorHandle(project)
-		//		return //return and stop the project
-		//	}
-		//	if exists {
-		//		continue
-		//	}
-		//	summary.NewUrls++
-		//	spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
-		//}
-	}(spider.GetLinksByTokenizer())
+	//enqueue
+	var enqueueUrls []string
+	for i, b := range exists {
+		if !b {
+			summary.NewUrls++
+			enqueueUrls = append(enqueueUrls, testUrls[i])
+		}
+	}
+	spider.GetQueue().Enqueue(enqueueUrls)
+
+	//for _, l := range urls {
+	//	enqueueUrl := ""
+	//	if project != nil {
+	//		enqueueUrl = project.EnqueueFilter(spider, l)
+	//	} else {
+	//		enqueueUrl = l.String()
+	//	}
+	//
+	//	if enqueueUrl == "" {
+	//		continue
+	//	}
+	//
+	//	summary.FindUrls++
+	//	exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
+	//	if err != nil {
+	//		log.Println(err)
+	//		tcpFilterErrorHandle(project)
+	//		return //return and stop the project
+	//	}
+	//	if exists {
+	//		continue
+	//	}
+	//	summary.NewUrls++
+	//	spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
+	//}
+	//}(spider.GetLinksByTokenizer())
 }
 
 func tcpFilterErrorHandle(project *Dispatcher) {
