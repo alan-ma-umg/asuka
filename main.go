@@ -48,9 +48,9 @@ func main() {
 func asuka() {
 	fmt.Println("http://127.0.0.1:" + strings.Split(helper.Env().WEBListen, ":")[len(strings.Split(helper.Env().WEBListen, ":"))-1])
 	log.Println(web.Server([]*project.Dispatcher{
-		//project.New(&project.DouBan{}, time.Now()).Run(),
-		//project.New(&project.Pixiv{}, time.Time{}).Run(),
-		//project.New(&project.V2ex{}, time.Time{}).Run(),
+		project.New(&project.DouBan{}, time.Now()).Run(),
+		project.New(&project.Pixiv{}, time.Time{}).Run(),
+		project.New(&project.V2ex{}, time.Time{}).Run(),
 		//project.New(&project.Test2{}, time.Time{}).Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),
@@ -63,7 +63,7 @@ func asuka() {
 		//project.New(&project.JianShu{}, time.Now()).CleanUp().Run(),
 		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
 		project.New(&project.Death{}, time.Now()).CleanUp().Run(),
-		//project.New(&project.JS{}, time.Now()).CleanUp().Run(),
+		project.New(&project.JS{}, time.Now()).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }
