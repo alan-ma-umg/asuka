@@ -205,12 +205,7 @@
             </button>
             <a href="/add/{{.ProjectName}}">
                 <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Add Proxy
-                </button>
-            </a>
-            <a href="/get/{{.ProjectName}}">
-                <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Get Proxy
+                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Proxy
                 </button>
             </a>
             <a href="/website/{{.ProjectName}}">
@@ -237,6 +232,18 @@
             <strong><a href="https://kumiko.flysay.com" class="text-orange" style="margin-left:10px"
                        v-if="location.host.toLowerCase().indexOf('kumiko') === -1">KUMIKO</a></strong>
         {{end}}
+        <strong>
+            <a href="/log" v-if="basic.log_mod > 0"
+               style="margin-left:10px"
+               :class="{'text-red':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
+                {{"{{basic.log_mod.timestamp2date()}}"}}
+            </a>
+            <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
+               style="margin-left:10px"
+               :class="{'text-red':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
+                {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
+            </a>
+        </strong>
     </div>
 </div>
 

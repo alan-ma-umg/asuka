@@ -112,14 +112,6 @@
     <div class="text-gray" style="padding:20px 20px 40px">
         <div>
             <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>
-            <a href="/log" v-if="basic.log_mod > 0"
-               :class="{'text-orange':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
-                LOG: {{"{{basic.log_mod.timestamp2date()}}"}}
-            </a>
-            <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
-               :class="{'text-orange':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
-                LOG: {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
-            </a>
         </div>
         <div>
             <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>

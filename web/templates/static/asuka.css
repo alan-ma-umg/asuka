@@ -189,12 +189,20 @@ tr:hover {
     background: rgb(255, 240, 240) !important;
 }
 
+.red {
+    background: #ff5252 !important;
+}
+
 .orange {
     background: #ff9c38 !important;
 }
 
 .green {
     background: #00af4c !important;
+}
+
+.text-red {
+    color: #ff5252 !important;
 }
 
 .text-orange {

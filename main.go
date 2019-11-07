@@ -24,10 +24,9 @@ func main() {
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
-	//todo LOG Notice
+
 	//todo network speed
 	//todo unload页面的时候update一次preloadJson
-	//todo google fonts with jsdelivr
 	//todo AVG
 	//todo systemd
 	//todo TCP filter 链接池空闲释放, 通过NewConnectionCount属性在一定心跳检测周期内是否增加判断是否空闲. 通过GetConn().Close()关闭
