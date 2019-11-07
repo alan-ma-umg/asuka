@@ -109,6 +109,36 @@ func GetTcpFilterInstance() *TcpFilter {
 			} else {
 				tcpFilterInstance.serverAddress = u.Host
 			}
+
+			//connection pool check
+			go func() {
+				time.Sleep(time.Second * 3)
+				loopSince := time.Now()
+				connectionCount := GetTcpFilterInstance().NewConnectionCount
+				for {
+					time.Sleep(time.Second * 3)
+
+					//Heartbeat check
+					if GetTcpFilterInstance().ConnPoolSize() > 1 {
+						GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+					}
+
+					//close useless connections
+					if time.Since(loopSince).Seconds() > 1812 {
+						loopSince = time.Now()
+						b := connectionCount == GetTcpFilterInstance().NewConnectionCount
+						connectionCount = GetTcpFilterInstance().NewConnectionCount
+						if b { //no change mean pool connections enough to use
+							//make pool connections less than N
+							for i := 0; i < GetTcpFilterInstance().ConnPoolSize()-5; i++ {
+								if conn, _ := GetTcpFilterInstance().getConn(); conn != nil {
+									conn.Close()
+								}
+							}
+						}
+					}
+				}
+			}()
 		}
 
 		//for server mode
@@ -201,7 +231,7 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	return
 }
 
-func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
+func (my *TcpFilter) getConn() (conn net.Conn, err error) {
 	// Grab a buffer if available; allocate if not.
 	select {
 	case conn = <-my.connPool:
@@ -236,7 +266,7 @@ func (my *TcpFilter) putConn(conn net.Conn) {
 }
 
 func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err error) {
-	conn, err := my.GetConn()
+	conn, err := my.getConn()
 	defer func() {
 		if err != nil {
 			if conn != nil {

@@ -17,38 +17,6 @@ import (
 	"time"
 )
 
-func init() {
-	//connection pool check
-	go func() {
-		time.Sleep(time.Second * 3)
-		loopSince := time.Now()
-		connectionCount := queue.GetTcpFilterInstance().NewConnectionCount
-		for {
-			time.Sleep(time.Second * 3)
-
-			//Heartbeat check
-			if queue.GetTcpFilterInstance().ConnPoolSize() > 1 {
-				queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
-			}
-
-			//close useless connections
-			if time.Since(loopSince).Seconds() > 1812 {
-				loopSince = time.Now()
-				b := connectionCount == queue.GetTcpFilterInstance().NewConnectionCount
-				connectionCount = queue.GetTcpFilterInstance().NewConnectionCount
-				if b { //no change mean pool connections enough to use
-					//make pool connections less than N
-					for i := 0; i < queue.GetTcpFilterInstance().ConnPoolSize()-5; i++ {
-						if conn, _ := queue.GetTcpFilterInstance().GetConn(); conn != nil {
-							conn.Close()
-						}
-					}
-				}
-			}
-		}
-	}()
-}
-
 const RecentFetchCount = 50
 
 type Dispatcher struct {

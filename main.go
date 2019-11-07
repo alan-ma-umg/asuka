@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo float round
 	//todo network speed + counting + canvas. cat /proc/net/dev https://stackoverflow.com/questions/3521678/what-are-meanings-of-fields-in-proc-net-dev
 	//todo systemd
 
