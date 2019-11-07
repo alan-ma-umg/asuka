@@ -13,20 +13,13 @@ import (
 
 type Death struct {
 	*Implement
+	*SpeedShowing
 	queueUrlLen int64
-
-	DefaultShowingEnable bool //todo 通过组合方式加入进来
-	DefaultShowing       string
-	DefaultSpeedCount    uint
-	DefaultSpeedTotal    time.Duration
-	DefaultSpeedMin      time.Duration
-	DefaultSpeedAvgDiv   time.Duration
-	DefaultSpeedMax      time.Duration
 }
 
-func (my *Death) Showing() string { my.DefaultShowingEnable = true; return my.DefaultShowing }
-func (my *Death) Name() string    { return "Death" }
+func (my *Death) Name() string { return "Death" }
 func (my *Death) Init(d *Dispatcher) {
+	my.SpeedShowing = &SpeedShowing{}
 	go func() {
 		for {
 			time.Sleep(5e9)
@@ -54,38 +47,10 @@ func (my *Death) EntryUrl() []string {
 	return links
 }
 
-func (my *Death) ResponseAfter(spider *spider.Spider) {
-}
-
 // queue
 func (my *Death) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	if my.queueUrlLen > 100000 {
 		return
 	}
-
 	return l.String()
-}
-
-func (my *Death) ResponseSuccess(spider *spider.Spider) {
-	if my.DefaultShowingEnable {
-		if my.DefaultShowing == "" {
-			my.DefaultSpeedMin = time.Hour
-		}
-		duration := spider.RequestEndTime.Sub(spider.RequestStartTime)
-		if duration < my.DefaultSpeedMin {
-			my.DefaultSpeedMin = duration
-		}
-		if duration > my.DefaultSpeedMax {
-
-			my.DefaultSpeedMax = duration
-		}
-		if my.DefaultSpeedAvgDiv == 0 {
-			my.DefaultSpeedAvgDiv = duration
-		}
-		my.DefaultSpeedAvgDiv = (my.DefaultSpeedAvgDiv + duration) / 2
-
-		my.DefaultSpeedTotal += duration
-		my.DefaultSpeedCount++
-		my.DefaultShowing = "MIN: " + my.DefaultSpeedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.DefaultSpeedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.DefaultSpeedTotal / time.Duration(my.DefaultSpeedCount)).Truncate(time.Microsecond).String() + " / " + my.DefaultSpeedAvgDiv.Truncate(time.Microsecond).String()
-	}
 }

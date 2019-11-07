@@ -26,8 +26,7 @@ func main() {
 	}()
 
 	//todo network speed
-	//todo unload页面的时候update一次preloadJson
-	//todo AVG
+	//todo AVG 组合
 	//todo systemd
 	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送

@@ -18,18 +18,15 @@ import (
 
 type V2ex struct {
 	*Implement
+	*SpeedShowing
 	queueUrlLen    int64
-	showStr        string
-	speedMin       time.Duration
-	speedTotal     time.Duration
-	speedMax       time.Duration
 	itemRegex      *regexp.Regexp
 	lastUpdateTime time.Time
 }
 
 func (my *V2ex) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *V2ex) Init(d *Dispatcher) {
-
+	my.SpeedShowing = &SpeedShowing{}
 	database.Redis().Del(my.Name() + "_" + helper.Env().Redis.URLQueueKey)
 
 	go func() {
@@ -38,17 +35,10 @@ func (my *V2ex) Init(d *Dispatcher) {
 			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
-
-	my.speedMin = time.Hour
-	my.showStr = "Waiting"
 }
 
 func (my *V2ex) resultRedisKeyName(cate string) string {
 	return my.Name() + "_result" + "_" + cate
-}
-
-func (my *V2ex) Showing() string {
-	return my.showStr
 }
 
 func (my *V2ex) Name() string {
@@ -125,21 +115,7 @@ func (my *V2ex) ResponseSuccess(spider *spider.Spider) {
 }
 
 func (my *V2ex) ResponseAfter(spider *spider.Spider) {
-	if spider.CurrentResponse() != nil && spider.CurrentResponse().StatusCode == 200 {
-		duration := spider.RequestEndTime.Sub(spider.RequestStartTime)
-		if duration < my.speedMin {
-			my.speedMin = duration
-		}
-		if duration > my.speedMax {
-			my.speedMax = duration
-		}
-
-		my.speedTotal += duration
-		if spider.GetAccessCount() > spider.GetFailureCount() {
-			my.showStr = "MIN: " + my.speedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.speedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.speedTotal / time.Duration(spider.GetAccessCount()-spider.GetFailureCount())).Truncate(time.Microsecond).String()
-		}
-	}
-
+	my.SpeedShowing.ResponseSuccess(spider)
 	my.Implement.ResponseAfter(spider)
 }
 
