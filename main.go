@@ -25,7 +25,7 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	//todo network speed
+	//todo network speed . cat /proc/net/dev
 	//todo systemd
 
 	//BloomFilterServer
