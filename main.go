@@ -29,7 +29,6 @@ func main() {
 	//todo unload页面的时候update一次preloadJson
 	//todo AVG
 	//todo systemd
-	//todo TCP filter 链接池空闲释放, 通过NewConnectionCount属性在一定心跳检测周期内是否增加判断是否空闲. 通过GetConn().Close()关闭
 	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送
 	//todo douban web page.
