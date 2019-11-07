@@ -14,14 +14,15 @@ import (
 type Death struct {
 	*Implement
 	*SpeedShowing
-	*SpiderThrottle
+	ThrottleInterface
 	queueUrlLen int64
 }
 
 func (my *Death) Name() string { return "Death" }
 func (my *Death) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
-	my.SpiderThrottle = &SpiderThrottle{}
+	my.ThrottleInterface = &SpiderThrottle{}
+	my.SetThrottleSpeed(10)
 	go func() {
 		for {
 			time.Sleep(5e9)

@@ -27,9 +27,6 @@ func main() {
 
 	//todo network speed
 	//todo systemd
-	//todo WEB输入频率限2制
-	//todo chrome 插件 => pixiv.net js自动抓取报送
-	//todo douban web page.
 
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {

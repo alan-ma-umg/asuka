@@ -1,7 +1,6 @@
 package project
 
 import (
-	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
 	"io"
 	"net/http"
@@ -11,7 +10,7 @@ import (
 
 type ThrottleInterface interface {
 	SetThrottleSpeed(ThrottleSpeed float64)
-	SetThrottleSleep(ThrottleSleepSecond int)
+	Throttle(spider *spider.Spider)
 }
 
 type IProject interface {
@@ -151,18 +150,14 @@ func (my *SpeedShowing) ResponseSuccess(spider *spider.Spider) {
 }
 
 type SpiderThrottle struct {
-	SpiderThrottleSpeed       float64
-	SpiderThrottleSleepSecond int
+	SpiderThrottleSpeed float64
 }
 
 func (my *SpiderThrottle) SetThrottleSpeed(ThrottleSpeed float64) {
 	my.SpiderThrottleSpeed = ThrottleSpeed
 }
-func (my *SpiderThrottle) SetThrottleSleep(ThrottleSleepSecond int) {
-	my.SpiderThrottleSleepSecond = ThrottleSleepSecond
-}
 func (my *SpiderThrottle) Throttle(spider *spider.Spider) {
-	if spider.LoadRate(5) > my.SpiderThrottleSpeed {
-		spider.AddSleep(time.Duration(helper.MaxInt(my.SpiderThrottleSleepSecond, 1)) * 1e9)
+	if my.SpiderThrottleSpeed > .0 {
+		spider.AddSleep(time.Duration(float64(time.Second) / my.SpiderThrottleSpeed))
 	}
 }
