@@ -89,7 +89,7 @@ func commonHandleFunc(fn http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if w.Header().Get("Content-Type") == "" {
-			w.Header().Set("Content-Type", "text/html")
+			w.Header().Set("Content-Type", "text/html;charset=utf8")
 		}
 		w.Header().Set("Connection", "keep-alive")
 		w.Header().Set("Server", "Asuka")
