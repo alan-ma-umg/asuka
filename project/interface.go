@@ -1,12 +1,18 @@
 package project
 
 import (
+	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
 )
+
+type ThrottleInterface interface {
+	SetThrottleSpeed(ThrottleSpeed float64)
+	SetThrottleSleep(ThrottleSleepSecond int)
+}
 
 type IProject interface {
 	// Init DoOnce func
@@ -69,7 +75,6 @@ type Implement struct{}
 
 func (my *Implement) InitBloomFilterCapacity() uint       { return 5000000 }
 func (my *Implement) Init(d *Dispatcher)                  {}
-func (my *Implement) Throttle(spider *spider.Spider)      {}
 func (my *Implement) RequestBefore(spider *spider.Spider) {}
 func (my *Implement) Fetch(spider *spider.Spider, u *url.URL) (summary *spider.Summary, err error) {
 	return spider.HttpFetch(u)
@@ -142,5 +147,22 @@ func (my *SpeedShowing) ResponseSuccess(spider *spider.Spider) {
 		my.DefaultSpeedTotal += duration
 		my.DefaultSpeedCount++
 		my.DefaultShowing = "MIN: " + my.DefaultSpeedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.DefaultSpeedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.DefaultSpeedTotal / time.Duration(my.DefaultSpeedCount)).Truncate(time.Microsecond).String() + " / " + my.DefaultSpeedAvgDiv.Truncate(time.Microsecond).String()
+	}
+}
+
+type SpiderThrottle struct {
+	SpiderThrottleSpeed       float64
+	SpiderThrottleSleepSecond int
+}
+
+func (my *SpiderThrottle) SetThrottleSpeed(ThrottleSpeed float64) {
+	my.SpiderThrottleSpeed = ThrottleSpeed
+}
+func (my *SpiderThrottle) SetThrottleSleep(ThrottleSleepSecond int) {
+	my.SpiderThrottleSleepSecond = ThrottleSleepSecond
+}
+func (my *SpiderThrottle) Throttle(spider *spider.Spider) {
+	if spider.LoadRate(5) > my.SpiderThrottleSpeed {
+		spider.AddSleep(time.Duration(helper.MaxInt(my.SpiderThrottleSleepSecond, 1)) * 1e9)
 	}
 }

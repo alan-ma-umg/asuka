@@ -14,12 +14,14 @@ import (
 type Death struct {
 	*Implement
 	*SpeedShowing
+	*SpiderThrottle
 	queueUrlLen int64
 }
 
 func (my *Death) Name() string { return "Death" }
 func (my *Death) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
+	my.SpiderThrottle = &SpiderThrottle{}
 	go func() {
 		for {
 			time.Sleep(5e9)
@@ -36,7 +38,7 @@ func (my *Death) Init(d *Dispatcher) {
 		d.AddSpider(uu)
 	}
 }
-
+func (my *Death) ResponseAfter(spider *spider.Spider) {}
 func (my *Death) EntryUrl() []string {
 	var links []string
 

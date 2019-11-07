@@ -397,7 +397,26 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 		log.Println("spider start")
 	}
 
+	cmdSpiderThrottle(p, cmd)
 	io.WriteString(w, "{success:true}")
+}
+
+func cmdSpiderThrottle(p *project.Dispatcher, cmd string) {
+	if splits := strings.Split(cmd, "/"); len(splits) == 2 {
+		if pp, ok := p.IProject.(project.ThrottleInterface); ok {
+			speed, err := strconv.ParseFloat(splits[0], 64)
+			if err != nil {
+				return
+			}
+			sleep, err := strconv.Atoi(splits[1])
+			if err != nil {
+				return
+			}
+			pp.SetThrottleSpeed(speed)
+			pp.SetThrottleSleep(sleep)
+			log.Println(cmd)
+		}
+	}
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {

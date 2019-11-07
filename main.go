@@ -26,7 +26,6 @@ func main() {
 	}()
 
 	//todo network speed
-	//todo AVG 组合
 	//todo systemd
 	//todo WEB输入频率限2制
 	//todo chrome 插件 => pixiv.net js自动抓取报送
