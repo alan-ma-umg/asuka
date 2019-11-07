@@ -11,11 +11,14 @@ import (
 type JS struct {
 	*Implement
 	*SpeedShowing
+	*SpiderThrottle
 }
 
 func (my *JS) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *JS) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
+	my.SpiderThrottle = &SpiderThrottle{}
+	my.SetThrottleSpeed(0.01)
 	go func() {
 		for {
 			time.Sleep(20e9)
@@ -43,10 +46,6 @@ func (my *JS) EntryUrl() []string {
 	}
 
 	return links
-}
-
-func (my *JS) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Minute * 3)
 }
 
 // queue

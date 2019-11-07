@@ -4,42 +4,41 @@ import (
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/spider"
-	"math/rand"
-	"net/http"
 	"net/url"
-	"strings"
+	"runtime"
+	"strconv"
 	"time"
 )
 
 type Test struct {
 	*Implement
+	*SpeedShowing
+	*SpiderThrottle
 	queueUrlLen int64
-	showStr     string
-	speedMin    time.Duration
-	speedTotal  time.Duration
-	speedMax    time.Duration
 }
 
+func (my *Test) Name() string { return "Kei" }
 func (my *Test) Init(d *Dispatcher) {
+	my.SpeedShowing = &SpeedShowing{}
+	my.SpiderThrottle = &SpiderThrottle{}
+	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
-			time.Sleep(10e9)
+			time.Sleep(5e9)
 			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
 		}
 	}()
 
-	my.speedMin = time.Hour
-	my.showStr = "Waiting"
-}
+	for _, s := range d.GetSpiders() {
+		d.RemoveSpider(s)
+	}
 
-func (my *Test) Showing() string {
-	return my.showStr
+	for i := 0; i < helper.MaxInt(10, runtime.NumCPU()*10); i++ {
+		uu, _ := url.Parse("direct://thread-" + strconv.Itoa(i))
+		d.AddSpider(uu)
+	}
 }
-
-func (my *Test) Name() string {
-	return "KEI"
-}
-
+func (my *Test) ResponseAfter(spider *spider.Spider) {}
 func (my *Test) EntryUrl() []string {
 	var links []string
 
@@ -49,50 +48,11 @@ func (my *Test) EntryUrl() []string {
 
 	return links
 }
-func (my *Test) Throttle(spider *spider.Spider) {
-	if spider.LoadRate(5) > 10 {
-		spider.AddSleep(time.Duration(rand.Float64() * 1e9))
-	}
-}
-
-func (my *Test) RequestBefore(spider *spider.Spider) {
-	spider.SetRequestTimeout(time.Second * 10)
-}
-
-// RequestAfter HTTP请求已经完成, Response Header已经获取到, 但是 Response.Body 未下载
-// 一般用于根据Header过滤不想继续下载的response.content_type
-func (my *Test) DownloadFilter(spider *spider.Spider, response *http.Response) (bool, error) {
-	if !strings.Contains(response.Header.Get("Content-type"), "text/html") {
-		return false, nil
-	}
-
-	return true, nil
-}
-
-func (my *Test) ResponseAfter(spider *spider.Spider) {
-	if spider.CurrentResponse() != nil && spider.CurrentResponse().StatusCode == 200 {
-		duration := spider.RequestEndTime.Sub(spider.RequestStartTime)
-		if duration < my.speedMin {
-			my.speedMin = duration
-		}
-		if duration > my.speedMax {
-			my.speedMax = duration
-		}
-
-		my.speedTotal += duration
-		if spider.GetAccessCount() > spider.GetFailureCount() {
-			my.showStr = "MIN: " + my.speedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.speedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.speedTotal / time.Duration(spider.GetAccessCount()-spider.GetFailureCount())).Truncate(time.Microsecond).String()
-		}
-	}
-
-	//my.Implement.ResponseAfter(spider)
-}
 
 // queue
 func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-	if my.queueUrlLen > 20000 {
+	if my.queueUrlLen > 100000 {
 		return
 	}
-
 	return l.String()
 }
