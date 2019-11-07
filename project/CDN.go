@@ -47,7 +47,7 @@ func (my *CDN) Throttle(spider *spider.Spider) {
 
 func (my *CDN) RequestBefore(spider *spider.Spider) {
 	//Referer
-	spider.CurrentRequest().Header.Set("Referer", "https://pages.github.com/")
+	spider.CurrentRequest().Header.Set("Referer", "https://pages.github.com/"+strconv.Itoa(rand.Intn(1000000000)))
 }
 
 func (my *CDN) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
