@@ -37,8 +37,9 @@ func init() {
 				if b { //no change mean pool connections enough to use
 					//make pool connections less than N
 					for i := 0; i < queue.GetTcpFilterInstance().ConnPoolSize()-5; i++ {
-						conn, _ := queue.GetTcpFilterInstance().GetConn()
-						conn.Close()
+						if conn, _ := queue.GetTcpFilterInstance().GetConn(); conn != nil {
+							conn.Close()
+						}
 					}
 				}
 			}

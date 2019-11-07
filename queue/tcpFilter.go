@@ -239,7 +239,9 @@ func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err e
 	conn, err := my.GetConn()
 	defer func() {
 		if err != nil {
-			conn.Close()
+			if conn != nil {
+				conn.Close()
+			}
 			name, _ := os.Hostname()
 			helper.SendTextToWXDoOnceDurationHour(name + " TcpFilter connection failed: " + err.Error())
 			TcpErrorPrintDoOnce.Do(func() {
