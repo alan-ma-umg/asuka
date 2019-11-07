@@ -53,4 +53,5 @@ func (my *CDN) RequestBefore(spider *spider.Spider) {
 func (my *CDN) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	return
 }
-func (my *CDN) ResponseAfter(spider *spider.Spider) {}
+
+//func (my *CDN) ResponseAfter(spider *spider.Spider) {}
