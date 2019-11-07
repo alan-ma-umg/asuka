@@ -104,7 +104,7 @@ type IProject interface {
 	WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool //控制是否需要登录
 }
 
-type Implement struct{ implementNameCache string }
+type Implement struct{}
 
 func (my *Implement) InitBloomFilterCapacity() uint       { return 5000000 }
 func (my *Implement) Init(d *Dispatcher)                  {}
