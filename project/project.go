@@ -459,6 +459,9 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 	//bloom filter test
 	exists, err := spider.GetQueue().BlTestAndAddStrings(testUrls)
 	if err != nil || len(exists) != len(testUrls) {
+		go func() {
+			spider.GetQueue().Enqueue(link) //enqueue again
+		}()
 		log.Println("exists len: " + strconv.Itoa(len(exists)) + " testUrls len: " + strconv.Itoa(len(testUrls)))
 		if err != nil {
 			log.Println(err)
