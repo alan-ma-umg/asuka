@@ -27,7 +27,9 @@ func init() {
 			time.Sleep(time.Second * 3)
 
 			//Heartbeat check
-			queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+			if queue.GetTcpFilterInstance().ConnPoolSize() > 1 {
+				queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+			}
 
 			//close useless connections
 			if time.Since(loopSince).Seconds() > 1812 {
