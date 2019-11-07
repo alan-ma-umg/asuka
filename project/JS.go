@@ -20,7 +20,7 @@ func (my *JS) Init(d *Dispatcher) {
 		for {
 			time.Sleep(20e9)
 			queueUrlLen, _ := database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
-			if queueUrlLen < 10000 {
+			if queueUrlLen < 1000 {
 				d.queue.Enqueue(my.EntryUrl())
 			}
 		}

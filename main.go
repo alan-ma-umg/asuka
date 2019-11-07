@@ -51,6 +51,7 @@ func asuka() {
 		project.New(&project.DouBan{}, time.Now()).Run(),
 		project.New(&project.Pixiv{}, time.Time{}).Run(),
 		project.New(&project.V2ex{}, time.Time{}).Run(),
+		project.New(&project.CDN{}, time.Time{}).Run(),
 		//project.New(&project.Test2{}, time.Time{}).Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),

@@ -112,7 +112,15 @@ type SpeedShowing struct {
 	DefaultSpeedMax      time.Duration
 }
 
-func (my *SpeedShowing) Showing() string { my.DefaultShowingEnable = true; return my.DefaultShowing }
+func (my *SpeedShowing) Showing() string {
+	my.DefaultShowingEnable = true
+	if my.DefaultShowing == "" {
+		return "Have a nice day !"
+	} else {
+		return my.DefaultShowing
+	}
+}
+
 func (my *SpeedShowing) ResponseSuccess(spider *spider.Spider) {
 	if my.DefaultShowingEnable {
 		if my.DefaultShowing == "" {
