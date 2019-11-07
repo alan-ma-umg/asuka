@@ -18,6 +18,35 @@ import (
 	"time"
 )
 
+func init() {
+	//connection pool check
+	go func() {
+		time.Sleep(time.Second * 3)
+		loopSince := time.Now()
+		connectionCount := queue.GetTcpFilterInstance().NewConnectionCount
+		for {
+			time.Sleep(time.Second * 3)
+
+			//Heartbeat check
+			queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+
+			//close useless connections
+			if time.Since(loopSince).Seconds() > 1812 {
+				loopSince = time.Now()
+				b := connectionCount == queue.GetTcpFilterInstance().NewConnectionCount
+				connectionCount = queue.GetTcpFilterInstance().NewConnectionCount
+				if b { //no change mean pool connections enough to use
+					//make pool connections less than N
+					for i := 0; i < queue.GetTcpFilterInstance().ConnPoolSize()-5; i++ {
+						conn, _ := queue.GetTcpFilterInstance().GetConn()
+						conn.Close()
+					}
+				}
+			}
+		}
+	}()
+}
+
 type IProject interface {
 	// Init DoOnce func
 	Init(my *Dispatcher)
@@ -75,7 +104,7 @@ type IProject interface {
 	WEBSiteLoginRequired(w http.ResponseWriter, r *http.Request) bool //控制是否需要登录
 }
 
-type Implement struct{}
+type Implement struct{ implementNameCache string }
 
 func (my *Implement) InitBloomFilterCapacity() uint       { return 5000000 }
 func (my *Implement) Init(d *Dispatcher)                  {}
@@ -106,7 +135,9 @@ func (my *Implement) ResponseAfter(spider *spider.Spider) {
 	//重置spider比较消耗性能
 	spider.ResetSpider() //现在是每请求一次, 就重置一次. 请求代理也会重新连接
 }
-
+func (my *Implement) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
+	return l.String()
+}
 func (my *Implement) Name() string { return "" }
 func (my *Implement) WEBSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html; charset=UTF-8")
@@ -373,16 +404,6 @@ func (my *Dispatcher) Run() *Dispatcher {
 			for {
 				time.Sleep(time.Minute * 32)
 				my.tcpFilterErrorCount = 0
-			}
-		}()
-		//Heartbeat check
-		go func() {
-			for {
-				time.Sleep(time.Second * 3)
-				_, err := queue.GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
-				if err != nil {
-					tcpFilterErrorHandle(my)
-				}
 			}
 		}()
 	} else {

@@ -201,7 +201,7 @@ func (my *TcpFilter) Cmd(cmd byte, cmdData interface{}) (res []byte, err error) 
 	return
 }
 
-func (my *TcpFilter) getConn() (conn net.Conn, err error) {
+func (my *TcpFilter) GetConn() (conn net.Conn, err error) {
 	// Grab a buffer if available; allocate if not.
 	select {
 	case conn = <-my.connPool:
@@ -236,9 +236,10 @@ func (my *TcpFilter) putConn(conn net.Conn) {
 }
 
 func (my *TcpFilter) client(buf []byte, writeLen uint32) (response []byte, err error) {
-	conn, err := my.getConn()
+	conn, err := my.GetConn()
 	defer func() {
 		if err != nil {
+			conn.Close()
 			name, _ := os.Hostname()
 			helper.SendTextToWXDoOnceDurationHour(name + " TcpFilter connection failed: " + err.Error())
 			TcpErrorPrintDoOnce.Do(func() {

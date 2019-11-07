@@ -25,7 +25,7 @@ type Death struct {
 }
 
 func (my *Death) Showing() string { my.DefaultShowingEnable = true; return my.DefaultShowing }
-
+func (my *Death) Name() string    { return "Death" }
 func (my *Death) Init(d *Dispatcher) {
 	go func() {
 		for {
