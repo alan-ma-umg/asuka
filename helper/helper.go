@@ -698,3 +698,47 @@ func FloatRound2(f float64) float64 {
 func FloatRound4(f float64) float64 {
 	return math.Floor(f*10000) / 10000
 }
+
+var onlyWhiteSpaceRex = regexp.MustCompile(`[ ]+`)
+
+//GetNetTraffic
+func GetNetTraffic(pid int) (rx, tx, rp, tp uint64) {
+	if runtime.GOOS != "linux" {
+		return
+	}
+
+	file := "/proc/net/dev"
+	if pid > 0 {
+		file = "/proc/" + strconv.Itoa(pid) + "/net/dev"
+	}
+	if dat, err := ioutil.ReadFile(file); err == nil {
+		out := onlyWhiteSpaceRex.ReplaceAllString(string(dat), " ")
+		lines := strings.Split(out, "\n")
+		if len(lines) < 3 {
+			return
+		}
+		lines = lines[2:]
+		for _, line := range lines {
+			if strings.HasPrefix(line, "lo:") {
+				continue
+			}
+			nodes := strings.SplitN(line, " ", 12)
+			if len(nodes) < 12 {
+				return
+			}
+
+			//bytes
+			r, _ := strconv.ParseUint(nodes[1], 10, 64)
+			rx += r
+			t, _ := strconv.ParseUint(nodes[9], 10, 64)
+			tx += t
+
+			//packets
+			p1, _ := strconv.ParseUint(nodes[2], 10, 64)
+			rp += p1
+			p2, _ := strconv.ParseUint(nodes[10], 10, 64)
+			tp += p2
+		}
+	}
+	return
+}

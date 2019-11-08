@@ -1254,6 +1254,12 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["access_count"] = accessCount
 	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
 
+	rx, tx, rp, tp := helper.GetNetTraffic(0)
+	jsonMap["basic"].(map[string]interface{})["os_in"] = rx
+	jsonMap["basic"].(map[string]interface{})["os_in_n"] = rp
+	jsonMap["basic"].(map[string]interface{})["os_out"] = tx
+	jsonMap["basic"].(map[string]interface{})["os_out_n"] = tp
+
 	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
 
 }
