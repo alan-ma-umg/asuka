@@ -867,16 +867,16 @@ func indexJson(check bool) []byte {
 		var serverRun int
 		var serverEnable int
 
-		loads[5] += p.LoadRate(5)
-		loads[60] += p.LoadRate(60)
-		loads[60*15] += p.LoadRate(900)
-		loads[60*30] += p.LoadRate(1800)
-		loads[3600] += p.LoadRate(3600)
-		loads[3600*6] += p.LoadRate(3600 * 6)
-		loads[3600*12] += p.LoadRate(3600 * 12)
-		loads[86400] += p.LoadRate(86400)
-		loads[86400*2] += p.LoadRate(86400 * 2)
-		loads[86400*3] += p.LoadRate(86400 * 3)
+		loads[5] = helper.FloatRound4(loads[5] + p.LoadRate(5))
+		loads[60] = helper.FloatRound4(loads[60] + p.LoadRate(60))
+		loads[60*15] = helper.FloatRound4(loads[60*15] + p.LoadRate(900))
+		loads[60*30] = helper.FloatRound4(loads[60*30] + p.LoadRate(1800))
+		loads[3600] = helper.FloatRound4(loads[3600] + p.LoadRate(3600))
+		loads[3600*6] = helper.FloatRound4(loads[3600*6] + p.LoadRate(3600*6))
+		loads[3600*12] = helper.FloatRound4(loads[3600*12] + p.LoadRate(3600*12))
+		loads[86400] = helper.FloatRound4(loads[86400] + p.LoadRate(86400))
+		loads[86400*2] = helper.FloatRound4(loads[86400*2] + p.LoadRate(86400*2))
+		loads[86400*3] = helper.FloatRound4(loads[86400*3] + p.LoadRate(86400*3))
 
 		failureRatePeriodValue += helper.SpiderFailureRate(p.AccessCount(periodOfFailureSecond))
 		accessCount += p.GetAccessCount()
@@ -920,10 +920,15 @@ func indexJson(check bool) []byte {
 			}
 		}
 
-		projectMap["failure_period"] = failureRatePeriodValue
-		projectMap["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
-		projectMap["failure_all"] = strconv.FormatFloat(float64(p.GetFailureCount())/float64(p.GetAccessCount())*100, 'f', 2, 64)
-		projectMap["failure_all_hsl"] = strconv.Itoa(int(100 - float64(p.GetFailureCount())/float64(p.GetAccessCount())*100))
+		projectMap["failure_period"] = helper.FloatRound2(failureRatePeriodValue)
+		projectMap["failure_period_hsl"] = int(100 - failureRatePeriodValue)
+
+		projectMap["failure_all"] = .0
+		projectMap["failure_all_hsl"] = 100
+		if p.GetAccessCount() > 0 {
+			projectMap["failure_all"] = helper.FloatRound2(float64(p.GetFailureCount()) / float64(p.GetAccessCount()) * 100)
+			projectMap["failure_all_hsl"] = int(100 - float64(p.GetFailureCount())/float64(p.GetAccessCount())*100)
+		}
 
 		projectMap["traffic_in"] = helper.ByteCountBinary(TrafficIn)
 		projectMap["traffic_out"] = helper.ByteCountBinary(TrafficOut)
@@ -978,9 +983,9 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server := map[string]interface{}{}
 
 		loads := make(map[int]float64, 9)
-		loads[5] += s.LoadRate(5)
-		loads[60] += s.LoadRate(60)
-		loads[60*15] += s.LoadRate(900)
+		loads[5] = helper.FloatRound4(loads[5] + s.LoadRate(5))
+		loads[60] = helper.FloatRound4(loads[60] + s.LoadRate(60))
+		loads[60*15] = helper.FloatRound4(loads[60*15] + s.LoadRate(900))
 		//loads[60*30] += s.LoadRate(1800)
 		//loads[3600] += s.LoadRate(3600)
 		//loads[3600*6] += s.LoadRate(3600 * 6)
@@ -994,10 +999,10 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		server["stop"] = s.Stop
 		server["idle"] = s.IsIdle()
 		//server["proxy_status"] = s.Transport.S.Status
-		server["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
-		server["failure_period_hsl"] = strconv.Itoa(int(100 - failureRatePeriodValue))
-		server["failure_all"] = strconv.FormatFloat(failureRateAllValue, 'f', 2, 64)
-		server["failure_all_hsl"] = strconv.Itoa(int(100 - failureRateAllValue))
+		server["failure_period"] = helper.FloatRound2(failureRatePeriodValue)
+		server["failure_period_hsl"] = int(100 - failureRatePeriodValue)
+		server["failure_all"] = helper.FloatRound2(failureRateAllValue)
+		server["failure_all_hsl"] = int(100 - failureRateAllValue)
 		server["failure_level"] = s.FailureLevel
 		server["failure_level_hsl"] = 100 - s.FailureLevel
 		server["index"] = index
@@ -1065,16 +1070,16 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	loads := make(map[int]float64, 10)
 	for _, p := range ps {
-		loads[5] += p.LoadRate(5)
-		loads[60] += p.LoadRate(60)
-		loads[60*15] += p.LoadRate(900)
-		loads[60*30] += p.LoadRate(1800)
-		loads[3600] += p.LoadRate(3600)
-		loads[3600*6] += p.LoadRate(3600 * 6)
-		loads[3600*12] += p.LoadRate(3600 * 12)
-		loads[86400] += p.LoadRate(86400)
-		loads[86400*2] += p.LoadRate(86400 * 2)
-		loads[86400*3] += p.LoadRate(86400 * 3)
+		loads[5] = helper.FloatRound4(+loads[5] + p.LoadRate(5))
+		loads[60] = helper.FloatRound4(+loads[60] + p.LoadRate(60))
+		loads[60*15] = helper.FloatRound4(+loads[900] + p.LoadRate(900))
+		loads[60*30] = helper.FloatRound4(+loads[1800] + p.LoadRate(1800))
+		loads[3600] = helper.FloatRound4(+loads[3600] + p.LoadRate(3600))
+		loads[3600*6] = helper.FloatRound4(+loads[3600*6] + p.LoadRate(3600*6))
+		loads[3600*12] = helper.FloatRound4(+loads[3600*12] + p.LoadRate(3600*12))
+		loads[86400] = helper.FloatRound4(+loads[86400] + p.LoadRate(86400))
+		loads[86400*2] = helper.FloatRound4(+loads[86400*2] + p.LoadRate(86400*2))
+		loads[86400*3] = helper.FloatRound4(+loads[86400*3] + p.LoadRate(86400*3))
 		failureRatePeriodValue += helper.SpiderFailureRate(p.AccessCount(periodOfFailureSecond))
 		accessCount += p.GetAccessCount()
 		failureCount += p.GetFailureCount()
@@ -1186,7 +1191,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
 	}
 	//basic
-	jsonMap["basic"].(map[string]interface{})["failure_period"] = strconv.FormatFloat(failureRatePeriodValue, 'f', 2, 64)
+	jsonMap["basic"].(map[string]interface{})["failure_period"] = helper.FloatRound2(failureRatePeriodValue)
 	jsonMap["basic"].(map[string]interface{})["sleep_avg"] = "0s"
 	jsonMap["basic"].(map[string]interface{})["waiting_avg"] = "0s"
 

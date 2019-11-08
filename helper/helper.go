@@ -690,3 +690,11 @@ func GetSocketEstablishedCountLazy() int {
 	})
 	return getSocketEstablishedCountLazyCacheCount
 }
+
+func FloatRound2(f float64) float64 {
+	return math.Floor(f*100) / 100
+}
+
+func FloatRound4(f float64) float64 {
+	return math.Floor(f*10000) / 10000
+}
