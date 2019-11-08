@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"runtime"
 	"strconv"
+	"time"
 )
 
 type Forever struct {
@@ -22,6 +23,7 @@ func (my *Forever) Init(d *Dispatcher) {
 	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
+			time.Sleep(30e9)
 			if database.Redis().LLen(my.Name()+"_"+helper.Env().Redis.URLQueueKey).Val() > 100000 {
 				d.GetQueue().CleanQueue()
 				d.GetQueue().Enqueue(my.EntryUrl())
