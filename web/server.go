@@ -344,10 +344,8 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 		log.Println("\n" + helper.PrintMemUsage(mem))
 	case "parse":
 		helper.ParseTemplates()
-		log.Println("refresh templates")
 	case "free":
 		debug.FreeOSMemory()
-		log.Println("debug.FreeOsMemory")
 	}
 
 	p := getDispatcher(projectName)
@@ -361,21 +359,17 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 		for _, l := range p.EntryUrl() {
 			p.GetQueue().Enqueue(l)
 		}
-		log.Println(p.Name() + ": Enqueue")
 	case "clear":
 		p.CleanUp()
-		log.Println(p.Name() + ": Clear All")
 	case "empty":
 		for _, i := range p.GetSpiders() {
 			if i != nil {
 				i.Delete = true
 			}
 		}
-		log.Println(p.Name() + ": Empty spider")
 	case "retry":
 		p.GetQueue().CleanFailure()     //clean queue failure
 		p.QueueRetries = make([]int, 1) //clean queue failure
-		log.Println(p.Name() + ": Empty retries")
 	case "bl":
 		reportBuf, err := queue.GetTcpFilterInstance().Cmd(12, &queue.Cmd12{Db: p.GetQueue().GetBlKey()})
 		if err != nil {
@@ -389,14 +383,12 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 				s.Stop = true
 			}
 		}
-		log.Println(p.Name() + ": Spiders Stop")
 	case "start":
 		for _, s := range p.GetSpiders() {
 			if s != nil {
 				s.Stop = false
 			}
 		}
-		log.Println("spider start")
 	}
 
 	if speed, err := strconv.ParseFloat(cmd, 64); err == nil {
