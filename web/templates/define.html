@@ -126,15 +126,18 @@
 {{define "common"}}
     <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;" id="layer"></div>
     <div class="lds-dual-ring" id="loading"></div>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-71822351-2"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
+        setTimeout(function () {
+            loadScript("https://www.googletagmanager.com/gtag/js?id=UA-71822351-2", function () {
+                window.dataLayer = window.dataLayer || [];
 
-        function gtag() {
-            dataLayer.push(arguments);
-        }
+                function gtag() {
+                    dataLayer.push(arguments);
+                }
 
-        gtag('js', new Date());
-        gtag('config', 'UA-71822351-2');
+                gtag('js', new Date());
+                gtag('config', 'UA-71822351-2');
+            });
+        }, 150);
     </script>
 {{end}}

@@ -233,7 +233,7 @@ document.addEventListener('click', function (evt) {
 });
 
 function goToUrl(dstUrl) {
-    if (document.referrer && document.referrer.startsWith(location.origin) && document.referrer.replace(location.origin, '') === dstUrl.replace(location.origin, '')) {
+    if (document.referrer && document.referrer.startsWith(location.origin) && document.referrer.replace(location.origin, '') === dstUrl.replace(location.origin, '') && ((dstUrl.startsWith("/") && !dstUrl.startsWith("//")) || dstUrl.indexOf(location.host) > -1)) {
         history.replaceState(dstUrl, document.title, dstUrl);
         history.back();// Browser cache
     } else {
