@@ -194,7 +194,7 @@ function isMobile() {
 
 Number.prototype.fileSizeH = function () {
     const i = Math.floor(Math.log(this.valueOf()) / Math.log(1024));
-    return (this.valueOf() / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'k', 'M', 'G', 'T'][i];
+    return (this.valueOf() / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
 };
 
 function pad2(n) {
