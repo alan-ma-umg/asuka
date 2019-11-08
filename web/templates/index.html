@@ -148,8 +148,6 @@
         </strong>
     </div>
 </div>
-<div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;" id="layer"></div>
-<div class="lds-dual-ring" id="loading"></div>
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
@@ -212,7 +210,7 @@
                         lineChart(this.canvas, preloadJson.basic.loads);
                     }
                     handlerSocket();
-                    setInterval(function () {
+                    setTimeout(function () {
                         isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
                     }, 6543)
                 }

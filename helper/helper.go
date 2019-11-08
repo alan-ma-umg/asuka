@@ -743,3 +743,32 @@ func GetNetTraffic(pid int) (rx, tx, rp, tp uint64) {
 	}
 	return
 }
+
+var RxSlice = make([]uint64, 60)
+var TxSlice = make([]uint64, 60)
+var RpSlice = make([]uint64, 60)
+var TpSlice = make([]uint64, 60)
+var getNetTrafficSliceDoOnce sync.Once
+
+func GetNetTrafficSlice() ([]uint64, []uint64, []uint64, []uint64) {
+	//net traffic counter
+	getNetTrafficSliceDoOnce.Do(func() {
+		//if runtime.GOOS == "linux" {
+		go func() {
+			time.Sleep(time.Second * 2)
+			prevRx, prevTx, prevRp, prevTp := GetNetTraffic(0)
+			for {
+				time.Sleep(time.Second)
+				rx, tx, rp, tp := GetNetTraffic(0)
+				RxSlice = append(RxSlice[MaxInt(len(RxSlice)-59, 0):], rx-prevRx)
+				TxSlice = append(TxSlice[MaxInt(len(TxSlice)-59, 0):], tx-prevTx)
+				RpSlice = append(RpSlice[MaxInt(len(RpSlice)-59, 0):], rp-prevRp)
+				TpSlice = append(TpSlice[MaxInt(len(TpSlice)-59, 0):], tp-prevTp)
+				prevRx, prevTx, prevRp, prevTp = rx, tx, rp, tp
+			}
+		}()
+		//}
+	})
+
+	return RxSlice, TxSlice, RpSlice, TpSlice
+}

@@ -344,7 +344,7 @@
                         lineChart(this.canvas, preloadJson.basic.loads);
                     }
                     handlerSocket();
-                    setInterval(function () {
+                    setTimeout(function () {
                         isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
                     }, 6543)
                 }

@@ -58,8 +58,10 @@ func Server(d []*project.Dispatcher, address string) error {
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
 	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
+	http.HandleFunc("/netTraffic", commonHandleFunc(netTraffic))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
+	http.HandleFunc("/traffic.io", trafficIO)
 	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
 	http.HandleFunc("/switchServer", commonHandleFunc(switchServer))
 	http.HandleFunc("/forever/", forever)
@@ -405,6 +407,48 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, "{success:true}")
+}
+
+func netTraffic(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	helper.GetTemplates().ExecuteTemplate(w, "traffic.html", nil)
+}
+
+func trafficIO(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	webSocketConnections++
+
+	defer func() {
+		webSocketConnections--
+		c.Close()
+	}()
+
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	for {
+		_, _, err := c.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		err = c.WriteMessage(websocket.TextMessage, trafficJson())
+		if err != nil {
+			//log.Println("write:", err)
+			break
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 func indexIO(w http.ResponseWriter, r *http.Request) {
@@ -870,6 +914,21 @@ func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchInde
 	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
 }
 
+func trafficJson() []byte {
+	jsonMap := make(map[string][]uint64)
+	rx, tx, rp, tp := helper.GetNetTrafficSlice()
+	jsonMap["os_in"] = rx
+	jsonMap["os_in_n"] = rp
+	jsonMap["os_out"] = tx
+	jsonMap["os_out_n"] = tp
+
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		log.Println("error:", err)
+	}
+	return b
+}
+
 func indexJson(check bool) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
@@ -1250,18 +1309,9 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["goroutine"] = runtime.NumGoroutine()
 	jsonMap["basic"].(map[string]interface{})["connections"] = helper.GetSocketEstablishedCountLazy()
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
-
 	jsonMap["basic"].(map[string]interface{})["access_count"] = accessCount
 	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
-
-	rx, tx, rp, tp := helper.GetNetTraffic(0)
-	jsonMap["basic"].(map[string]interface{})["os_in"] = rx
-	jsonMap["basic"].(map[string]interface{})["os_in_n"] = rp
-	jsonMap["basic"].(map[string]interface{})["os_out"] = tx
-	jsonMap["basic"].(map[string]interface{})["os_out_n"] = tp
-
 	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
-
 }
 
 func getProjectByName(name string) *project.Dispatcher {

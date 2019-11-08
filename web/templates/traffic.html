@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head" "Asuka Traffic"}}</head>
+<body>
+<h1 style="margin: 40px 10px 0 20px"><a href="javascript:history.back()">Back</a></h1>
+<canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-os-in"></canvas>
+<canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-os-out"></canvas>
+<canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-os-in-n"></canvas>
+<canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-os-out-n"></canvas>
+<script>
+    let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false;
+    const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/traffic.io";
+    handlerSocket();
+
+    function handlerSocket() {
+        try {
+            document.title = "Asuka connecting...";
+            ws = new WebSocket(wsUrl);
+        } catch (e) {
+            console.log(e);
+            document.title = "Asuka exception";
+            reconnectSocket();
+            return
+        }
+        ws.onmessage = function (evt) {
+            let data = JSON.parse(evt.data);
+            lineChart(document.getElementById("chart-os-in"), data.os_in.reverse());
+            lineChart(document.getElementById("chart-os-out"), data.os_out.reverse());
+            lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse());
+            lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse());
+            ws.send("");
+        };
+        ws.onopen = function () {
+            sendMessage("");
+            document.body.className = "";
+            document.title = "Asuka connected";
+        };
+        ws.onerror = function () {
+            document.body.className = "ws-closed";
+            document.title = "Asuka Error !";
+            ws && ws.close();
+            reconnectSocket()
+        };
+        ws.onclose = function () {
+            document.body.className = "ws-closed";
+            document.title = "Asuka Closed !";
+            ws && ws.close();
+            reconnectSocket()
+        };
+        window.onbeforeunload = function () {
+            ws && ws.close()
+        };
+    }
+</script>
+{{template "common"}}
+</body>
+</html>
