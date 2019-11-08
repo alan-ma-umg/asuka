@@ -719,6 +719,7 @@ func GetNetTraffic(pid int) (rx, tx, rp, tp uint64) {
 		}
 		lines = lines[2:]
 		for _, line := range lines {
+			line = strings.ToLower(strings.TrimSpace(line))
 			if strings.HasPrefix(line, "lo:") {
 				continue
 			}
