@@ -3,6 +3,7 @@ package project
 import (
 	"github.com/chenset/asuka/spider"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"time"
@@ -158,6 +159,6 @@ func (my *SpiderThrottle) SetThrottleSpeed(ThrottleSpeed float64) {
 }
 func (my *SpiderThrottle) Throttle(spider *spider.Spider) {
 	if my.SpiderThrottleSpeed > .0 {
-		spider.AddSleep(time.Duration(float64(time.Second) / my.SpiderThrottleSpeed))
+		spider.AddSleep(time.Duration(rand.Float64()*float64(time.Second)/my.SpiderThrottleSpeed) * 2)
 	}
 }
