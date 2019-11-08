@@ -146,7 +146,7 @@ func (my *SpeedShowing) ResponseSuccess(spider *spider.Spider) {
 
 		my.DefaultSpeedTotal += duration
 		my.DefaultSpeedCount++
-		my.DefaultShowing = "MIN: " + my.DefaultSpeedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.DefaultSpeedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.DefaultSpeedTotal / time.Duration(my.DefaultSpeedCount)).Truncate(time.Microsecond).String() + " / " + my.DefaultSpeedAvgDiv.Truncate(time.Microsecond).String()
+		my.DefaultShowing = "MIN: " + my.DefaultSpeedMin.Truncate(time.Microsecond).String() + "  MAX: " + my.DefaultSpeedMax.Truncate(time.Microsecond).String() + "  AVG: " + (my.DefaultSpeedTotal / time.Duration(my.DefaultSpeedCount)).Truncate(time.Microsecond).String() + "/" + my.DefaultSpeedAvgDiv.Truncate(time.Microsecond).String()
 	}
 }
 

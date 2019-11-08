@@ -19,6 +19,11 @@ type Death struct {
 }
 
 func (my *Death) Name() string { return "Death" }
+func (my *Death) Throttle(spider *spider.Spider) {
+	spider.FailureLevel = 0
+	spider.ResetSleep()
+	my.SpiderThrottle.Throttle(spider)
+}
 func (my *Death) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
 	my.SpiderThrottle = &SpiderThrottle{}

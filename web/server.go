@@ -799,6 +799,31 @@ func redisQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func forever(w http.ResponseWriter, _ *http.Request) {
+
+	switch rand.Intn(200) {
+	case 10:
+		http.Error(w, "test 500", 500)
+		return
+	case 20:
+		http.Error(w, "test 422", 422)
+		return
+	case 30:
+		http.Error(w, "test 404", 404)
+		return
+	case 40:
+		http.Error(w, "test 419", 419)
+		return
+	case 50:
+		http.Error(w, "test 502", 502)
+		return
+	case 60:
+		http.Error(w, "test 403", 403)
+		return
+	case 70:
+		http.Error(w, "test 503", 503)
+		return
+	}
+
 	str := ""
 	for i := 0; i < rand.Intn(4); i++ {
 		str += "<a href=\"/forever/" + strconv.Itoa(rand.Int()) + "\">" + strconv.Itoa(i) + "</a>"
