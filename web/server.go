@@ -799,8 +799,8 @@ func redisQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func forever(w http.ResponseWriter, _ *http.Request) {
-
-	switch rand.Intn(200) {
+	v := rand.Intn(200)
+	switch v {
 	case 10:
 		http.Error(w, "test 500", 500)
 		return
@@ -822,6 +822,11 @@ func forever(w http.ResponseWriter, _ *http.Request) {
 	case 70:
 		http.Error(w, "test 503", 503)
 		return
+	default:
+		if v > 150 && v < 160 {
+			http.Error(w, "test rand", 700-v)
+			return
+		}
 	}
 
 	str := ""
