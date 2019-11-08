@@ -50,7 +50,7 @@ func fileCdnCtl(src string) template.URL {
 	versionSrc := fileVersionCtl(src)
 	if runtime.GOOS == "linux" {
 		if src == "/static/asuka.css" || src == "/static/asuka.js" {
-			return "https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates" + versionSrc
+			return "https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates" + versionSrc
 		}
 	}
 
