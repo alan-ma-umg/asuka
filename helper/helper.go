@@ -712,14 +712,14 @@ func GetNetTraffic(pid int) (rx, tx, rp, tp uint64) {
 		file = "/proc/" + strconv.Itoa(pid) + "/net/dev"
 	}
 	if dat, err := ioutil.ReadFile(file); err == nil {
-		out := onlyWhiteSpaceRex.ReplaceAllString(string(dat), " ")
+		out := strings.ToLower(onlyWhiteSpaceRex.ReplaceAllString(string(dat), " "))
 		lines := strings.Split(out, "\n")
 		if len(lines) < 3 {
 			return
 		}
 		lines = lines[2:]
 		for _, line := range lines {
-			line = strings.ToLower(strings.TrimSpace(line))
+			line = strings.TrimSpace(line)
 			if strings.HasPrefix(line, "lo:") {
 				continue
 			}
