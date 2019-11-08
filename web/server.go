@@ -402,7 +402,6 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 	if speed, err := strconv.ParseFloat(cmd, 64); err == nil {
 		if pp, ok := p.IProject.(project.ThrottleInterface); ok {
 			pp.SetThrottleSpeed(speed)
-			log.Println(p.Name()+" speed: ", speed)
 		}
 	}
 
