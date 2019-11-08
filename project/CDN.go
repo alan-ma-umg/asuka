@@ -13,16 +13,18 @@ import (
 type CDN struct {
 	*Implement
 	*SpeedShowing
+	*SpiderThrottle
 }
 
 func (my *CDN) Name() string { return "CDN" }
 func (my *CDN) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
+	my.SpiderThrottle = &SpiderThrottle{}
+	my.SetThrottleSpeed(0.01)
 	go func() {
 		for {
 			time.Sleep(20e9)
-			queueUrlLen, _ := database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
-			if queueUrlLen < 1000 {
+			if database.Redis().LLen(my.Name()+"_"+helper.Env().Redis.URLQueueKey).Val() < 1000 {
 				d.queue.Enqueue(my.EntryUrl())
 			}
 		}
@@ -41,9 +43,6 @@ func (my *CDN) EntryUrl() []string {
 
 	return links
 }
-func (my *CDN) Throttle(spider *spider.Spider) {
-	spider.AddSleep(time.Duration(rand.Float64() * 120e9))
-}
 
 func (my *CDN) RequestBefore(spider *spider.Spider) {
 	//Referer
@@ -53,5 +52,3 @@ func (my *CDN) RequestBefore(spider *spider.Spider) {
 func (my *CDN) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
 	return
 }
-
-//func (my *CDN) ResponseAfter(spider *spider.Spider) {}

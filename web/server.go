@@ -1162,7 +1162,7 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 		//redis retries
 		//redisRetriesQueueCount += database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
 		redisRetriesQueueCount += getInt64ValueFromCache(p.GetQueue().GetFailureKey()+"3", time.Second*8*time.Duration(len(ps)), func() int64 {
-			return database.Redis().HLen(p.GetQueue().GetFailureKey()).Val()
+			return p.GetQueue().FailureLen()
 		})
 		//redisRetriesMem += database.Redis().MemoryUsage(p.GetQueue().GetFailureKey()).Val()
 		redisRetriesMem += getInt64ValueFromCache(p.GetQueue().GetFailureKey()+"4", time.Second*8*time.Duration(len(ps)), func() int64 {

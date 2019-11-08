@@ -19,7 +19,6 @@ import (
 type V2ex struct {
 	*Implement
 	*SpeedShowing
-	queueUrlLen    int64
 	itemRegex      *regexp.Regexp
 	lastUpdateTime time.Time
 }
@@ -31,8 +30,10 @@ func (my *V2ex) Init(d *Dispatcher) {
 
 	go func() {
 		for {
-			time.Sleep(10e9)
-			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
+			time.Sleep(30e9)
+			if database.Redis().LLen(my.Name()+"_"+helper.Env().Redis.URLQueueKey).Val() < 1000 {
+				d.GetQueue().Enqueue(my.EntryUrl())
+			}
 		}
 	}()
 }
@@ -121,11 +122,6 @@ func (my *V2ex) ResponseAfter(spider *spider.Spider) {
 
 // queue
 func (my *V2ex) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-
-	if my.queueUrlLen < 1000 {
-		spider.GetQueue().Enqueue(my.EntryUrl())
-	}
-
 	return
 }
 

@@ -7,14 +7,12 @@ import (
 	"net/url"
 	"runtime"
 	"strconv"
-	"time"
 )
 
 type Forever struct {
 	*Implement
 	*SpeedShowing
 	*SpiderThrottle
-	queueUrlLen int64
 }
 
 func (my *Forever) Name() string { return "Mai" }
@@ -24,8 +22,10 @@ func (my *Forever) Init(d *Dispatcher) {
 	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
-			time.Sleep(5e9)
-			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
+			if database.Redis().LLen(my.Name()+"_"+helper.Env().Redis.URLQueueKey).Val() > 100000 {
+				d.GetQueue().CleanQueue()
+				d.GetQueue().Enqueue(my.EntryUrl())
+			}
 		}
 	}()
 
@@ -47,12 +47,4 @@ func (my *Forever) EntryUrl() []string {
 	}
 
 	return links
-}
-
-// queue
-func (my *Forever) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-	if my.queueUrlLen > 100000 {
-		return
-	}
-	return l.String()
 }

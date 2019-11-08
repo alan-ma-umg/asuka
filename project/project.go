@@ -324,11 +324,11 @@ func (my *Dispatcher) Run() *Dispatcher {
 }
 
 func (my *Dispatcher) CleanUp() *Dispatcher {
-	my.GetQueue().BlCleanUp()              //bloom filter & tcp bloom filter
-	database.Redis().Del(my.getGOBKey())   //GOB
-	database.Redis().Del(my.GetQueueKey()) //queue
-	my.GetQueue().CleanFailure()           //queue failure
-	my.QueueRetries = make([]int, 1)       //queue failure
+	my.GetQueue().BlCleanUp()            //bloom filter & tcp bloom filter
+	database.Redis().Del(my.getGOBKey()) //GOB
+	my.GetQueue().CleanQueue()           //queue
+	my.GetQueue().CleanFailure()         //queue failure
+	my.QueueRetries = make([]int, 1)     //queue failure
 	return my
 }
 

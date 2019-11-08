@@ -14,7 +14,6 @@ type Test struct {
 	*Implement
 	*SpeedShowing
 	*SpiderThrottle
-	queueUrlLen int64
 }
 
 func (my *Test) Name() string { return "Kei" }
@@ -24,8 +23,11 @@ func (my *Test) Init(d *Dispatcher) {
 	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
-			time.Sleep(5e9)
-			my.queueUrlLen, _ = database.Redis().LLen(my.Name() + "_" + helper.Env().Redis.URLQueueKey).Result()
+			time.Sleep(10e9)
+			if database.Redis().LLen(my.Name()+"_"+helper.Env().Redis.URLQueueKey).Val() > 100000 {
+				d.GetQueue().CleanQueue()
+				d.GetQueue().Enqueue(my.EntryUrl())
+			}
 		}
 	}()
 
@@ -47,12 +49,4 @@ func (my *Test) EntryUrl() []string {
 	}
 
 	return links
-}
-
-// queue
-func (my *Test) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
-	if my.queueUrlLen > 100000 {
-		return
-	}
-	return l.String()
 }

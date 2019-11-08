@@ -178,6 +178,10 @@ func (my *Queue) Dequeue() (string, error) {
 	return database.Redis().LPop(my.GetKey()).Result()
 }
 
+func (my *Queue) CleanQueue() {
+	database.Redis().Del(my.GetKey())
+}
+
 func (my *Queue) EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl string, retryTimes int) (success bool, tries int) {
 	retryTimes *= 3 //todo control by project
 
@@ -192,6 +196,10 @@ func (my *Queue) EnqueueForFailure(retryEnqueueUrl, spiderEnqueueUrl string, ret
 
 func (my *Queue) DequeueForFailure(rawUrl string) {
 	database.Redis().HDel(my.GetFailureKey(), rawUrl)
+}
+
+func (my *Queue) FailureLen() int64 {
+	return database.Redis().HLen(my.GetFailureKey()).Val()
 }
 
 func (my *Queue) CleanFailure() {
