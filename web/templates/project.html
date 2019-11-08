@@ -168,11 +168,8 @@
                     /
                     <div style="display:inline-block;width:80px" class="left">{{"{{server.sleep}}"}}</div>
                 </td>
-                <td class="center">
-                    <a :class="server.idle? 'text-green': 'text-orange'" :href="server.current" :title="server.current"
-                       style="display:inline-block;width: 130px;overflow: hidden;text-overflow: ellipsis;">
-                        {{"{{server.idle?'Idle':(server.current?(server.current.substring(server.current.length-20)):'run')}}"}}
-                    </a>
+                <td class="center" :class="server.idle? 'text-green': 'text-orange'">
+                    {{"{{server.idle}}"}}
                 </td>
                 {{/*<td class="center">*/}}
                 {{/*<div style="display:inline-block;width:50px" class="right">{{"{{server.traffic_in}}"}}</div>*/}}

@@ -1023,10 +1023,6 @@ func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
 		//server["connections"] = s.Transport.S.Connections
 		server["access_count"] = s.GetAccessCount()
 		server["failure_count"] = s.GetFailureCount()
-		server["current"] = ""
-		if check && s.CurrentRequest() != nil {
-			server["current"] = s.CurrentRequest().URL.String()
-		}
 		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
 	}
 
