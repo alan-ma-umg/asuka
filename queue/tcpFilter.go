@@ -94,7 +94,7 @@ type TcpFilter struct {
 
 var tcpFilterInstanceOnce sync.Once
 var tcpFilterInstance *TcpFilter
-var TcpErrorPrintDoOnce = helper.NewDoOnceInDuration(time.Minute)
+var TcpErrorPrintDoOnce = helper.NewDoOnceInDuration(time.Minute * 5)
 
 func GetTcpFilterInstance() *TcpFilter {
 	tcpFilterInstanceOnce.Do(func() {
