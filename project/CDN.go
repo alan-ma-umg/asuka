@@ -36,7 +36,8 @@ func (my *CDN) EntryUrl() []string {
 
 	for i := 0; i < 1000; i++ {
 		links = append(links, []string{
-			"https://asuka.flysay.com/",
+			"https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.css?i=" + time.Now().String() + strconv.Itoa(i), "https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.js?i=" + time.Now().String() + strconv.Itoa(i),
+			"https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.css?i=" + time.Now().String() + strconv.Itoa(i), "https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.js?i=" + time.Now().String() + strconv.Itoa(i),
 			"https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.css?i=" + time.Now().String() + strconv.Itoa(i), "https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.js?i=" + time.Now().String() + strconv.Itoa(i),
 		}...)
 	}
