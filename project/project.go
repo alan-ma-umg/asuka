@@ -273,7 +273,7 @@ func (my *Dispatcher) Run() *Dispatcher {
 		//empty tcpFilterErrorCount
 		go func() {
 			for {
-				time.Sleep(time.Minute * 32)
+				time.Sleep(time.Hour)
 				my.tcpFilterErrorCount = 0
 			}
 		}()
