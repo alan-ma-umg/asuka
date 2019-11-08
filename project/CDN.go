@@ -48,6 +48,8 @@ func (my *CDN) EntryUrl() []string {
 func (my *CDN) RequestBefore(spider *spider.Spider) {
 	//Referer
 	spider.CurrentRequest().Header.Set("Referer", "https://pages.github.com/"+strconv.Itoa(rand.Intn(1000000000)))
+	spider.CurrentRequest().Header.Set("cache-control", "no-cache")
+	spider.CurrentRequest().Header.Set("pragma", "no-cache")
 }
 
 func (my *CDN) EnqueueFilter(spider *spider.Spider, l *url.URL) (enqueueUrl string) {
