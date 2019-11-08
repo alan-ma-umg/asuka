@@ -114,24 +114,24 @@ func GetTcpFilterInstance() *TcpFilter {
 			go func() {
 				time.Sleep(time.Second * 3)
 				loopSince := time.Now()
-				connectionCount := GetTcpFilterInstance().NewConnectionCount
+				connectionCount := tcpFilterInstance.NewConnectionCount
 				for {
 					time.Sleep(time.Second * 3)
 
 					//Heartbeat check
-					if GetTcpFilterInstance().ConnPoolSize() > 1 {
-						GetTcpFilterInstance().Cmd(0, nil) //connection pool will drop the net.conn when occur error
+					if tcpFilterInstance.ConnPoolSize() > 1 {
+						tcpFilterInstance.Cmd(0, nil) //connection pool will drop the net.conn when occur error
 					}
 
 					//close useless connections
 					if time.Since(loopSince).Seconds() > 1812 {
 						loopSince = time.Now()
-						b := connectionCount == GetTcpFilterInstance().NewConnectionCount
-						connectionCount = GetTcpFilterInstance().NewConnectionCount
+						b := connectionCount == tcpFilterInstance.NewConnectionCount
+						connectionCount = tcpFilterInstance.NewConnectionCount
 						if b { //no change mean pool connections enough to use
 							//make pool connections less than N
-							for i := 0; i < GetTcpFilterInstance().ConnPoolSize()-5; i++ {
-								if conn, _ := GetTcpFilterInstance().getConn(); conn != nil {
+							for i := 0; i < tcpFilterInstance.ConnPoolSize()-5; i++ {
+								if conn, _ := tcpFilterInstance.getConn(); conn != nil {
 									conn.Close()
 								}
 							}
