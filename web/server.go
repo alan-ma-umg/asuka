@@ -1311,6 +1311,14 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["ws_connections"] = webSocketConnections
 	jsonMap["basic"].(map[string]interface{})["access_count"] = accessCount
 	jsonMap["basic"].(map[string]interface{})["failure_count"] = failureCount
+	jsonMap["basic"].(map[string]interface{})["os_in"] = 0
+	jsonMap["basic"].(map[string]interface{})["os_out"] = 0
+	if check {
+		RxSlice, TxSlice, _, _ := helper.GetNetTrafficSlice()
+		jsonMap["basic"].(map[string]interface{})["os_in"] = RxSlice[len(RxSlice)-1]
+		jsonMap["basic"].(map[string]interface{})["os_out"] = TxSlice[len(TxSlice)-1]
+	}
+
 	jsonMap["basic"].(map[string]interface{})["uptime"] = helper.TimeSince(time.Since(StartTime))
 }
 

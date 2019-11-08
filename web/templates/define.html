@@ -64,11 +64,13 @@
 {{define "sectionThree"}}
     <div class="head-item">
         <div style="float:right">
-            <h1>{{"{{basic.traffic_out}}"}}</h1>
+            <h1>{{"{{basic.traffic_out}}"}} <small style="font-size: 12px"
+                                                    v-if="basic.os_out.MemRss>0">{{"{{basic.os_out.fileSizeH()}}"}}</small> </h1>
             <small>TCP traffic out</small>
         </div>
         <div>
-            <h1>{{"{{basic.traffic_in}}"}}</h1>
+            <h1>{{"{{basic.traffic_in}}"}}  <small style="font-size: 12px"
+                                                   v-if="basic.os_in.MemRss>0">{{"{{basic.os_in.fileSizeH()}}"}}</small></h1>
             <small>TCP traffic in</small>
         </div>
         <br>
