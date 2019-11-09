@@ -924,12 +924,17 @@ func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchInde
 }
 
 func trafficJson() []byte {
-	jsonMap := make(map[string][]uint64)
+	jsonMap := make(map[string]interface{})
 	rx, tx, rp, tp := helper.GetNetTrafficSlice()
 	jsonMap["os_in"] = rx
 	jsonMap["os_in_n"] = rp
 	jsonMap["os_out"] = tx
 	jsonMap["os_out_n"] = tp
+	rxAll, txAll, rpAll, tpAll := helper.GetNetTraffic(0)
+	jsonMap["os_in_all"] = rxAll
+	jsonMap["os_in_n_all"] = txAll
+	jsonMap["os_out_all"] = rpAll
+	jsonMap["os_out_n_all"] = tpAll
 
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
