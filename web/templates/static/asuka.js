@@ -335,7 +335,7 @@ function popupWindow(title, content) {
         popupWindowTitleEl.innerHTML = title;
         popupWindowContentEl.innerHTML = content;
         popupWindowEl.style.display = "block";
-        popupWindowContentEl.style.maxHeight = Math.min((window.innerHeight * .6), popupWindowContentEl.scrollHeight) + 'px';
+        popupWindowContentEl.style.maxHeight = Math.min((window.innerHeight * .5), popupWindowContentEl.scrollHeight) + 'px';
 
         //run javascript
         Array.from(popupWindowContentEl.querySelectorAll("script")).forEach(oldScript => {
