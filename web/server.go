@@ -32,7 +32,7 @@ var StartTime = time.Now()
 var webSocketConnections = 0
 var dispatchers []*project.Dispatcher
 var mem runtime.MemStats
-var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second*6 + 234*time.Millisecond)
+var tcpFilterDoOnceInDuration = helper.NewDoOnceInDuration(time.Second * 3)
 var tcpFilterDoOnceInDurationCache = &queue.Cmd20Response{}       //not nil
 var AlwaysEmptyTcpFilterDoOnceInDuration = &queue.Cmd20Response{} //not nil
 

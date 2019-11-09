@@ -73,6 +73,36 @@ function sendCommand(cmd, projectName) {
     ajax({
         method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}, complete: function () {
             hideLoading()
+        }, success: function () {
+            if (typeof vueContent === "undefined") {
+                return
+            }
+
+            let i = 0;
+            let t = setInterval(function () {
+                if (++i > 100) {
+                    clearInterval(t);
+                }
+                if (vueContent.$data.basic.log_mod >= vueContent.$data.basic.log_check) {
+                    showLoading();
+                    ajax({
+                        url: "/log", success: function (res) {
+                            hideLoading();
+                            popupWindow(res.response)
+                        }
+                    });
+                    clearInterval(t);
+                } else if (vueContent.$data.basic.tcp_filter.LogMod >= vueContent.$data.basic.tcp_filter.LogCheck) {
+                    showLoading();
+                    ajax({
+                        url: "/log/tcp", success: function (res) {
+                            hideLoading();
+                            popupWindow(res.response)
+                        }
+                    });
+                    clearInterval(t);
+                }
+            }, 200)
         }
     })
 }
@@ -292,4 +322,31 @@ function lineChart(canvasElement, loads) {
         context.fillText(timestampHumanReadable(k), x - fontSize / 2, canvasElement.height);
     }
     context.stroke();
+}
+
+function popupWindow(content) {
+    let popupWindowEl = document.getElementById("popup-window");
+    let popupWindowLayerEl = document.getElementById("popup-window-layer");
+    let popupWindowContentEl = document.getElementById("popup-window-content");
+    if (window.getComputedStyle(popupWindowEl).display === 'none') {
+        popupWindowLayerEl.style.display = 'block';
+        popupWindowContentEl.innerHTML = content;
+
+        //run javascript
+        Array.from(popupWindowContentEl.querySelectorAll("script")).forEach(oldScript => {
+            const newScript = document.createElement("script");
+            Array.from(oldScript.attributes)
+                .forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+
+        popupWindowEl.style.display = "block";
+    }
+}
+
+function popupWindowClose() {
+    document.getElementById("popup-window-content").innerHTML = "";
+    document.getElementById("popup-window").style.display = "none";
+    document.getElementById("popup-window-layer").style.display = 'none';
 }

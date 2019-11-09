@@ -1,9 +1,11 @@
-<pre>{{.log}}</pre>
-<br>
-<strong class="text-orange">{{.mod}} </strong>
-<strong class="text-red">{{.size}}</strong>
-<script>
-    setTimeout(function () {
-        popupWindowEl.scrollTo(0, 99999999);
-    }, 10);
-</script>
+<div id="log-wrap">
+    <pre>{{.log}}</pre>
+    <br>
+    <strong class="text-orange">{{.mod}} </strong>
+    <strong class="text-red">{{.size}}</strong>
+    <script>
+        setTimeout(function () {
+            document.getElementById("log-wrap").offsetParent.scrollTo(0, 99999999);
+        }, 10);
+    </script>
+</div>

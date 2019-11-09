@@ -238,7 +238,7 @@ func (my *TcpFilter) getConn() (conn net.Conn, err error) {
 		// Got one; nothing more to do.
 	default:
 		// None free, so allocate a new one.
-		conn, err = (&net.Dialer{Timeout: time.Second * 5}).Dial("tcp", my.serverAddress)
+		conn, err = (&net.Dialer{Timeout: time.Second * 2}).Dial("tcp", my.serverAddress)
 		my.NewConnectionCount++
 		if err != nil {
 			break
