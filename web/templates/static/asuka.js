@@ -326,10 +326,12 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
             y = canvasElement.height / 2
         }
 
+        //line
         context.lineTo(x, y);
-        context.arc(x, y, 1, 0, 2 * Math.PI);
 
         if (mod === 0 || i % mod === 0) {
+            //dot
+            context.arc(x, y, 1, 0, 2 * Math.PI);
             //y text
             context.fillText(yConvert ? yConvert(loads[k]) : loads[k], x - fontSize / 2, y - fontSize);
             //x text
