@@ -365,10 +365,12 @@ function popupWindow(title, content) {
 }
 
 function popupWindowClose() {
-    let myNode = document.getElementById("popup-window-content");
-    while (myNode.firstChild) {
-        myNode.removeChild(myNode.firstChild);
+    let popupWindowContentEl = document.getElementById("popup-window-content");
+    while (popupWindowContentEl.firstChild) {
+        popupWindowContentEl.removeChild(popupWindowContentEl.firstChild);
     }
+    popupWindowContentEl.scrollTo(0, 0);
+
     document.getElementById("popup-window").style.display = "none";
     document.getElementById("popup-window-layer").style.display = 'none';
 }
