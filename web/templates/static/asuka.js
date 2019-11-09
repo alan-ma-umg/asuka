@@ -303,7 +303,7 @@ function lineChart(canvasElement, loads) {
         }
 
         context.lineTo(x, y);
-        context.arc(x, y, 1.5, 0, 2 * Math.PI);
+        context.arc(x, y, 1, 0, 2 * Math.PI);
         i++;
 
         let toFixedValue = 4;
