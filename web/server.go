@@ -345,7 +345,9 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			reportBuf, _ := queue.GetTcpFilterInstance().Cmd(20, nil)
-			log.Println("TCP Filter: ", string(reportBuf))
+			var cmd20Response queue.Cmd20Response
+			json.Unmarshal(reportBuf, &cmd20Response)
+			log.Println("TCP Filter: ", "\n", cmd20Response)
 		}()
 	case "tcpmem":
 		queue.GetTcpFilterInstance().Cmd(23, nil)
