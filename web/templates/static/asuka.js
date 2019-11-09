@@ -329,7 +329,7 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
         //line
         context.lineTo(x, y);
 
-        if (mod === 0 || i % mod === 0) {
+        if (mod === 0 || i % mod === 0 || len - 1 === i) {
             //dot
             context.arc(x, y, 1, 0, 2 * Math.PI);
             //y text
