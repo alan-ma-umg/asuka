@@ -400,6 +400,15 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// url
+	if strings.HasPrefix(strings.ToLower(cmd), "http") {
+		u, err := url.Parse(cmd)
+		if err == nil {
+			p.GetQueue().LeftEnqueue(u.String())
+		}
+	}
+
+	// int number
 	if speed, err := strconv.ParseFloat(cmd, 64); err == nil {
 		if pp, ok := p.IProject.(project.ThrottleInterface); ok {
 			pp.SetThrottleSpeed(speed)

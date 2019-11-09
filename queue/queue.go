@@ -170,6 +170,10 @@ func (my *Queue) Enqueue(values interface{}) {
 	database.Redis().RPush(my.GetKey(), values)
 }
 
+func (my *Queue) LeftEnqueue(values interface{}) {
+	database.Redis().LPush(my.GetKey(), values)
+}
+
 func (my *Queue) QueueLen() int64 {
 	return database.Redis().LLen(my.GetKey()).Val()
 }

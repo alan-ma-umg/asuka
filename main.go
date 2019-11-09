@@ -24,8 +24,6 @@ func main() {
 	defer func() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
-	//todo network speed + counting + canvas. cat /proc/net/dev https://stackoverflow.com/questions/3521678/what-are-meanings-of-fields-in-proc-net-dev
-	//todo systemd
 
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {
