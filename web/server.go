@@ -338,6 +338,15 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 	cmd, _ := post["cmd"].(string)
 
 	switch cmd {
+	case "w":
+		log.Println("Uptime: ", helper.TimeSince(time.Since(StartTime)))
+		log.Println("Pool/New: ", queue.GetTcpFilterInstance().ConnPoolSize(), queue.GetTcpFilterInstance().NewConnectionCount)
+		log.Println("\n" + helper.PrintMemUsage(mem))
+
+		go func() {
+			reportBuf, _ := queue.GetTcpFilterInstance().Cmd(20, nil)
+			log.Println("TCP Filter: ", string(reportBuf))
+		}()
 	case "tcpmem":
 		queue.GetTcpFilterInstance().Cmd(23, nil)
 	case "mem":
@@ -1258,13 +1267,13 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 
 	jsonMap["basic"].(map[string]interface{})["log_mod"] = 0
 	jsonMap["basic"].(map[string]interface{})["log_check"] = 0
-	jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = 0
-	jsonMap["basic"].(map[string]interface{})["pool_size"] = 0
+	//jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = 0
+	//jsonMap["basic"].(map[string]interface{})["pool_size"] = 0
 	if check {
 		jsonMap["basic"].(map[string]interface{})["log_mod"] = helper.GetFileLogInstance().GetLogModifyTime().Unix()
 		jsonMap["basic"].(map[string]interface{})["log_check"] = helper.GetFileLogInstance().GetLogCheckTime().Unix()
-		jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
-		jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
+		//jsonMap["basic"].(map[string]interface{})["filter_new_connections"] = queue.GetTcpFilterInstance().NewConnectionCount
+		//jsonMap["basic"].(map[string]interface{})["pool_size"] = queue.GetTcpFilterInstance().ConnPoolSize()
 	}
 	//basic
 	jsonMap["basic"].(map[string]interface{})["failure_period"] = helper.FloatRound2(failureRatePeriodValue)

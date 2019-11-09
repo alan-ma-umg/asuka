@@ -111,18 +111,18 @@
 {{end}}
 
 {{define "foot"}}
-    <div class="text-gray" style="padding:20px 20px 40px">
-        <div>
-            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>
-        </div>
-        <div>
-            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>
-            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>
-            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>
-        </div>
-    </div>
+{{/*    <div class="text-gray" style="padding:20px 20px 40px">*/}}
+{{/*        <div>*/}}
+{{/*            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>*/}}
+{{/*        </div>*/}}
+{{/*        <div>*/}}
+{{/*            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>*/}}
+{{/*            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>*/}}
+{{/*            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>*/}}
+{{/*            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>*/}}
+{{/*            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>*/}}
+{{/*        </div>*/}}
+{{/*    </div>*/}}
 {{end}}
 
 {{define "common"}}
