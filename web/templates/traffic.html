@@ -21,6 +21,7 @@
                 lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse());
                 lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse());
                 ws.send("");
+                document.getElementById("popup-window-title").querySelector("small").innerText = (data.os_in[data.os_in.length-1]).fileSizeH()+" / "+(data.os_out[data.os_out.length-1]).fileSizeH()
             } else {
                 ws.onclose()
             }

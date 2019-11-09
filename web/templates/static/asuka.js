@@ -182,7 +182,7 @@ function handlerSocket() {
             }
             if (cacheKey !== window.chartUpdatecacheCheck) {
                 window.chartUpdatecacheCheck = cacheKey;
-                lineChart(vueContent.$data.canvas, data.basic.loads);
+                lineChart(vueContent.$data.canvas, data.basic.loads, timestampHumanReadable, chartCeil);
             }
         }
     };
@@ -223,12 +223,20 @@ function isMobile() {
 }
 
 Number.prototype.fileSizeH = function () {
-    const i = Math.floor(Math.log(this.valueOf()) / Math.log(1024));
-    return (this.valueOf() / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
+    const n = this.valueOf();
+    if (n === 0) {
+        return "0B";
+    }
+    const i = Math.floor(Math.log(n) / Math.log(1024));
+    return (n / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
 };
 
 function pad2(n) {
     return (n < 10 ? '0' : '') + n;
+}
+
+function chartCeil(n) {
+    return Math.ceil(n * 1000) / 1000;
 }
 
 Number.prototype.timestamp2date = function () {
@@ -272,7 +280,7 @@ function goToUrl(dstUrl) {
     }
 }
 
-function lineChart(canvasElement, loads) {
+function lineChart(canvasElement, loads, xConvert, yConvert) {
     canvasElement.width = canvasElement.offsetWidth;
     canvasElement.height = canvasElement.offsetHeight;
 
@@ -283,13 +291,18 @@ function lineChart(canvasElement, loads) {
     let minValue = Math.min(...Object.values(loads));
     let maxValue = Math.max(...Object.values(loads));
     let heightUnitPX = lineCanvasHeight / (maxValue - minValue);
-    let len = (Object.values(loads).length - 1);
-    let widthUnitPx = lineCanvasWidth / len;
+    let len = (Object.values(loads).length);
+    let widthUnitPx = lineCanvasWidth / (len - 1);
     let fontSize = 10;
     context.font = fontSize + "px 'open sans'";
     context.fillStyle = "#dadada";
     context.lineWidth = 0.5;
     context.strokeStyle = "#666666";
+
+    let mod = 0;
+    if (widthUnitPx < 100) {
+        mod = Math.ceil(100 / widthUnitPx)
+    }
 
     let i = 0;
     for (let k in loads) {
@@ -305,22 +318,15 @@ function lineChart(canvasElement, loads) {
 
         context.lineTo(x, y);
         context.arc(x, y, 1, 0, 2 * Math.PI);
-        i++;
 
-        let toFixedValue = 4;
-        if (loads[k] > 0.1) {
-            toFixedValue = 1
-        } else if (loads[k] > 0.01) {
-            toFixedValue = 2
-        } else if (loads[k] > 0.001) {
-            toFixedValue = 3
+        if (mod === 0 || i % mod === 0) {
+            //y text
+            context.fillText(yConvert ? yConvert(loads[k]) : loads[k], x - fontSize / 2, y - fontSize);
+            //x text
+            context.fillText(xConvert ? xConvert(k) : k, x - fontSize / 2, canvasElement.height);
         }
 
-        //y text
-        context.fillText(loads[k].toFixed(toFixedValue), x - fontSize - toFixedValue / 2 + 1, y - fontSize);
-
-        //x text
-        context.fillText(timestampHumanReadable(k), x - fontSize / 2, canvasElement.height);
+        i++;
     }
     context.stroke();
 }

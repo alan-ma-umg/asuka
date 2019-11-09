@@ -383,7 +383,7 @@
                     document.getElementById('vue-content').style.display = "block";
                     this.canvas = document.getElementById("chart-rate");
                     if (preloadJson.basic.loads) {
-                        lineChart(this.canvas, preloadJson.basic.loads);
+                        lineChart(this.canvas, preloadJson.basic.loads, timestampHumanReadable, chartCeil);
                     }
                     handlerSocket();
                     setTimeout(function () {
