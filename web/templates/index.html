@@ -38,7 +38,8 @@
                     </td>
                     <td>
                         <strong>{{"{{basic.connections.numFormat()}}"}}
-                            / {{"{{basic.ws_connections.numFormat()}}"}}</strong>
+                            /
+                            <span :class="{'text-orange':basic.ws_connections==3,'text-red':basic.ws_connections>3}">{{"{{basic.ws_connections}}"}}</span></strong>
                     </td>
                     <td>
                         Threads
