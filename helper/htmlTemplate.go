@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 )
 
 var templates *template.Template
@@ -19,9 +20,11 @@ var templatesOnce sync.Once
 
 var fileVersionCtlMap = make(map[string]string)
 var fileVersionCtlMapMutex sync.Mutex
+var startTime = time.Now()
 
 func GetTemplates() *template.Template {
-	if runtime.GOOS == "linux" {
+	//time.Since(startTime).Hours() > 12. waiting for jsdelivr cache
+	if runtime.GOOS == "linux" && time.Since(startTime).Hours() > 12. {
 		templatesOnce.Do(func() {
 			templates = ParseTemplates()
 		})
