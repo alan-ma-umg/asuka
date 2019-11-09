@@ -1,3 +1,7 @@
 {{range $index, $element := .List}}
     <a href="{{$element}}" target="_blank">{{$element}}</a><br>
 {{end}}
+
+<script>
+    document.getElementById("popup-window-title").querySelector("small").innerHTML = numFormat({{.Len}}) + "&nbsp;&nbsp;&nbsp; {{.Mem}}"
+</script>

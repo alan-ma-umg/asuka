@@ -842,9 +842,13 @@ func redisQueue(w http.ResponseWriter, r *http.Request) {
 	list, _ := database.Redis().LRange(p.GetQueueKey(), 0, 1000).Result()
 	data := struct {
 		List        []string
+		Len         int64
+		Mem         string
 		ProjectName string
 	}{
 		List:        list,
+		Len:         p.GetQueue().QueueLen(),
+		Mem:         helper.ByteCountBinary(uint64(database.Redis().MemoryUsage(p.GetQueueKey()).Val())),
 		ProjectName: p.Name(),
 	}
 
