@@ -23,8 +23,7 @@ var fileVersionCtlMapMutex sync.Mutex
 var startTime = time.Now()
 
 func GetTemplates() *template.Template {
-	//time.Since(startTime).Hours() > 12. waiting for jsdelivr cache
-	if runtime.GOOS == "linux" && time.Since(startTime).Hours() > 12. {
+	if runtime.GOOS == "linux" {
 		templatesOnce.Do(func() {
 			templates = ParseTemplates()
 		})
@@ -51,7 +50,7 @@ func ParseTemplates() *template.Template {
 
 func fileCdnCtl(src string) template.URL {
 	versionSrc := fileVersionCtl(src)
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && time.Since(startTime).Hours() > 12. { //time.Since(startTime).Hours() > 12. waiting for jsdelivr cache
 		if src == "/static/asuka.css" || src == "/static/asuka.js" {
 			return "https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates" + versionSrc
 		}
