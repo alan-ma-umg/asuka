@@ -65,12 +65,13 @@
     <div class="head-item">
         <div style="float:right">
             <h1>{{"{{basic.traffic_out}}"}} <small style="font-size: 12px"
-                                                    v-if="basic.os_out>0">{{"{{basic.os_out.fileSizeH()}}"}}/s</small> </h1>
+                                                   v-if="basic.os_out>0">{{"{{basic.os_out.fileSizeH()}}"}}/s</small>
+            </h1>
             <small>TCP traffic out</small>
         </div>
         <div>
-            <h1>{{"{{basic.traffic_in}}"}}  <small style="font-size: 12px"
-                                                   v-if="basic.os_in>0">{{"{{basic.os_in.fileSizeH()}}"}}/s</small></h1>
+            <h1>{{"{{basic.traffic_in}}"}} <small style="font-size: 12px"
+                                                  v-if="basic.os_in>0">{{"{{basic.os_in.fileSizeH()}}"}}/s</small></h1>
             <small>TCP traffic in</small>
         </div>
         <br>
@@ -111,21 +112,61 @@
 {{end}}
 
 {{define "foot"}}
-{{/*    <div class="text-gray" style="padding:20px 20px 40px">*/}}
-{{/*        <div>*/}}
-{{/*            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>*/}}
-{{/*        </div>*/}}
-{{/*        <div>*/}}
-{{/*            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>*/}}
-{{/*            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>*/}}
-{{/*            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>*/}}
-{{/*            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>*/}}
-{{/*            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>*/}}
-{{/*        </div>*/}}
-{{/*    </div>*/}}
+    {{/*    <div class="text-gray" style="padding:20px 20px 40px">*/}}
+    {{/*        <div>*/}}
+    {{/*            <span v-if="basic.uptime">Uptime: {{"{{basic.uptime}}"}}</span>*/}}
+    {{/*        </div>*/}}
+    {{/*        <div>*/}}
+    {{/*            <span v-if="basic.tcp_filter.Goroutine">Threads: {{"{{basic.tcp_filter.Goroutine}}"}}</span>*/}}
+    {{/*            <span v-if="basic.tcp_filter.Goroutine">Alive: {{"{{basic.tcp_filter.BlAliveSize}}"}}</span>*/}}
+    {{/*            <span v-if="basic.tcp_filter.Goroutine">Test: {{"{{basic.tcp_filter.BlTestCount.numFormat()}}"}}</span>*/}}
+    {{/*            <span v-if="basic.tcp_filter.Goroutine">Sockets: {{"{{basic.tcp_filter.Sockets}}"}}</span>*/}}
+    {{/*            <span v-if="basic.pool_size || basic.filter_new_connections">Pool size/create: {{"{{basic.pool_size}}"}}/{{"{{basic.filter_new_connections}}"}}</span>*/}}
+    {{/*        </div>*/}}
+    {{/*    </div>*/}}
 {{end}}
 
 {{define "common"}}
+    <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;opacity: 0.1;background: #000"
+         id="popup-window-layer"></div>
+    <div id="popup-window"
+         style="display:none;position: fixed;top:50%; left: 50%;z-index: 999; transform: translate(-50%, -50%);max-height: 80%;max-width:1460px;width: 90%;background: #FFF;overflow: auto;border-radius: 2px;padding: 15px">
+        <div id="popup-window-content"></div>
+    </div>
+    <script>
+        let popupWindowEl = document.getElementById("popup-window");
+        let popupWindowLayerEl = document.getElementById("popup-window-layer");
+        let popupWindowContentEl = document.getElementById("popup-window-content");
+
+        function popupWindow(content) {
+            if (window.getComputedStyle(popupWindowEl).display === 'none') {
+                popupWindowLayerEl.style.display = 'block';
+                popupWindowContentEl.innerHTML = content;
+
+                //run javascript
+                Array.from(popupWindowContentEl.querySelectorAll("script")).forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes)
+                        .forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+
+                popupWindowEl.style.display = "block";
+            }
+        }
+
+        function popupWindowClose() {
+            popupWindowContentEl.innerHTML = "";
+            popupWindowEl.style.display = "none";
+            popupWindowLayerEl.style.display = 'none';
+        }
+
+        popupWindowLayerEl.addEventListener("click", function () {
+            popupWindowClose()
+        })
+    </script>
+
     <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;" id="layer"></div>
     <div class="lds-dual-ring" id="loading"></div>
     <script>
@@ -140,6 +181,6 @@
                 gtag('js', new Date());
                 gtag('config', 'UA-71822351-2');
             });
-        }, 150);
+        }, 100);
     </script>
 {{end}}

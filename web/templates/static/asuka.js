@@ -173,9 +173,9 @@ function handlerSocket() {
         ws && ws.close();
         reconnectSocket()
     };
-    window.onbeforeunload = function () {
-        ws && ws.close()
-    };
+    // window.onbeforeunload = function () {
+    //     ws && ws.close()
+    // };
 }
 
 // device detection

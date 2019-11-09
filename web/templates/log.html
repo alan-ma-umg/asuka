@@ -1,29 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>{{template "head" "Asuka Log"}}</head>
-<body>
-<div id="btn" style="position: fixed;bottom: 20px;right:20px;text-align: center">
-    <strong style="display:block;font-size: 16px" class="text-orange">{{.mod}}</strong>
-    <a href="javascript:history.back()" style="font-size: 16px;margin:30px 0;display: block"><strong>Back</strong></a>
-    <div id="scroll"
-         style="margin:0 auto;cursor:pointer;width: 70px;height:70px;line-height:70px;border-radius:50%;background: #ff9c38">
-        <strong style="color: #fff">{{.size}}</strong></div>
-</div>
-
-<pre style="padding: 10px 10px 100px 10px;">{{.log}}</pre>
+<pre>{{.log}}</pre>
+<br>
+<strong class="text-orange">{{.mod}} </strong>
+<strong class="text-red">{{.size}}</strong>
 <script>
     setTimeout(function () {
-        window.scrollTo(0, document.body.offsetHeight);
-    }, 100);
-
-    document.getElementById("scroll").addEventListener("click", function () {
-        if (window.innerHeight + window.scrollY + 100 >= document.body.offsetHeight) {
-            window.scrollTo(0, 0);
-        } else {
-            window.scrollTo(0, document.body.offsetHeight);
-        }
-    })
+        popupWindowEl.scrollTo(0, 99999999);
+    }, 10);
 </script>
-{{template "common"}}
-</body>
-</html>

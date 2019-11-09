@@ -127,11 +127,10 @@
             <button v-on:click="logout()" class="btn-mb"
                     style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
             </button>
-            <a href="/netTraffic">
-                <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Traffic
-                </button>
-            </a>
+            <button class="btn-mb"
+                    v-on:click="traffic()"
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Traffic
+            </button>
             <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                    style="margin-bottom: 10px;max-width: 160px">
             <strong><a href="https://asuka.flysay.com" class="text-orange" style="margin-left:10px"
@@ -140,16 +139,16 @@
                        v-if="location.host.toLowerCase().indexOf('kumiko') === -1">KUMIKO</a></strong>
         {{end}}
         <strong>
-            <a href="/log" v-if="basic.log_mod > 0"
-               style="margin-left:10px"
-               :class="{'text-red':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
+            <span v-on:click="log()" v-if="basic.log_mod > 0"
+                  style="margin-left:10px;cursor: pointer"
+                  :class="{'text-red':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
                 {{"{{basic.log_mod.timestamp2date()}}"}}
-            </a>
-            <a href="/log/tcp" v-if="basic.tcp_filter.LogMod > 0"
-               style="margin-left:10px"
-               :class="{'text-red':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
+            </span>
+            <span v-on:click="tcpLog()" v-if="basic.tcp_filter.LogMod > 0"
+                  style="margin-left:10px;cursor: pointer"
+                  :class="{'text-red':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
                 {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
-            </a>
+            </span>
         </strong>
     </div>
 </div>
@@ -194,6 +193,33 @@
                         if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
                             sendCommand(evt.target.value);
                         }
+                    },
+                    log: function () {
+                        showLoading();
+                        ajax({
+                            url: "/log", success: function (res) {
+                                hideLoading();
+                                popupWindow(res.response)
+                            }
+                        });
+                    },
+                    tcpLog: function () {
+                        showLoading();
+                        ajax({
+                            url: "/log/tcp", success: function (res) {
+                                hideLoading();
+                                popupWindow(res.response)
+                            }
+                        });
+                    },
+                    traffic: function () {
+                        showLoading();
+                        ajax({
+                            url: "/netTraffic", success: function (res) {
+                                hideLoading();
+                                popupWindow(res.response)
+                            }
+                        });
                     }
                 },
                 computed: {
