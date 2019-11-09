@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"github.com/chenset/asuka/database"
 	"github.com/chenset/asuka/helper"
 	"github.com/chenset/asuka/project"
@@ -339,18 +340,18 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 
 	switch cmd {
 	case "w":
-		log.Println("Uptime: ", helper.TimeSince(time.Since(StartTime)))
-		log.Println("Pool/New: ", queue.GetTcpFilterInstance().ConnPoolSize(), queue.GetTcpFilterInstance().NewConnectionCount)
-		log.Println("\n" + helper.PrintMemUsage(mem))
+		fmt.Println("Uptime: ", helper.TimeSince(time.Since(StartTime)))
+		fmt.Println("Pool/New: ", queue.GetTcpFilterInstance().ConnPoolSize(), queue.GetTcpFilterInstance().NewConnectionCount)
+		fmt.Println("\n" + helper.PrintMemUsage(mem))
 
 		go func() {
 			reportBuf, _ := queue.GetTcpFilterInstance().Cmd(20, nil)
 			res := string(reportBuf)
 			res = strings.TrimLeft(res, "{")
 			res = strings.TrimRight(res, "}")
-			log.Println("TCP Filter: ")
+			fmt.Println("TCP Filter: ")
 			for _, s := range strings.Split(res, ",") {
-				log.Println(s)
+				fmt.Println(s)
 			}
 		}()
 	case "tcpmem":
