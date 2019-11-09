@@ -340,6 +340,7 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 
 	switch cmd {
 	case "w":
+		log.Println("")
 		fmt.Println("Uptime: ", helper.TimeSince(time.Since(StartTime)))
 		fmt.Println("Pool/New: ", queue.GetTcpFilterInstance().ConnPoolSize(), queue.GetTcpFilterInstance().NewConnectionCount)
 		fmt.Println("\n" + helper.PrintMemUsage(mem))
