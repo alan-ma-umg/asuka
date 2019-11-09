@@ -37,7 +37,7 @@ function ajax(option) {
     for (let k in headers) {
         xhr.setRequestHeader(k, headers[k]);
     }
-    data ? xhr.send(typeof data == "string" ? data : JSON.stringify(data)) : xhr.send();
+    data ? xhr.send((typeof data == "string" || data instanceof FormData) ? data : JSON.stringify(data)) : xhr.send();
 }
 
 function timestampHumanReadable(timestamp) {
@@ -88,7 +88,7 @@ function sendCommand(cmd, projectName) {
                     ajax({
                         url: "/log", success: function (res) {
                             hideLoading();
-                            popupWindow(res.response)
+                            popupWindow('<h1 class="text-green">Logging <small class="text-gray" ></small></h1>', res.response)
                         }
                     });
                     clearInterval(t);
@@ -97,7 +97,7 @@ function sendCommand(cmd, projectName) {
                     ajax({
                         url: "/log/tcp", success: function (res) {
                             hideLoading();
-                            popupWindow(res.response)
+                            popupWindow('<h1 class="text-green">TCP Logging <small class="text-gray" ></small></h1>', res.response)
                         }
                     });
                     clearInterval(t);
@@ -253,10 +253,11 @@ function numFormat(v) {
 
 //listen for a link
 document.addEventListener('click', function (evt) {
-    for (let i = 0; i < evt.path.length; i++) {
-        if (evt.path[i] && evt.path[i].tagName === 'A' && evt.path[i].href.trim() !== "") {
+    let path = evt.path || (evt.composedPath && evt.composedPath());
+    for (let i = 0; i < path.length; i++) {
+        if (path[i] && path[i].tagName === 'A' && path[i].href.trim() !== "" && (path[i].target === undefined || path[i].target === "")) {
             evt.preventDefault();
-            goToUrl(evt.path[i].href);
+            goToUrl(path[i].href);
             return
         }
     }
@@ -324,13 +325,17 @@ function lineChart(canvasElement, loads) {
     context.stroke();
 }
 
-function popupWindow(content) {
+function popupWindow(title, content) {
     let popupWindowEl = document.getElementById("popup-window");
     let popupWindowLayerEl = document.getElementById("popup-window-layer");
+    let popupWindowTitleEl = document.getElementById("popup-window-title");
     let popupWindowContentEl = document.getElementById("popup-window-content");
     if (window.getComputedStyle(popupWindowEl).display === 'none') {
         popupWindowLayerEl.style.display = 'block';
+        popupWindowTitleEl.innerHTML = title;
         popupWindowContentEl.innerHTML = content;
+        popupWindowEl.style.display = "block";
+        popupWindowContentEl.style.maxHeight = Math.min((window.innerHeight * .6), popupWindowContentEl.scrollHeight) + 'px';
 
         //run javascript
         Array.from(popupWindowContentEl.querySelectorAll("script")).forEach(oldScript => {
@@ -340,13 +345,14 @@ function popupWindow(content) {
             newScript.appendChild(document.createTextNode(oldScript.innerHTML));
             oldScript.parentNode.replaceChild(newScript, oldScript);
         });
-
-        popupWindowEl.style.display = "block";
     }
 }
 
 function popupWindowClose() {
-    document.getElementById("popup-window-content").innerHTML = "";
+    let myNode = document.getElementById("popup-window-content");
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
     document.getElementById("popup-window").style.display = "none";
     document.getElementById("popup-window-layer").style.display = 'none';
 }

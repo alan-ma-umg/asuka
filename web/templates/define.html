@@ -65,13 +65,13 @@
     <div class="head-item">
         <div style="float:right">
             <h1>{{"{{basic.traffic_out}}"}} <small style="font-size: 12px"
-                                                   v-if="basic.os_out>0">{{"{{basic.os_out.fileSizeH()}}"}}/s</small>
+                        v-if="basic.os_out>0">{{"{{basic.os_out.fileSizeH()}}"}}/s</small>
             </h1>
             <small>TCP traffic out</small>
         </div>
         <div>
             <h1>{{"{{basic.traffic_in}}"}} <small style="font-size: 12px"
-                                                  v-if="basic.os_in>0">{{"{{basic.os_in.fileSizeH()}}"}}/s</small></h1>
+                        v-if="basic.os_in>0">{{"{{basic.os_in.fileSizeH()}}"}}/s</small></h1>
             <small>TCP traffic in</small>
         </div>
         <br>
@@ -116,8 +116,9 @@
     <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;opacity: 0.1;background: #000"
          id="popup-window-layer" onclick="popupWindowClose()"></div>
     <div id="popup-window"
-         style="display:none;position: fixed;top:50%; left: 50%;z-index: 999; transform: translate(-50%, -50%);max-height: 80%;max-width:1460px;width: 90%;background: #FFF;overflow: auto;border-radius: 2px;padding: 15px">
-        <div id="popup-window-content"></div>
+         style="display:none;position: fixed;top:50%; left: 50%;z-index: 999; transform: translate(-50%, -50%);max-height:80%;max-width:1500px;width: 96%;background: #FFF;border-radius: 2px;padding: 50px;">
+        <div style="margin: 0 0 50px" id="popup-window-title"></div>
+        <div id="popup-window-content" style="overflow: auto;"></div>
     </div>
     {{/* loading */}}
     <div style="display:none;position:fixed;top:0;left:0;z-index: 999;width: 100%;height: 100%;" id="layer"></div>

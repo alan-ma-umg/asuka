@@ -5,7 +5,7 @@
     <strong class="text-red">{{.size}}</strong>
     <script>
         setTimeout(function () {
-            document.getElementById("log-wrap").offsetParent.scrollTo(0, 99999999);
+            document.getElementById("log-wrap").parentElement.scrollTo(0, document.getElementById("log-wrap").scrollHeight);
         }, 10);
     </script>
 </div>

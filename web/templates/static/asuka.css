@@ -79,6 +79,10 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 300;
 }
 
+h1 small, h2 small, h3 small {
+    font-size: 0.5em;
+}
+
 h1 {
     font-size: 30px;
 }

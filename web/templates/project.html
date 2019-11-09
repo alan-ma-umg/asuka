@@ -202,9 +202,9 @@
             <button v-on:click="switchProject()" class="btn-mb"
                     style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">{{"{{stop?'Start':'Stop'}}"}}
             </button>
-                <button class="btn-mb" v-on:click="proxy()"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Proxy
-                </button>
+            <button class="btn-mb" v-on:click="proxy()"
+                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Proxy
+            </button>
             <a href="/website/{{.ProjectName}}">
                 <button class="btn-mb"
                         style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">WEB
@@ -320,7 +320,7 @@
                         ajax({
                             url: "/log", success: function (res) {
                                 hideLoading();
-                                popupWindow(res.response)
+                                popupWindow('<h1 class="text-green">Logging <small class="text-gray" ></small></h1>', res.response)
                             }
                         });
                     },
@@ -329,7 +329,7 @@
                         ajax({
                             url: "/log/tcp", success: function (res) {
                                 hideLoading();
-                                popupWindow(res.response)
+                                popupWindow('<h1 class="text-green">TCP Logging <small class="text-gray" ></small></h1>', res.response)
                             }
                         });
                     },
@@ -338,7 +338,7 @@
                         ajax({
                             url: "/netTraffic", success: function (res) {
                                 hideLoading();
-                                popupWindow(res.response)
+                                popupWindow('<h1 class="text-green">Traffic <small class="text-gray" ></small></h1>', res.response)
                             }
                         });
                     }, queue: function () {
@@ -346,7 +346,7 @@
                         ajax({
                             url: "/queue/{{.ProjectName}}", success: function (res) {
                                 hideLoading();
-                                popupWindow(res.response)
+                                popupWindow('<h1 class="text-green">{{.ProjectName}} <small class="text-gray" ></small></h1>', res.response)
                             }
                         });
                     }, proxy: function () {
@@ -354,7 +354,7 @@
                         ajax({
                             url: "/add/{{.ProjectName}}", success: function (res) {
                                 hideLoading();
-                                popupWindow(res.response)
+                                popupWindow('<h1 class="text-green">{{.ProjectName}}  <small><a class="text-gray" target="_blank" href="/get/{{.ProjectName}}"> Download</a></small></h1>', res.response)
                             }
                         });
                     },
