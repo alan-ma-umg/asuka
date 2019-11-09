@@ -223,13 +223,16 @@ function isMobile() {
 }
 
 Number.prototype.fileSizeH = function () {
-    const n = this.valueOf();
-    if (n === 0) {
+    return fileSizeH(this.valueOf())
+};
+
+function fileSizeH(bytes) {
+    if (bytes === 0) {
         return "0B";
     }
-    const i = Math.floor(Math.log(n) / Math.log(1024));
-    return (n / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
-};
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
+}
 
 function pad2(n) {
     return (n < 10 ? '0' : '') + n;
@@ -237,6 +240,13 @@ function pad2(n) {
 
 function chartCeil(n) {
     return Math.ceil(n * 1000) / 1000;
+}
+
+function chartTimeSince(t) {
+    let dateTime = new Date();
+    dateTime = dateTime.setSeconds(dateTime.getSeconds() - t);
+    const d = new Date(dateTime);
+    return pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
 }
 
 Number.prototype.timestamp2date = function () {
