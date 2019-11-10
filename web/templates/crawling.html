@@ -77,11 +77,15 @@
         ws.onmessage = function (evt) {
             if (document.getElementById("vue-crawling") != null) {
                 const data = JSON.parse(evt.data);
+                document.getElementById("popup-window-title").querySelector("small").innerText = data.speed + "/s";
                 if (data.fetched.length) {
                     vueCrawling.$data.crawling = data.fetched;
+                    ws.send("");
+                } else {
+                    setTimeout(function () {
+                        ws.send("");
+                    }, 1000);
                 }
-                document.getElementById("popup-window-title").querySelector("small").innerText = data.speed + "/s";
-                ws.send("");
             } else {
                 ws.onclose();
                 vueCrawling.$destroy();
