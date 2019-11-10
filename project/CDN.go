@@ -34,11 +34,11 @@ func (my *CDN) Init(d *Dispatcher) {
 func (my *CDN) EntryUrl() []string {
 	var links []string
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		links = append(links, []string{
-			"https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.css?i=" + strconv.Itoa(time.Now().Second()), "https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.js?i=" + strconv.Itoa(time.Now().Second()),
-			"https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.css?i=" + strconv.Itoa(time.Now().Second()), "https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.js?i=" + strconv.Itoa(time.Now().Second()),
-			"https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.css?i=" + strconv.Itoa(time.Now().Second()), "https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.js?i=" + strconv.Itoa(time.Now().Second()),
+			"https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.css?i=" + strconv.FormatInt(time.Now().Unix(), 10), "https://cdn.jsdelivr.net/gh/chenset/asuka@master/web/templates/static/asuka.js?i=" + strconv.FormatInt(time.Now().Unix(), 10),
+			"https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.css?i=" + strconv.FormatInt(time.Now().Unix(), 10), "https://cdn.jsdelivr.net/gh/chenset/asuka@latest/web/templates/static/asuka.js?i=" + strconv.FormatInt(time.Now().Unix(), 10),
+			"https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.css?i=" + strconv.FormatInt(time.Now().Unix(), 10), "https://cdn.jsdelivr.net/gh/chenset/asuka/web/templates/static/asuka.js?i=" + strconv.FormatInt(time.Now().Unix(), 10),
 		}...)
 	}
 
