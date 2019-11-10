@@ -25,8 +25,6 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
-	//todo remove useless recently codes
-
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {
 		go func() {
