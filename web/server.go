@@ -59,10 +59,12 @@ func Server(d []*project.Dispatcher, address string) error {
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
 	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
+	http.HandleFunc("/crawling", commonHandleFunc(crawling))
 	http.HandleFunc("/netTraffic", commonHandleFunc(netTraffic))
 	http.HandleFunc("/project.io", projectIO)
 	http.HandleFunc("/index.io", indexIO)
 	http.HandleFunc("/traffic.io", trafficIO)
+	http.HandleFunc("/crawling.io", crawlingIO)
 	http.HandleFunc("/switchProject", commonHandleFunc(switchProject))
 	http.HandleFunc("/switchServer", commonHandleFunc(switchServer))
 	http.HandleFunc("/forever/", forever)
@@ -433,6 +435,81 @@ func netTraffic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helper.GetTemplates().ExecuteTemplate(w, "traffic.html", nil)
+}
+
+func crawling(w http.ResponseWriter, r *http.Request) {
+	ps, ok := r.URL.Query()["project"]
+	if !ok || len(ps) != 1 {
+		http.NotFound(w, r)
+		return
+	}
+	p := getDispatcher(ps[0])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+	check := false
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		check = authCheck(cookie.Value)
+	}
+
+	helper.GetTemplates().ExecuteTemplate(w, "crawling.html", struct {
+		ProjectName string
+		Check       bool
+	}{
+		ProjectName: p.Name(),
+		Check:       check,
+	})
+}
+
+func crawlingIO(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	webSocketConnections++
+
+	defer func() {
+		webSocketConnections--
+		c.Close()
+	}()
+	ps, ok := r.URL.Query()["project"]
+	if !ok || len(ps) != 1 {
+		c.Close()
+		return
+	}
+	p := getDispatcher(ps[0])
+	if p == nil {
+		c.Close()
+		return
+	}
+
+	check := false
+	//login check
+	if cookie, err := r.Cookie("id"); err == nil {
+		check = authCheck(cookie.Value)
+	}
+	var recentFetchIndex int64 = 0
+	for {
+		_, _, err := c.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		jsonRes, n := crawlingJson(check, p, recentFetchIndex)
+		recentFetchIndex = n
+		err = c.WriteMessage(websocket.TextMessage, jsonRes)
+		if err != nil {
+			break
+		}
+		if check {
+			time.Sleep(time.Second / 10)
+		} else {
+			time.Sleep(time.Second)
+		}
+	}
 }
 
 func trafficIO(w http.ResponseWriter, r *http.Request) {
@@ -928,6 +1005,36 @@ func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchInde
 	}
 
 	responseJsonCommon(check, []*project.Dispatcher{p}, jsonMap, start)
+	b, err := json.Marshal(jsonMap)
+	if err != nil {
+		log.Println("error:", err)
+	}
+	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
+}
+
+func crawlingJson(check bool, p *project.Dispatcher, recentFetchIndex int64) ([]byte, int64) {
+	var jsonMap = map[string]interface{}{
+		"speed":   p.LoadRate(5),
+		"fetched": []*spider.Summary{},
+	}
+
+	var lastIndex int64
+	for _, l := range p.RecentFetchList {
+		if l == nil { //Change frequently, prevent nil pointer
+			continue
+		}
+		if l.Index > recentFetchIndex {
+			ll := *l
+			if !check {
+				ll.TransportName = ""
+				ll.RawUrl = ""
+				ll.ErrType = ""
+			}
+			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.Summary), &ll)
+			lastIndex = helper.MaxInt64(lastIndex, l.Index)
+		}
+	}
+
 	b, err := json.Marshal(jsonMap)
 	if err != nil {
 		log.Println("error:", err)

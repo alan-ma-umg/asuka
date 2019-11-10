@@ -1,0 +1,105 @@
+<div id="vue-crawling">
+    <div v-if='fetchList.length' style="height: 2000px">
+        <table class="table-striped">
+            <thead>
+            <tr>
+                <th style="width: 1px"></th>
+                {{if .Check}}
+                    <th>Server</th>
+                {{end}}
+                <th>Add Time</th>
+                <th>Consume Time</th>
+                <th>Status</th>
+                <th>Size</th>
+                <th>Content Type</th>
+                <th>Error</th>
+                <th>Find/New</th>
+                <th>Url</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in fetchList"
+                :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
+                <td class="center">{{"{{item.Index}}"}}</td>
+                {{if .Check}}
+                    <td class="center">{{"{{item.TransportName}}"}}</td>
+                {{end}}
+                <td class="center">{{"{{item.AddTime}}"}}</td>
+                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
+                <td class="center">{{"{{item.StatusCode}}"}}</td>
+                <td class="center">{{"{{item.TrafficInStr}}"}}</td>
+                <td class="center">{{"{{item.ContentType}}"}}</td>
+                <td class="center">{{"{{item.ErrType}}"}}</td>
+                <td class="center">{{"{{item.FindUrls}}"}}/{{"{{item.NewUrls}}"}}</td>
+                {{if .Check}}
+                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a>
+                    </td>
+                {{else}}
+                    <td class="right">***</td>
+                {{end}}
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h2 v-else style="text-align: center">No Data</h2>
+</div>
+
+<script>
+    vueCrawling = new Vue({
+        el: "#vue-crawling",
+        data: {
+            crawling: [],
+            fetchList: [],
+        }, mounted: function () {
+            trafficHandlerSocket();
+        }
+    });
+    vueCrawling.$watch('crawling', function (newVal, oldVal) {
+        if (!newVal.length) {
+            return
+        }
+        for (item of newVal) {
+            this.fetchList.unshift(item);
+            if (this.fetchList.length > 200) {
+                this.fetchList.pop()
+            }
+        }
+    });
+
+    function trafficHandlerSocket() {
+        let ws;
+        try {
+            ws = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/crawling.io?project=" + {{.ProjectName}});
+        } catch (e) {
+            console.log(e);
+            return
+        }
+        ws.onmessage = function (evt) {
+            if (document.getElementById("vue-crawling") != null) {
+                const data = JSON.parse(evt.data);
+                if (data.fetched.length) {
+                    vueCrawling.$data.crawling = data.fetched;
+                }
+                document.getElementById("popup-window-title").querySelector("small").innerText = data.speed + "/s";
+                ws.send("");
+            } else {
+                ws.onclose();
+                vueCrawling.$destroy();
+                vueCrawling.$watch = null;
+                vueCrawling = null;
+            }
+        };
+        ws.onopen = function () {
+            if (ws.readyState !== 1) {
+                return;
+            }
+            ws.send("");
+        };
+        ws.onerror = function () {
+            ws && ws.close();
+        };
+        ws.onclose = function () {
+            ws && ws.close();
+        };
+    }
+</script>

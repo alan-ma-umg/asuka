@@ -64,49 +64,6 @@
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto"
          v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
 
-        {{/*recent*/}}
-        <table v-if='action == "recent" && fetchList.length' class="table-striped">
-            <thead>
-            <tr>
-                <th style="width: 1px"></th>
-                {{if .Check}}
-                    <th>Server</th>
-                {{end}}
-                <th>Add Time</th>
-                <th>Consume Time</th>
-                <th>Status</th>
-                <th>Size</th>
-                <th>Content Type</th>
-                <th>Error</th>
-                <th>Find/New</th>
-                <th>Url</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="item in fetchList"
-                :class="{warning:!item.StatusCode || item.StatusCode != 200,danger:item.ErrType !=''}">
-                <td class="center">{{"{{item.Index}}"}}</td>
-                {{if .Check}}
-                    <td class="center">{{"{{item.TransportName}}"}}</td>
-                {{end}}
-                <td class="center">{{"{{item.AddTime}}"}}</td>
-                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
-                <td class="center">{{"{{item.StatusCode}}"}}</td>
-                <td class="center">{{"{{item.TrafficInStr}}"}}</td>
-                <td class="center">{{"{{item.ContentType}}"}}</td>
-                <td class="center">{{"{{item.ErrType}}"}}</td>
-                <td class="center">{{"{{item.FindUrls}}"}}/{{"{{item.NewUrls}}"}}</td>
-                {{if .Check}}
-                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a>
-                    </td>
-                {{else}}
-                    <td class="right">********</td>
-                {{end}}
-            </tr>
-            </tbody>
-        </table>
-
-
         {{/*home*/}}
         <table v-if='action == "home" && home.servers' class="table-striped">
             <thead>
@@ -215,11 +172,9 @@
                 style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">On /
             Off
         </button>
-        <button v-on:click="wsPageSwitch()" class="btn-mb"
+        <button v-on:click="crawling()" class="btn-mb"
                 style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">
-            <span v-if="action=='home'">Crawling</span>
-            <span v-else>Servers</span>
-
+            Crawling
         </button>
         {{if .Check}}
             <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
@@ -305,16 +260,19 @@
                             sendCommand(evt.target.value, '{{.ProjectName}}');
                         }
                     },
-                    wsPageSwitch: function () {
-                        vueContent.$data.action = vueContent.$data.action === "recent" ? "home" : "recent";
-                        showLoading();
-                        sendMessage(vueContent.$data.action);
-                        hideLoading()
-                    }, wsOpenClose: function () {
+                    wsOpenClose: function () {
                         showLoading();
                         manualOpen();
                         manualClose();
                         hideLoading()
+                    }, crawling: function () {
+                        showLoading();
+                        ajax({
+                            url: "/crawling?project={{.ProjectName}}", success: function (res) {
+                                hideLoading();
+                                popupWindow('<h1 class="text-green">{{.ProjectName}} <small class="text-gray" ></small></h1>', res.response)
+                            }
+                        });
                     }, log: function () {
                         showLoading();
                         ajax({
@@ -389,18 +347,6 @@
                     setTimeout(function () {
                         isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
                     }, 6543)
-                }
-            });
-
-            vueContent.$watch('recent.fetched', function (newVal, oldVal) {
-                if (!newVal.length) {
-                    return
-                }
-                for (item of newVal) {
-                    this.fetchList.unshift(item);
-                    if (this.fetchList.length > 200) {
-                        this.fetchList.pop()
-                    }
                 }
             });
         });
