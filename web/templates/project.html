@@ -168,10 +168,6 @@
                 </button>
             </a>
         {{end}}
-        <button v-on:click="wsOpenClose()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">On /
-            Off
-        </button>
         <button v-on:click="crawling()" class="btn-mb"
                 style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">
             Crawling
@@ -260,12 +256,7 @@
                             sendCommand(evt.target.value, '{{.ProjectName}}');
                         }
                     },
-                    wsOpenClose: function () {
-                        showLoading();
-                        manualOpen();
-                        manualClose();
-                        hideLoading()
-                    }, crawling: function () {
+                    crawling: function () {
                         showLoading();
                         ajax({
                             url: "/crawling?project={{.ProjectName}}", success: function (res) {
