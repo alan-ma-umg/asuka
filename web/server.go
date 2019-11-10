@@ -435,7 +435,11 @@ func netTraffic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helper.GetTemplates().ExecuteTemplate(w, "traffic.html", nil)
+	helper.GetTemplates().ExecuteTemplate(w, "traffic.html", struct {
+		PreloadJson template.JS
+	}{
+		PreloadJson: template.JS(trafficJson()),
+	})
 }
 
 func crawling(w http.ResponseWriter, r *http.Request) {

@@ -3,7 +3,17 @@
 <canvas style="width: 100%;height:94px;margin-bottom: 15px" id="chart-os-in-n"></canvas>
 <canvas style="width: 100%;height:94px;margin-bottom: 15px" id="chart-os-out-n"></canvas>
 <script>
+
+    refreshNetTrafficLines({{.PreloadJson}});
     trafficHandlerSocket();
+
+    function refreshNetTrafficLines(data) {
+        lineChart(document.getElementById("chart-os-in"), data.os_in.reverse(), chartTimeSince, fileSizeH);
+        lineChart(document.getElementById("chart-os-out"), data.os_out.reverse(), chartTimeSince, fileSizeH);
+        lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse(), chartTimeSince, fileSizeH);
+        lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse(), chartTimeSince, fileSizeH);
+        document.getElementById("popup-window-title").querySelector("small").innerHTML = data.os_in_all.fileSizeH() + " / " + data.os_out_all.fileSizeH() + " &nbsp;&nbsp;&nbsp;&nbsp;  " + data.os_in_n_all.numFormat() + " / " + data.os_out_n_all.numFormat()
+    }
 
     function trafficHandlerSocket() {
         let ws;
@@ -16,12 +26,8 @@
         ws.onmessage = function (evt) {
             let data = JSON.parse(evt.data);
             if (document.getElementById("chart-os-in") != null) {
-                lineChart(document.getElementById("chart-os-in"), data.os_in.reverse(), chartTimeSince, fileSizeH);
-                lineChart(document.getElementById("chart-os-out"), data.os_out.reverse(), chartTimeSince, fileSizeH);
-                lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse(), chartTimeSince, fileSizeH);
-                lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse(), chartTimeSince, fileSizeH);
+                refreshNetTrafficLines(data);
                 ws.send("");
-                document.getElementById("popup-window-title").querySelector("small").innerHTML = data.os_in_all.fileSizeH() + " / " + data.os_out_all.fileSizeH() + " &nbsp;&nbsp;&nbsp;&nbsp;  " + data.os_in_n_all.numFormat() + " / " + data.os_out_n_all.numFormat()
             } else {
                 ws.onclose()
             }
