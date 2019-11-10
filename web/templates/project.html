@@ -305,6 +305,10 @@
                             url: "/queue/{{.ProjectName}}", success: function (res) {
                                 hideLoading();
                                 popupWindow('<h1 class="text-green">{{.ProjectName}} <small class="text-gray" ></small></h1>', res.response)
+                            }, error: function (res) {
+                                if (res.status === 401) {
+                                    location.href = "/login"
+                                }
                             }
                         });
                     }, proxy: function () {
