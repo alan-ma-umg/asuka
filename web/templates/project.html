@@ -329,14 +329,6 @@
                         return str ? str.substring(0, str.length - 1) : str
                     }
                 },
-                filters: {
-                    urlTruncate: function (str) {
-                        if (str.length > 40) {
-                            return str.substring(0, 40) + "..(" + str.length + ")"
-                        }
-                        return str
-                    }
-                },
                 mounted: function () {
                     document.getElementById('vue-content').style.display = "block";
                     this.canvas = document.getElementById("chart-rate");

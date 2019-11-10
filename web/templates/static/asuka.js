@@ -262,6 +262,14 @@ String.prototype.numFormat = function () {
     return numFormat(this.valueOf())
 };
 
+String.prototype.urlTruncate = function () {
+    let str = this.valueOf();
+    if (str.length > 40) {
+        return str.substring(0, 40) + "..(" + str.length + ")"
+    }
+    return str
+};
+
 function numFormat(v) {
     if (v === undefined || isNaN(v)) {
         return "0"

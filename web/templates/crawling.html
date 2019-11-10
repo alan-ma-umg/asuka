@@ -32,7 +32,7 @@
                 <td class="center">{{"{{item.ErrType}}"}}</td>
                 <td class="center">{{"{{item.FindUrls}}"}}/{{"{{item.NewUrls}}"}}</td>
                 {{if .Check}}
-                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl | urlTruncate}}"}}</a>
+                    <td class="right"><a target="_blank" :href="item.RawUrl">{{"{{item.RawUrl.urlTruncate()}}"}}</a>
                     </td>
                 {{else}}
                     <td class="right">***</td>
