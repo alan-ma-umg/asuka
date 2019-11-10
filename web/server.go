@@ -321,7 +321,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		data.Check = authCheck(cookie.Value)
 	}
 
-	data.PreloadJson = template.JS(projectJson(data.Check, p, "home"))
+	data.PreloadJson = template.JS(projectJson(data.Check, p))
 
 	helper.GetTemplates().ExecuteTemplate(w, "project.html", data)
 }
@@ -625,8 +625,6 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 		c.Close()
 	}()
 
-	responseContent := "home"
-	var recentFetchIndex int64 = 0
 	var sleepSecondTimes int64 = 1
 	if !check {
 		sleepSecondTimes = 3
@@ -637,32 +635,14 @@ func projectIO(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if messageType == 1 {
-			input := strings.TrimSpace(string(b))
-			switch input {
-			case "home":
-				responseContent = strings.TrimSpace(string(b))
+			if speedInt, err := strconv.ParseInt(strings.TrimSpace(string(b)), 10, 64); err == nil && speedInt > 0 {
+				sleepSecondTimes = helper.MaxInt64(speedInt, 1)
 				continue
-			case "recent":
-				responseContent = strings.TrimSpace(string(b))
-				continue
-			default:
-				if speedInt, err := strconv.ParseInt(input, 10, 64); err == nil && speedInt > 0 {
-					sleepSecondTimes = helper.MaxInt64(speedInt, 1)
-					continue
-				}
 			}
 		}
 
-		switch responseContent {
-		case "home":
-			err = c.WriteMessage(websocket.TextMessage, projectJson(check, p, responseContent))
-		case "recent":
-			jsonRes, n := recentJson(check, p, responseContent, recentFetchIndex)
-			recentFetchIndex = n
-			err = c.WriteMessage(websocket.TextMessage, jsonRes)
-		}
+		err = c.WriteMessage(websocket.TextMessage, projectJson(check, p))
 		if err != nil {
-			//log.Println("write:", err)
 			break
 		}
 		time.Sleep(time.Second * time.Duration(sleepSecondTimes))
@@ -979,39 +959,6 @@ func forever(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, str)
 }
 
-func recentJson(check bool, p *project.Dispatcher, sType string, recentFetchIndex int64) ([]byte, int64) {
-	start := time.Now()
-	var jsonMap = map[string]interface{}{
-		"type":      sType,
-		"stop":      p.IsStop(),
-		"stop_time": p.StopTime.Unix(),
-		"fetched":   []*spider.Summary{},
-	}
-
-	var lastIndex int64
-	for _, l := range p.RecentFetchList {
-		if l == nil { //Change frequently, prevent nil pointer
-			continue
-		}
-		if l.Index > recentFetchIndex {
-			ll := *l
-			if !check {
-				ll.TransportName = ""
-				ll.RawUrl = ""
-			}
-			jsonMap["fetched"] = append(jsonMap["fetched"].([]*spider.Summary), &ll)
-			lastIndex = helper.MaxInt64(lastIndex, l.Index)
-		}
-	}
-
-	responseJsonCommon(check, []*project.Dispatcher{p}, jsonMap, start)
-	b, err := json.Marshal(jsonMap)
-	if err != nil {
-		log.Println("error:", err)
-	}
-	return b, helper.MaxInt64(lastIndex, recentFetchIndex)
-}
-
 func crawlingJson(check bool, p *project.Dispatcher, recentFetchIndex int64) ([]byte, int64) {
 	var jsonMap = map[string]interface{}{
 		"speed":   p.LoadRate(5),
@@ -1173,10 +1120,9 @@ func indexJson(check bool) []byte {
 	return b
 }
 
-func projectJson(check bool, p *project.Dispatcher, sType string) []byte {
+func projectJson(check bool, p *project.Dispatcher) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
-		"type":      sType,
 		"stop":      p.IsStop(),
 		"stop_time": p.StopTime.Unix(),
 		"servers":   []map[string]interface{}{},

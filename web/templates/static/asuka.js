@@ -164,7 +164,7 @@ function handlerSocket() {
         if (data.hasOwnProperty("projects")) {
             vueContent.$data.projects = data.projects;
         } else {
-            vueContent.$data[data.type] = data;
+            vueContent.$data.servers = data.servers;
         }
         vueContent.$data.stop = data.stop;
         vueContent.$data.stopTime = data.stop_time;

@@ -62,10 +62,8 @@
     </div>
     <canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-rate"></canvas>
     <div style="background: #fff;padding: 30px 20px;overflow-x: auto"
-         v-if="(action == 'home' && home.servers) || (action == 'recent' && fetchList.length)">
-
-        {{/*home*/}}
-        <table v-if='action == "home" && home.servers' class="table-striped">
+         v-if="servers">
+        <table v-if='servers' class="table-striped">
             <thead>
             <tr>
                 {{if .Check}}
@@ -83,7 +81,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="server in home.servers" :class="{warning:server.failure_level,stop: server.stop}">
+            <tr v-for="server in servers" :class="{warning:server.failure_level,stop: server.stop}">
                 {{if .Check}}
                     <td class="center">
                         <div style="display:inline-block;width: 100px;overflow: hidden;text-overflow: ellipsis ;text-align: center">{{"{{server.name}}"}}</div>
@@ -204,10 +202,8 @@
             vueContent = new Vue({
                 el: "#vue-content",
                 data: {
-                    home: preloadJson, recent: {},
+                    servers: preloadJson.servers,
                     basic: preloadJson.basic,
-                    fetchList: [],
-                    action: "home",
                     stop: preloadJson.stop,
                     stopTime: preloadJson.stop_time,
                     canvas: null,
