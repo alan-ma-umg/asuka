@@ -334,7 +334,7 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
             //y text
             context.fillText(yConvert ? yConvert(loads[k]) : loads[k], x - fontSize / 2, y - fontSize);
             //x text
-            context.fillText(xConvert ? xConvert(k) : k, x - fontSize / 2, canvasElement.height);
+            context.fillText(xConvert ? xConvert(k) : k, x - fontSize / 2, canvasElement.height - 1);
         }
 
         i++;
