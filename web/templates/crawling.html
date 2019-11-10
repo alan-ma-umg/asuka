@@ -88,9 +88,11 @@
                 }
             } else {
                 ws.onclose();
-                vueCrawling.$destroy();
-                vueCrawling.$watch = null;
-                vueCrawling = null;
+                if (vueCrawling) {
+                    vueCrawling.$destroy();
+                    vueCrawling.$watch = null;
+                    vueCrawling = null;
+                }
             }
         };
         ws.onopen = function () {
