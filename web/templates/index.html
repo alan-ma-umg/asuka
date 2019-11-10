@@ -126,10 +126,6 @@
             <button v-on:click="logout()" class="btn-mb"
                     style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
             </button>
-            <button class="btn-mb"
-                    v-on:click="traffic()"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Traffic
-            </button>
             <input type="text" v-on:keypress="sendCommand($event)" class="inp-mb" placeholder="console" value=""
                    style="margin-bottom: 10px;max-width: 160px">
             <strong><a href="https://asuka.flysay.com" class="text-orange" style="margin-left:10px"
@@ -214,6 +210,10 @@
                         url: "/netTraffic", success: function (res) {
                             hideLoading();
                             popupWindow('<h1 class="text-green">Network Traffic <small class="text-gray" ></small></h1>', res.response)
+                        }, error: function (res) {
+                            if (res.status === 401) {
+                                location.href = "/login"
+                            }
                         }
                     });
                 }

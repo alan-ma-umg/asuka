@@ -64,13 +64,13 @@
 {{define "sectionThree"}}
     <div class="head-item">
         <div style="float:right">
-            <h1>{{"{{payload.basic.traffic_out}}"}} <small style="font-size: 12px"
+            <h1><a style="cursor:pointer;" v-on:click="traffic()">{{"{{payload.basic.traffic_out}}"}}</a><small style="font-size: 12px"
                         v-if="payload.basic.os_out>0">{{"{{payload.basic.os_out.fileSizeH()}}"}}/s</small>
             </h1>
             <small>TCP traffic out</small>
         </div>
         <div>
-            <h1>{{"{{payload.basic.traffic_in}}"}} <small style="font-size: 12px"
+            <h1><a style="cursor:pointer;" v-on:click="traffic()">{{"{{payload.basic.traffic_in}}"}}</a> <small style="font-size: 12px"
                         v-if="payload.basic.os_in>0">{{"{{payload.basic.os_in.fileSizeH()}}"}}/s</small></h1>
             <small>TCP traffic in</small>
         </div>
