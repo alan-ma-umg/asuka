@@ -4,12 +4,12 @@
 <body>
 <div style="max-width: 1500px;margin: 20px auto;display: none"
      id="vue-content">
-    <div class="head_wrap" v-if="basic.time">
+    <div class="head_wrap" v-if="payload.basic.time">
         <div class="head-item">
             <div>
-                <h1>{{"{{basic.mem_sys}}"}}
+                <h1>{{"{{payload.basic.mem_sys}}"}}
                     <small style="font-size: 12px"
-                           v-if="basic.tcp_filter.MemRss>0">{{"{{basic.tcp_filter.MemRss.fileSizeH()}}"}}</small>
+                           v-if="payload.basic.tcp_filter.MemRss>0">{{"{{payload.basic.tcp_filter.MemRss.fileSizeH()}}"}}</small>
                 </h1>
                 <small>Memory usage</small>
             </div>
@@ -19,15 +19,15 @@
 
         <div class="head-item">
             <div>
-                <h1>{{"{{basic.queue.numFormat()}}"}}
+                <h1>{{"{{payload.basic.queue.numFormat()}}"}}
                     <small style="font-size: 12px;"
-                           v-if="basic.retries_queue">{{"{{basic.retries_queue.numFormat()}}"}}</small>
+                           v-if="payload.basic.retries_queue">{{"{{payload.basic.retries_queue.numFormat()}}"}}</small>
                 </h1>
                 <small>All url in redis</small>
-                <span style="float: right"><strong>{{"{{basic.redis_mem}}"}}</strong>
+                <span style="float: right"><strong>{{"{{payload.basic.redis_mem}}"}}</strong>
                     <br>
                     <span class="text-gray"
-                          v-if="basic.redis_retries_mem!='0B'">{{"{{basic.redis_retries_mem}}"}}</span></span>
+                          v-if="payload.basic.redis_retries_mem!='0B'">{{"{{payload.basic.redis_retries_mem}}"}}</span></span>
             </div>
             <br>
             <table>
@@ -37,15 +37,15 @@
                         socket / ws
                     </td>
                     <td>
-                        <strong>{{"{{basic.connections.numFormat()}}"}}
+                        <strong>{{"{{payload.basic.connections.numFormat()}}"}}
                             /
-                            <span :class="{'text-orange':basic.ws_connections==3,'text-red':basic.ws_connections>3}">{{"{{basic.ws_connections}}"}}</span></strong>
+                            <span :class="{'text-orange':payload.basic.ws_connections==3,'text-red':payload.basic.ws_connections>3}">{{"{{payload.basic.ws_connections}}"}}</span></strong>
                     </td>
                     <td>
                         Threads
                     </td>
                     <td>
-                        <strong>{{"{{basic.goroutine.numFormat()}}"}}</strong>
+                        <strong>{{"{{payload.basic.goroutine.numFormat()}}"}}</strong>
                     </td>
                 </tr>
                 <tr>
@@ -61,7 +61,7 @@
         {{template "sectionThree"}}
     </div>
     <canvas style="width: 100%;height:135px;margin-bottom: 15px" id="chart-rate"></canvas>
-    <div style="background: #fff;padding: 30px 20px;overflow-x: auto" v-if='projects.length'>
+    <div style="background: #fff;padding: 30px 20px;overflow-x: auto" v-if='payload.items.length'>
         <table class="table-striped">
             <thead>
             <tr>
@@ -78,7 +78,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item,index in projects" style="cursor: pointer"
+            <tr v-for="item,index in payload.items" style="cursor: pointer"
                 v-on:click="goToUrl('/' +item.name)"
                 :class="{ stop: item.stop}">
                 <td class="center">{{"{{index+1}}"}}</td>
@@ -138,15 +138,15 @@
                        v-if="location.host.toLowerCase().indexOf('kumiko') === -1">KUMIKO</a></strong>
         {{end}}
         <strong>
-            <span v-on:click="log()" v-if="basic.log_mod > 0"
+            <span v-on:click="log()" v-if="payload.basic.log_mod > 0"
                   style="margin-left:10px;cursor: pointer"
-                  :class="{'text-red':basic.log_mod>=basic.log_check,'text-gray':basic.log_mod<basic.log_check}">
-                {{"{{basic.log_mod.timestamp2date()}}"}}
+                  :class="{'text-red':payload.basic.log_mod>=payload.basic.log_check,'text-gray':payload.basic.log_mod<payload.basic.log_check}">
+                {{"{{payload.basic.log_mod.timestamp2date()}}"}}
             </span>
-            <span v-on:click="tcpLog()" v-if="basic.tcp_filter.LogMod > 0"
+            <span v-on:click="tcpLog()" v-if="payload.basic.tcp_filter.LogMod > 0"
                   style="margin-left:10px;cursor: pointer"
-                  :class="{'text-red':basic.tcp_filter.LogMod>=basic.tcp_filter.LogCheck,'text-gray':basic.tcp_filter.LogMod<basic.tcp_filter.LogCheck}">
-                {{"{{basic.tcp_filter.LogMod.timestamp2date()}}"}}
+                  :class="{'text-red':payload.basic.tcp_filter.LogMod>=payload.basic.tcp_filter.LogCheck,'text-gray':payload.basic.tcp_filter.LogMod<payload.basic.tcp_filter.LogCheck}">
+                {{"{{payload.basic.tcp_filter.LogMod.timestamp2date()}}"}}
             </span>
         </strong>
     </div>
@@ -159,9 +159,9 @@
             vueContent = new Vue({
                 el: "#vue-content",
                 data: {
-                    basic: preloadJson.basic,
-                    projects: preloadJson.projects,
-                    action: "",
+                    payload:preloadJson,
+                    // basic: preloadJson.basic,
+                    // items: preloadJson.items,
                     canvas: null,
                 },
                 methods: {
@@ -224,7 +224,7 @@
                 computed: {
                     retries: function () {
                         let str = "";
-                        this.basic.queue_retries.forEach(function (v, i) {
+                        this.payload.basic.queue_retries.forEach(function (v, i) {
                             if (i === 0 && v === 0) {
                                 return
                             }

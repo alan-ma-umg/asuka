@@ -14,21 +14,21 @@
                 Time
             </td>
             <td>
-                <strong>{{"{{basic.time}}"}}</strong>
+                <strong>{{"{{payload.basic.time}}"}}</strong>
             </td>
-            <template v-if="basic.sys_load">
+            <template v-if="payload.basic.sys_load">
                 <td>
                     Load
                 </td>
-                <td style="line-height: 10px" v-if="basic.tcp_filter.Load">
-                    <strong style="font-size: 10px">{{"{{basic.sys_load}}"}} <span
-                                :style="{color: 'hsl('+(100-basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{basic.sys_mem_percent.toFixed(0)}}"}}%</span></strong>
+                <td style="line-height: 10px" v-if="payload.basic.tcp_filter.Load">
+                    <strong style="font-size: 10px">{{"{{payload.basic.sys_load}}"}} <span
+                                :style="{color: 'hsl('+(100-payload.basic.sys_mem_percent)+', 100%, 35%)'}">{{"{{payload.basic.sys_mem_percent.toFixed(0)}}"}}%</span></strong>
                     <br>
-                    <strong style="font-size: 10px">{{"{{basic.tcp_filter.Load}}"}} <span
-                                :style="{color: 'hsl('+(100-(basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((basic.tcp_filter.MemTotal-basic.tcp_filter.MemAvailable)/basic.tcp_filter.MemTotal*100).toFixed(0)}}"}}%</span></strong>
+                    <strong style="font-size: 10px">{{"{{payload.basic.tcp_filter.Load}}"}} <span
+                                :style="{color: 'hsl('+(100-(payload.basic.tcp_filter.MemTotal-payload.basic.tcp_filter.MemAvailable)/payload.basic.tcp_filter.MemTotal*100)+', 100%, 35%)'}">{{"{{((payload.basic.tcp_filter.MemTotal-payload.basic.tcp_filter.MemAvailable)/payload.basic.tcp_filter.MemTotal*100).toFixed(0)}}"}}%</span></strong>
                 </td>
                 <td v-else>
-                    <strong>{{"{{basic.sys_load}}"}}</strong>
+                    <strong>{{"{{payload.basic.sys_load}}"}}</strong>
                 </td>
             </template>
             <template v-else>
@@ -36,7 +36,7 @@
                     Uptime
                 </td>
                 <td>
-                    <strong>{{"{{basic.uptime}}"}}</strong>
+                    <strong>{{"{{payload.basic.uptime}}"}}</strong>
                 </td>
             </template>
         </tr>
@@ -45,14 +45,14 @@
                 Servers
             </td>
             <td>
-                <strong>{{"{{basic.server_enable}}"}}</strong>
+                <strong>{{"{{payload.basic.server_enable}}"}}</strong>
             </td>
             <td>
                 Offline
             </td>
             <td>
                 <strong>
-                    {{"{{basic.server_enable?((basic.server_enable-basic.server_run)/basic.server_enable*100).toFixed(2):0}}"}}
+                    {{"{{payload.basic.server_enable?((payload.basic.server_enable-payload.basic.server_run)/payload.basic.server_enable*100).toFixed(2):0}}"}}
                     %
                 </strong>
             </td>
@@ -64,14 +64,14 @@
 {{define "sectionThree"}}
     <div class="head-item">
         <div style="float:right">
-            <h1>{{"{{basic.traffic_out}}"}} <small style="font-size: 12px"
-                        v-if="basic.os_out>0">{{"{{basic.os_out.fileSizeH()}}"}}/s</small>
+            <h1>{{"{{payload.basic.traffic_out}}"}} <small style="font-size: 12px"
+                        v-if="payload.basic.os_out>0">{{"{{payload.basic.os_out.fileSizeH()}}"}}/s</small>
             </h1>
             <small>TCP traffic out</small>
         </div>
         <div>
-            <h1>{{"{{basic.traffic_in}}"}} <small style="font-size: 12px"
-                        v-if="basic.os_in>0">{{"{{basic.os_in.fileSizeH()}}"}}/s</small></h1>
+            <h1>{{"{{payload.basic.traffic_in}}"}} <small style="font-size: 12px"
+                        v-if="payload.basic.os_in>0">{{"{{payload.basic.os_in.fileSizeH()}}"}}/s</small></h1>
             <small>TCP traffic in</small>
         </div>
         <br>
@@ -82,13 +82,13 @@
                     Request
                 </td>
                 <td>
-                    <strong>{{"{{basic.access_count.numFormat()}}"}}</strong>
+                    <strong>{{"{{payload.basic.access_count.numFormat()}}"}}</strong>
                 </td>
                 <td>
                     Failed
                 </td>
                 <td>
-                    <strong>{{"{{basic.failure_count.numFormat()}}"}}</strong>
+                    <strong>{{"{{payload.basic.failure_count.numFormat()}}"}}</strong>
                 </td>
             </tr>
             <tr>
@@ -96,13 +96,13 @@
                     Failure Recent
                 </td>
                 <td>
-                    <strong>{{"{{basic.failure_period}}"}}%</strong>
+                    <strong>{{"{{payload.basic.failure_period}}"}}%</strong>
                 </td>
                 <td>
                     Failure All
                 </td>
                 <td>
-                    <strong>{{"{{ (basic.access_count?(basic.failure_count/basic.access_count)*100:0).numFormat() }}"}}
+                    <strong>{{"{{ (payload.basic.access_count?(payload.basic.failure_count/payload.basic.access_count)*100:0).numFormat() }}"}}
                         %</strong>
                 </td>
             </tr>

@@ -1012,7 +1012,7 @@ func trafficJson() []byte {
 func indexJson(check bool) []byte {
 	start := time.Now()
 	var jsonMap = map[string]interface{}{
-		"projects": []map[string]interface{}{},
+		"items": []map[string]interface{}{},
 	}
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
@@ -1109,7 +1109,7 @@ func indexJson(check bool) []byte {
 		projectMap["failure_count"] = failureCount
 		projectMap["name"] = p.Name()
 
-		jsonMap["projects"] = append(jsonMap["projects"].([]map[string]interface{}), projectMap)
+		jsonMap["items"] = append(jsonMap["items"].([]map[string]interface{}), projectMap)
 	}
 
 	responseJsonCommon(check, dispatchers, jsonMap, start)
@@ -1125,7 +1125,7 @@ func projectJson(check bool, p *project.Dispatcher) []byte {
 	var jsonMap = map[string]interface{}{
 		"stop":      p.IsStop(),
 		"stop_time": p.StopTime.Unix(),
-		"servers":   []map[string]interface{}{},
+		"items":     []map[string]interface{}{},
 	}
 
 	periodOfFailureSecond := helper.MinInt(int(time.Since(StartTime).Seconds()), spider.PeriodOfFailureSecond)
@@ -1191,7 +1191,7 @@ func projectJson(check bool, p *project.Dispatcher) []byte {
 		//server["connections"] = s.Transport.S.Connections
 		server["access_count"] = s.GetAccessCount()
 		server["failure_count"] = s.GetFailureCount()
-		jsonMap["servers"] = append(jsonMap["servers"].([]map[string]interface{}), server)
+		jsonMap["items"] = append(jsonMap["items"].([]map[string]interface{}), server)
 	}
 
 	//basic

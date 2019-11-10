@@ -161,14 +161,7 @@ function handlerSocket() {
     }
     ws.onmessage = function (evt) {
         let data = JSON.parse(evt.data);
-        if (data.hasOwnProperty("projects")) {
-            vueContent.$data.projects = data.projects;
-        } else {
-            vueContent.$data.servers = data.servers;
-        }
-        vueContent.$data.stop = data.stop;
-        vueContent.$data.stopTime = data.stop_time;
-        vueContent.$data.basic = data.basic;
+        vueContent.$data.payload = data;
         if (data.basic.loads) {
             document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
         }
