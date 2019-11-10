@@ -154,98 +154,93 @@
 <script>
     let timer_d90g8df987g9dfg7df9gdfj, ws, manualFlag = false, vueContent;
     const wsUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/index.io";
-    const preloadJson = {{.PreloadJson}}
-        loadScript("https://cdn.jsdelivr.net/gh/vuejs/vue@2/dist/vue.min.js", function () {
-            vueContent = new Vue({
-                el: "#vue-content",
-                data: {
-                    payload:preloadJson,
-                    // basic: preloadJson.basic,
-                    // items: preloadJson.items,
-                    canvas: null,
-                },
-                methods: {
-                    switchProject: function (item) {
-                        showLoading();
-                        this.$set(item, '_btnDisabled', true);
-                        ajax({
-                            url: "/switchProject", data: {name: item.name}, error: function (res) {
-                                if (res.status === 401) {
-                                    location.href = "/login"
-                                }
-                            }, complete: function () {
-                                hideLoading();
+    loadScript("https://cdn.jsdelivr.net/gh/vuejs/vue@2/dist/vue.min.js", function () {
+        vueContent = new Vue({
+            el: "#vue-content",
+            data: {
+                payload:{{.PreloadJson}},
+                canvas: null,
+            },
+            methods: {
+                switchProject: function (item) {
+                    showLoading();
+                    this.$set(item, '_btnDisabled', true);
+                    ajax({
+                        url: "/switchProject", data: {name: item.name}, error: function (res) {
+                            if (res.status === 401) {
+                                location.href = "/login"
                             }
-                        });
-                    },
-                    logout: function () {
-                        showLoading();
-                        ajax({
-                            url: "/logout", success: function () {
-                                location.reload()
-                            }, complete: function () {
-                                hideLoading();
-                            }
-                        });
-                    },
-                    sendCommand: function (evt) {
-                        if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
-                            sendCommand(evt.target.value);
+                        }, complete: function () {
+                            hideLoading();
                         }
-                    },
-                    log: function () {
-                        showLoading();
-                        ajax({
-                            url: "/log", success: function (res) {
-                                hideLoading();
-                                popupWindow('<h1 class="text-green">Logging <small class="text-gray" ></small></h1>', res.response)
-                            }
-                        });
-                    },
-                    tcpLog: function () {
-                        showLoading();
-                        ajax({
-                            url: "/log/tcp", success: function (res) {
-                                hideLoading();
-                                popupWindow('<h1 class="text-green">TCP Logging <small class="text-gray" ></small></h1>', res.response)
-                            }
-                        });
-                    },
-                    traffic: function () {
-                        showLoading();
-                        ajax({
-                            url: "/netTraffic", success: function (res) {
-                                hideLoading();
-                                popupWindow('<h1 class="text-green">Network Traffic <small class="text-gray" ></small></h1>', res.response)
-                            }
-                        });
+                    });
+                },
+                logout: function () {
+                    showLoading();
+                    ajax({
+                        url: "/logout", success: function () {
+                            location.reload()
+                        }, complete: function () {
+                            hideLoading();
+                        }
+                    });
+                },
+                sendCommand: function (evt) {
+                    if (evt.key && evt.key.toLocaleLowerCase() === "enter") {
+                        sendCommand(evt.target.value);
                     }
                 },
-                computed: {
-                    retries: function () {
-                        let str = "";
-                        this.payload.basic.queue_retries.forEach(function (v, i) {
-                            if (i === 0 && v === 0) {
-                                return
-                            }
-                            str += (i === 0 ? "F:" : "") + "" + v + "/"
-                        });
-                        return str ? str.substring(0, str.length - 1) : str
-                    }
+                log: function () {
+                    showLoading();
+                    ajax({
+                        url: "/log", success: function (res) {
+                            hideLoading();
+                            popupWindow('<h1 class="text-green">Logging <small class="text-gray" ></small></h1>', res.response)
+                        }
+                    });
                 },
-                mounted: function () {
-                    document.getElementById('vue-content').style.display = "block";
-                    this.canvas = document.getElementById("chart-rate");
-                    if (preloadJson.basic.loads) {
-                        lineChart(this.canvas, preloadJson.basic.loads, timestampHumanReadable,chartCeil);
-                    }
-                    handlerSocket();
-                    setTimeout(function () {
-                        isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
-                    }, 6543)
+                tcpLog: function () {
+                    showLoading();
+                    ajax({
+                        url: "/log/tcp", success: function (res) {
+                            hideLoading();
+                            popupWindow('<h1 class="text-green">TCP Logging <small class="text-gray" ></small></h1>', res.response)
+                        }
+                    });
+                },
+                traffic: function () {
+                    showLoading();
+                    ajax({
+                        url: "/netTraffic", success: function (res) {
+                            hideLoading();
+                            popupWindow('<h1 class="text-green">Network Traffic <small class="text-gray" ></small></h1>', res.response)
+                        }
+                    });
                 }
-            });
+            },
+            computed: {
+                retries: function () {
+                    let str = "";
+                    this.payload.basic.queue_retries.forEach(function (v, i) {
+                        if (i === 0 && v === 0) {
+                            return
+                        }
+                        str += (i === 0 ? "F:" : "") + "" + v + "/"
+                    });
+                    return str ? str.substring(0, str.length - 1) : str
+                }
+            },
+            mounted: function () {
+                document.getElementById('vue-content').style.display = "block";
+                this.canvas = document.getElementById("chart-rate");
+                lineChart(this.canvas, this.payload.basic.loads, timestampHumanReadable, chartCeil);
+                handlerSocket();
+                setTimeout(function () {
+                    isMobile() ? sendMessage("4") : sendMessage("2")//change refresh rate
+                }, 6543)
+            }
         });
+    });
 </script>
 {{template "common"}}
 </body>

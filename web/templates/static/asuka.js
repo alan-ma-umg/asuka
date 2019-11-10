@@ -162,9 +162,7 @@ function handlerSocket() {
     ws.onmessage = function (evt) {
         let data = JSON.parse(evt.data);
         vueContent.$data.payload = data;
-        if (data.basic.loads) {
-            document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
-        }
+        document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
         ws.send("");
 
         //chart
