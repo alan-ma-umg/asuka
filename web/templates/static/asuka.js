@@ -256,7 +256,7 @@ String.prototype.numFormat = function () {
 String.prototype.urlTruncate = function () {
     let str = this.valueOf();
     if (str.length > 40) {
-        return str.substring(str.length - 40) + "..(" + str.length + ")"
+        return ".." + str.substring(str.length - 40) + "(" + str.length + ")"
     }
     return str
 };
