@@ -282,7 +282,7 @@ func DouBanJsonUnmarshal(jsonStr []byte, model *AsukaDouBan) (err error) {
 				jsonStr[i] = '/'
 			}
 		}
-		err = json.Unmarshal(jsonStr, &model.Data)
+		err = json.Unmarshal([]byte(strings.ReplaceAll(string(jsonStr), `"@`, `"`)), &model.Data) //replaceAll for "@context":"http://schema.org", "@type":"Book",
 	}
 
 	return
