@@ -145,28 +145,28 @@
     <div class="ctrl-wrap">
         {{if not .Check}}
             <a href="/login">
-                <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Login
+                <button class="btn-mb orange"
+                        style="margin-bottom: 10px;">Login
                 </button>
             </a>
         {{else}}
-            <button v-on:click="logout()" class="btn-mb"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Logout
+            <button v-on:click="logout()" class="btn-mb orange"
+                    style="margin-bottom: 10px;">Logout
             </button>
-            <button v-on:click="switchProject()" class="btn-mb"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">{{"{{payload.stop?'Start':'Stop'}}"}}
+            <button v-on:click="switchProject()" class="btn-mb orange"
+                    style="margin-bottom: 10px;">{{"{{payload.stop?'Start':'Stop'}}"}}
             </button>
-            <button class="btn-mb" v-on:click="proxy()"
-                    style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">Proxy
+            <button class="btn-mb orange" v-on:click="proxy()"
+                    style="margin-bottom: 10px;">Proxy
             </button>
             <a href="/website/{{.ProjectName}}">
-                <button class="btn-mb"
-                        style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">WEB
+                <button class="btn-mb orange"
+                        style="margin-bottom: 10px;">WEB
                 </button>
             </a>
         {{end}}
-        <button v-on:click="crawling()" class="btn-mb"
-                style="margin-bottom: 10px;background: #ff9c38;border: 1px solid #ff9c38;">
+        <button v-on:click="crawling()" class="btn-mb orange"
+                style="margin-bottom: 10px;">
             Crawling
         </button>
         {{if .Check}}

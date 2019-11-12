@@ -69,7 +69,6 @@ small {
 }
 
 a {
-    color: #00af4c;
     text-decoration: none;
 }
 
@@ -223,7 +222,7 @@ tr:hover {
     color: #ff9c38 !important;
 }
 
-.text-green {
+a, .text-green {
     color: #00af4c !important;
 }
 
@@ -290,7 +289,8 @@ tr:hover {
 
 /* Dark mode */
 body {
-    color: #ccc;
+    /*color: #ccc;*/
+    color: rgb(103, 106, 108);
     background-color: #191919;
 }
 
@@ -319,5 +319,47 @@ tr:hover {
 input, select {
     background: #363636;
     border: 1px solid #000;
+    color: rgb(103, 106, 108);
+    /*color:#ccc;*/
+}
+
+.warning {
+    background: rgb(77, 47, 17) !important;
+}
+
+.danger {
+    background: rgb(49, 16, 16) !important;
+}
+
+.red {
+    background: #ca4040 !important;
+}
+
+.orange {
+    background: #c97c2d !important;
+}
+
+.green {
+    background: #00883b !important;
+}
+
+.text-red {
+    color: #ca4040 !important;
+}
+
+.text-orange {
+    color: #c97c2d !important;
+}
+
+a, .text-green {
+    color: #00883b !important;
+}
+
+.text-gray {
+    color: rgb(103, 106, 108);
+}
+
+.btn-sm, .btn-mb {
     color:#ccc;
 }
+
