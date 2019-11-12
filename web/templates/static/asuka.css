@@ -93,6 +93,10 @@ h1 {
     }
 }
 
+.main-content {
+    background-color: #fff;
+}
+
 input, button, select {
     border-radius: 2px;
     border: 1px solid #e7e7e7;
@@ -282,4 +286,38 @@ tr:hover {
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Dark mode */
+body {
+    color: #ccc;
+    background-color: #191919;
+}
+
+.main-content {
+    background-color: #282828;
+}
+
+table.table-striped th {
+    background: #191919;
+}
+
+table.table-striped tr:nth-child(even) {
+    background: #191919;
+}
+
+th, td {
+    border: 1px solid #363636;
+    border-left: none;
+    border-right: none;
+}
+
+tr:hover {
+    background: #3b3b3b !important;
+}
+
+input, select {
+    background: #363636;
+    border: 1px solid #000;
+    color:#ccc;
 }
