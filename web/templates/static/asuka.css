@@ -290,7 +290,7 @@ a, .text-green {
 /* Dark mode */
 body {
     /*color: #ccc;*/
-    color: rgb(124, 127, 130);
+    color: #999;
     background-color: #191919;
 }
 
@@ -324,7 +324,7 @@ input, select {
 }
 
 .warning {
-    background: rgb(77, 47, 17) !important;
+    background: rgb(57, 35, 13) !important;
 }
 
 .danger {
@@ -356,7 +356,7 @@ a, .text-green {
 }
 
 .text-gray {
-    color: rgb(124, 127, 130);
+    color: #999;
 }
 
 .btn-sm, .btn-mb {
