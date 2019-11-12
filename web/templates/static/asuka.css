@@ -251,10 +251,6 @@ a, .text-green {
     flex: 1;
 }
 
-.ws-closed {
-    background: #dcdcdc
-}
-
 .lds-dual-ring {
     display: none;
     position: fixed;
@@ -294,7 +290,7 @@ body {
     background-color: #191919;
 }
 
-.ws-closed, .main-content {
+.main-content {
     background-color: #282828;
 }
 

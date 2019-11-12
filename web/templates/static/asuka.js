@@ -179,17 +179,14 @@ function handlerSocket() {
     };
     ws.onopen = function () {
         sendMessage("");
-        document.body.className = "";
         document.title = "Asuka connected";
     };
     ws.onerror = function () {
-        document.body.className = "ws-closed";
         document.title = "Asuka Error !";
         ws && ws.close();
         reconnectSocket()
     };
     ws.onclose = function () {
-        document.body.className = "ws-closed";
         document.title = "Asuka Closed !";
         ws && ws.close();
         reconnectSocket()
