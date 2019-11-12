@@ -291,13 +291,10 @@ a, .text-green {
 body {
     /*color: #ccc;*/
     color: #999;
-}
-
-.ws-closed, body {
     background-color: #191919;
 }
 
-.main-content {
+.ws-closed, .main-content {
     background-color: #282828;
 }
 
