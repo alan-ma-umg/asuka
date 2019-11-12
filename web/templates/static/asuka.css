@@ -336,11 +336,11 @@ input, select {
 }
 
 .orange {
-    background: #c97c2d !important;
+    background: #d2822f !important;
 }
 
 .green {
-    background: #00883b !important;
+    background: #009842 !important;
 }
 
 .text-red {
@@ -348,18 +348,18 @@ input, select {
 }
 
 .text-orange {
-    color: #c97c2d !important;
+    color: #d2822f !important;
 }
 
 a, .text-green {
-    color: #00883b !important;
+    color: #009842 !important;
 }
 
 .text-gray {
-    color: rgb(103, 106, 108);
+    color: rgb(131, 136, 138);
 }
 
 .btn-sm, .btn-mb {
-    color:#ccc;
+    color: #e3e3e3;
 }
 
