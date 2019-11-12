@@ -291,6 +291,9 @@ a, .text-green {
 body {
     /*color: #ccc;*/
     color: #999;
+}
+
+.ws-closed body {
     background-color: #191919;
 }
 
@@ -362,4 +365,3 @@ a, .text-green {
 .btn-sm, .btn-mb {
     color: #e3e3e3;
 }
-
