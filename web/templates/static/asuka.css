@@ -315,7 +315,7 @@ tr:hover {
     background: #3b3b3b !important;
 }
 
-input, select {
+input, select, textarea {
     background: #363636;
     border: 1px solid #191919;
 }
