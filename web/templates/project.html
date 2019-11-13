@@ -43,7 +43,7 @@
                 <tr>
                     <td colspan="4">
                         {{if .Check}}
-                            <div style="overflow:hidden;text-overflow: ellipsis;max-width: 400px"
+                            <div style="overflow:hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 350px"
                                  v-html="payload.basic.showing"></div>
                         {{else}}
                             <a href="/login" style="color: #ff9c38">Login Required</a>
