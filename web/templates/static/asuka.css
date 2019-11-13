@@ -316,6 +316,7 @@ tr:hover {
 }
 
 input, select, textarea {
+    color: #ccc;
     background: #363636;
     border: 1px solid #191919;
 }
