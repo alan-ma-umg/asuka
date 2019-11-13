@@ -88,7 +88,7 @@ h1 {
 
 @media only screen and (max-width: 1024px) {
     h1 {
-        font-size: 26px;
+        font-size: 24px;
     }
 }
 
@@ -285,8 +285,7 @@ a, .text-green {
 
 /* Dark mode */
 body {
-    /*color: #ccc;*/
-    color: #999;
+    color: #ccc;
     background-color: #191919;
 }
 
@@ -315,8 +314,6 @@ tr:hover {
 input, select {
     background: #363636;
     border: 1px solid #000;
-    color: rgb(103, 106, 108);
-    /*color:#ccc;*/
 }
 
 .warning {
@@ -349,12 +346,4 @@ input, select {
 
 a, .text-green {
     color: #009842 !important;
-}
-
-.text-gray {
-    color: #999;
-}
-
-.btn-sm, .btn-mb {
-    color: #e3e3e3;
 }

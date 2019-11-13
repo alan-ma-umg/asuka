@@ -1379,8 +1379,8 @@ func responseJsonCommon(check bool, ps []*project.Dispatcher, jsonMap map[string
 	jsonMap["basic"].(map[string]interface{})["redis_retries_mem"] = helper.ByteCountBinary(uint64(redisRetriesMem))
 	jsonMap["basic"].(map[string]interface{})["retries_queue"] = redisRetriesQueueCount
 	jsonMap["basic"].(map[string]interface{})["redis_mem"] = helper.ByteCountBinary(uint64(redisMem))
-	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.ByteCountBinary(TrafficIn)
-	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.ByteCountBinary(TrafficOut)
+	jsonMap["basic"].(map[string]interface{})["traffic_in"] = helper.FileSizeH(TrafficIn, 1)
+	jsonMap["basic"].(map[string]interface{})["traffic_out"] = helper.FileSizeH(TrafficOut, 1)
 	//jsonMap["basic"].(map[string]interface{})["net_in"] = helper.ByteCountBinary(NetIn)
 	//jsonMap["basic"].(map[string]interface{})["net_out"] = helper.ByteCountBinary(NetOut)
 	//jsonMap["basic"].(map[string]interface{})["net_in_int"] = NetIn

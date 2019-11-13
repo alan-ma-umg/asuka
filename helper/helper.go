@@ -102,6 +102,10 @@ func Contains(a []string, x string) bool {
 }
 
 func ByteCountBinary(b uint64) string {
+	return FileSizeH(b, 2)
+}
+
+func FileSizeH(b uint64, precision int) string {
 	const unit = 1024
 	if b < unit {
 		return fmt.Sprintf("%dB", b)
@@ -111,7 +115,7 @@ func ByteCountBinary(b uint64) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.2f%c", float64(b)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%."+strconv.Itoa(precision)+"f%c", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 // TldDomain return the Second-level domain and Top-level domain from url string

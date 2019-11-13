@@ -219,7 +219,7 @@ function fileSizeH(bytes) {
         return "0B";
     }
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
+    return (bytes / Math.pow(1024, i)).toFixed(1) * 1 + ['B', 'K', 'M', 'G', 'T'][i];
 }
 
 function pad2(n) {
