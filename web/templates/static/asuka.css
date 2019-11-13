@@ -307,6 +307,10 @@ th, td {
     border-right: none;
 }
 
+table.table-striped th {
+    background: #363636;
+}
+
 tr:hover {
     background: #3b3b3b !important;
 }
