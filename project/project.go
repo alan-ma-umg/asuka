@@ -75,7 +75,6 @@ func New(project IProject, stopTime time.Time) *Dispatcher {
 			database.Redis().Del(GOBRedisKey)
 			database.Redis().Set(GOBRedisKey, encBuf.String(), 0)
 		}
-		//log.Println(projectName + " status saved")
 	})
 
 	return d
@@ -406,9 +405,6 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		return
 	}
 
-	// async , wil broke the system if too fast
-	//go func(urls []*url.URL) {
-
 	var testUrls []string
 	for _, l := range spider.GetLinksByTokenizer() {
 		testUrl := ""
@@ -447,33 +443,6 @@ func Crawl(project *Dispatcher, spider *spider.Spider, dispatcherCallback func(s
 		}
 	}
 	spider.GetQueue().Enqueue(enqueueUrls)
-
-	//for _, l := range urls {
-	//	enqueueUrl := ""
-	//	if project != nil {
-	//		enqueueUrl = project.EnqueueFilter(spider, l)
-	//	} else {
-	//		enqueueUrl = l.String()
-	//	}
-	//
-	//	if enqueueUrl == "" {
-	//		continue
-	//	}
-	//
-	//	summary.FindUrls++
-	//	exists, err := spider.GetQueue().BlTestAndAddString(enqueueUrl)
-	//	if err != nil {
-	//		log.Println(err)
-	//		tcpFilterErrorHandle(project)
-	//		return //return and stop the project
-	//	}
-	//	if exists {
-	//		continue
-	//	}
-	//	summary.NewUrls++
-	//	spider.GetQueue().Enqueue(strings.TrimSpace(enqueueUrl))
-	//}
-	//}(spider.GetLinksByTokenizer())
 }
 
 func tcpFilterErrorHandle(project *Dispatcher) {
