@@ -276,7 +276,7 @@ func DouBanJsonUnmarshal(jsonStr []byte, model *AsukaDouBan) (err error) {
 
 	err = json.Unmarshal(jsonStr, &model.Data)
 
-	if err != nil && (strings.Contains(err.Error(), `in string escape code`) || strings.Contains(err.Error(), `in string literal`)) {
+	if err != nil {
 		for i, ch := range jsonStr {
 			if ch == 92 { // \ = 92
 				jsonStr[i] = '/'
