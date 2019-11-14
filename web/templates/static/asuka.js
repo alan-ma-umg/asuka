@@ -1,25 +1,15 @@
 function loadScript(src, callback) {
     let script = document.createElement('script');
     script.src = src;
-    script.onload = function () {
+    script.onload = () => {
         script = null;
         callback && callback()
     };
     document.body.appendChild(script);
 }
 
-function ajax(option) {
-    let url = option.url || '',
-        method = option.method || 'POST',
-        data = option.data,
-        headers = option.headers || {},
-        timeout = option.timeout || 10000,
-        success = option.success,
-        error = option.error,
-        complete = option.complete;
-
-    let xhr = new XMLHttpRequest();
-
+function ajax({url, method = "POST", data, headers = {}, timeout = 10000, success, error, complete}) {
+    const xhr = new XMLHttpRequest();
     xhr.timeout = timeout;
     xhr.onreadystatechange = function () {
         if (this.readyState !== 4) {
@@ -62,7 +52,7 @@ function showLoading() {
 }
 
 function hideLoading() {
-    setTimeout(function () {
+    setTimeout(() => {
         document.getElementById('layer').style.display = 'none';
         document.getElementById('loading').style.display = 'none';
     }, 300);
@@ -71,22 +61,22 @@ function hideLoading() {
 function sendCommand(cmd, projectName) {
     showLoading();
     ajax({
-        method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}, complete: function () {
+        method: "POST", url: "/cmd", data: {"projectName": projectName, "cmd": cmd}, complete: () => {
             hideLoading()
-        }, success: function () {
+        }, success: () => {
             if (typeof vueContent === "undefined") {
                 return
             }
 
             let i = 0;
-            let t = setInterval(function () {
+            let t = setInterval(() => {
                 if (++i > 100) {
                     clearInterval(t);
                 }
                 if (vueContent.$data.payload.basic.log_mod >= vueContent.$data.payload.basic.log_check) {
                     showLoading();
                     ajax({
-                        url: "/log", success: function (res) {
+                        url: "/log", success: (res) => {
                             hideLoading();
                             popupWindow('<h1 class="text-green">Logging <small class="text-gray" ></small></h1>', res.response)
                         }
@@ -95,7 +85,7 @@ function sendCommand(cmd, projectName) {
                 } else if (vueContent.$data.payload.basic.tcp_filter.LogMod >= vueContent.$data.payload.basic.tcp_filter.LogCheck) {
                     showLoading();
                     ajax({
-                        url: "/log/tcp", success: function (res) {
+                        url: "/log/tcp", success: (res) => {
                             hideLoading();
                             popupWindow('<h1 class="text-green">TCP Logging <small class="text-gray" ></small></h1>', res.response)
                         }
@@ -122,7 +112,7 @@ function reconnectSocket() {
     if (manualFlag) {
         return;
     }
-    timer_d90g8df987g9dfg7df9gdfj = setTimeout(function () {
+    timer_d90g8df987g9dfg7df9gdfj = setTimeout(() => {
         handlerSocket()
     }, 2000)
 }
@@ -159,7 +149,7 @@ function handlerSocket() {
         reconnectSocket();
         return
     }
-    ws.onmessage = function (evt) {
+    ws.onmessage = (evt) => {
         let data = JSON.parse(evt.data);
         vueContent.$data.payload = data;
         document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
@@ -177,23 +167,20 @@ function handlerSocket() {
             }
         }
     };
-    ws.onopen = function () {
+    ws.onopen = () => {
         sendMessage("");
         document.title = "Asuka connected";
     };
-    ws.onerror = function () {
+    ws.onerror = () => {
         document.title = "Asuka Error !";
         ws && ws.close();
         reconnectSocket()
     };
-    ws.onclose = function () {
+    ws.onclose = () => {
         document.title = "Asuka Closed !";
         ws && ws.close();
         reconnectSocket()
     };
-    // window.onbeforeunload = function () {
-    //     ws && ws.close()
-    // };
 }
 
 // device detection
@@ -266,8 +253,8 @@ function numFormat(v) {
 }
 
 //listen for a link
-document.addEventListener('click', function (evt) {
-    let path = evt.path || (evt.composedPath && evt.composedPath());
+document.addEventListener('click', (evt) => {
+    const path = evt.path || (evt.composedPath && evt.composedPath());
     for (let i = 0; i < path.length; i++) {
         if (path[i] && path[i].tagName === 'A' && path[i].href.trim() !== "" && (path[i].target === undefined || path[i].target === "")) {
             evt.preventDefault();
@@ -340,10 +327,10 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
 }
 
 function popupWindow(title, content) {
-    let popupWindowEl = document.getElementById("popup-window");
-    let popupWindowLayerEl = document.getElementById("popup-window-layer");
-    let popupWindowTitleEl = document.getElementById("popup-window-title");
-    let popupWindowContentEl = document.getElementById("popup-window-content");
+    const popupWindowEl = document.getElementById("popup-window");
+    const popupWindowLayerEl = document.getElementById("popup-window-layer");
+    const popupWindowTitleEl = document.getElementById("popup-window-title");
+    const popupWindowContentEl = document.getElementById("popup-window-content");
     if (window.getComputedStyle(popupWindowEl).display === 'none') {
         popupWindowLayerEl.style.display = 'block';
         popupWindowTitleEl.innerHTML = title;
@@ -363,7 +350,7 @@ function popupWindow(title, content) {
 }
 
 function popupWindowClose() {
-    let popupWindowContentEl = document.getElementById("popup-window-content");
+    const popupWindowContentEl = document.getElementById("popup-window-content");
     while (popupWindowContentEl.firstChild) {
         popupWindowContentEl.removeChild(popupWindowContentEl.firstChild);
     }
