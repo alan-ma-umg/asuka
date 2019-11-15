@@ -10,6 +10,8 @@
             <option value="http" {{if eq .FormValueType "http"}} selected {{end}}>http</option>
             <option value="https" {{if eq .FormValueType "https"}} selected {{end}}>https</option>
             <option value="socks5" {{if eq .FormValueType "socks5"}} selected {{end}}>socks5</option>
+            <option value="scylla-json" {{if eq .FormValueType "scylla-json"}} selected {{end}}>scylla JSON</option>
+            <option value="scylla-api" {{if eq .FormValueType "scylla-api"}} selected {{end}}>scylla API</option>
         </select>
         <button class="btn-mb" style="margin:0 10px;background: #ff9c38;border: 1px solid #ff9c38;color: #fff"
                 type="submit">Submit

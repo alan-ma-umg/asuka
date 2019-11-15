@@ -747,7 +747,7 @@ func addServer(w http.ResponseWriter, r *http.Request) {
 		addServerPost(w, r, p)
 	}
 
-	helper.GetTemplates().ExecuteTemplate(w, "addServer.html", struct {
+	helper.GetTemplates().ExecuteTemplate(w, "proxy.html", struct {
 		ProjectName     string
 		FormValueServer string
 		FormValueType   string
@@ -797,8 +797,15 @@ func addServerPost(_ http.ResponseWriter, r *http.Request, dispatcher *project.D
 		for _, addr := range proxy.Socks5ProxyParse(strings.TrimSpace(r.FormValue("servers"))) {
 			dispatcher.AddSpider(addr)
 		}
+	case "scylla-json":
+		for _, addr := range proxy.ScyllaJson(strings.TrimSpace(r.FormValue("servers"))) {
+			dispatcher.AddSpider(addr)
+		}
+	case "scylla-api":
+		for _, addr := range proxy.ScyllaApi(strings.TrimSpace(r.FormValue("servers"))) {
+			dispatcher.AddSpider(addr)
+		}
 	}
-
 	return
 }
 

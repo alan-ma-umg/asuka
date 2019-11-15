@@ -1,27 +1,14 @@
 package proxy
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
-
-//func HttpProxyHandler() (addr []*AddrInfo) {
-//	for _, server := range helper.Env().HttpProxyServers {
-//
-//		addr = append(addr, &AddrInfo{
-//			Enable: server.Enable,
-//			//EnablePing: server.EnablePing,
-//			Interval: server.Interval,
-//			Name:     server.Name,
-//			//Group:      server.Group,
-//			Type:       strings.ToLower(server.Type),
-//			ServerAddr: strings.ToLower(server.Server + ":" + server.ServerPort),
-//			//openChan:   make(chan bool),
-//			//closeChan:  make(chan bool, 1),
-//		})
-//	}
-//	return
-//}
 
 func HttpProxyParse(scheme string, str string) (urls []*url.URL) {
 	str = strings.Replace(str, "\r\n", "\n", len(str))
@@ -44,4 +31,43 @@ func HttpProxyParse(scheme string, str string) (urls []*url.URL) {
 	}
 
 	return
+}
+func ScyllaJson(jsonStr string) (urls []*url.URL) {
+	var m map[string][]struct {
+		Ip       string
+		Port     int
+		Is_https bool
+		Is_valid bool
+	}
+	json.Unmarshal([]byte(jsonStr), &m)
+
+	if proxies, ok := m["proxies"]; ok {
+		for _, item := range proxies {
+			if !item.Is_valid {
+				continue
+			}
+			scheme := "http"
+			if item.Is_https {
+				scheme = "https"
+			}
+			urls = append(urls, HttpProxyParse(scheme, item.Ip+":"+strconv.Itoa(item.Port))...)
+		}
+	}
+
+	return
+}
+
+func ScyllaApi(url string) (urls []*url.URL) {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return ScyllaJson(string(body))
 }
