@@ -352,3 +352,7 @@ input, select, textarea {
 a, .text-green {
     color: #009842 !important;
 }
+
+.text-gray {
+    color: #CCC;
+}
