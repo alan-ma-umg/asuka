@@ -10,8 +10,8 @@
     function refreshNetTrafficLines(data) {
         lineChart(document.getElementById("chart-os-in"), data.os_in.reverse(), chartTimeSince, fileSizeH);
         lineChart(document.getElementById("chart-os-out"), data.os_out.reverse(), chartTimeSince, fileSizeH);
-        lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse(), chartTimeSince, fileSizeH);
-        lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse(), chartTimeSince, fileSizeH);
+        lineChart(document.getElementById("chart-os-in-n"), data.os_in_n.reverse(), chartTimeSince, numFormat);
+        lineChart(document.getElementById("chart-os-out-n"), data.os_out_n.reverse(), chartTimeSince, numFormat);
         document.getElementById("popup-window-title").querySelector("small").innerHTML = data.os_in_all.fileSizeH() + " / " + data.os_out_all.fileSizeH() + " &nbsp;&nbsp;&nbsp;&nbsp;  " + data.os_in_n_all.numFormat() + " / " + data.os_out_n_all.numFormat()
     }
 
