@@ -279,10 +279,13 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
     canvasElement.width = canvasElement.offsetWidth;
     canvasElement.height = canvasElement.offsetHeight;
 
-    let lineOffset = 50; //偏移量类似padding/margin的作用
+    let yLineOffset = 50; //偏移量类似padding/margin的作用
+    let xLineOffset = 80; //偏移量类似padding/margin的作用
+    const yOffset = yLineOffset / 2, xOffset = xLineOffset / 2;
+
     let context = canvasElement.getContext("2d");
-    let lineCanvasWidth = canvasElement.width - lineOffset;
-    let lineCanvasHeight = canvasElement.height - lineOffset;
+    let lineCanvasWidth = canvasElement.width - xLineOffset;
+    let lineCanvasHeight = canvasElement.height - yLineOffset;
     let minValue = Math.min(...Object.values(loads));
     let maxValue = Math.max(...Object.values(loads));
     let heightUnitPX = lineCanvasHeight / (maxValue - minValue);
@@ -290,21 +293,31 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
     let widthUnitPx = lineCanvasWidth / (len - 1);
     let fontSize = 10;
     context.font = fontSize + "px 'open sans'";
-    context.fillStyle = "#dadada";
     context.lineWidth = 0.5;
     context.strokeStyle = "#666666";
 
-    let mod = 0;
+    let modX = 0;
     if (widthUnitPx < 100) {
-        mod = Math.ceil(100 / widthUnitPx)
+        modX = Math.ceil(100 / widthUnitPx)
     }
+    let i = 0, firstMin = true, firstMax = true;
 
-    let i = 0;
+    //0,y text
+    if (maxValue !== minValue) {
+        context.fillStyle = "#666666";
+        const minHeight = (maxValue - minValue) * heightUnitPX + yOffset;
+        context.fillText("" + Math.round(maxValue * 100) / 100, 0, yOffset);
+        if (minHeight - yOffset > 69) {
+            context.fillText("" + Math.round((maxValue - minValue) / 2 * 100) / 100, 0, (minHeight - yOffset) / 2 + yOffset);
+        }
+        context.fillText("" + Math.round(minValue * 100) / 100, 0, minHeight);}
+
+    context.fillStyle = "#dadada";
     for (let k in loads) {
         //line chart
         let x = i * widthUnitPx, y = (maxValue - loads[k]) * heightUnitPX;
-        x += lineOffset / 2;
-        y += lineOffset / 2;
+        x += xOffset;
+        y += yOffset;
 
         // when minValue === maxValue
         if (heightUnitPX === Infinity) {
@@ -314,11 +327,30 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
         //line
         context.lineTo(x, y);
 
-        if (mod === 0 || i % mod === 0 || len - 1 === i) {
+        //Y text
+        if (i === 0 || len - 1 === i || (firstMin && minValue === loads[k]) || (firstMax && maxValue === loads[k])) {
+
+            // context.fillStyle = "#666666";
+            if (firstMin && minValue === loads[k]) {
+                firstMin = false;
+                //min 0,Y text
+                // context.fillText(yConvert ? yConvert(loads[k]) : loads[k], 0, y);
+            }
+            if (firstMax && maxValue === loads[k]) {
+                firstMax = false;
+                //max 0,Y text
+                // context.fillText(yConvert ? yConvert(loads[k]) : loads[k], 0, y);
+            }
+
+            // context.fillStyle = "#dadada";
+            //x,y text
+            context.fillText(yConvert ? yConvert(loads[k]) : loads[k], x - fontSize / 2, y - fontSize);
+        }
+
+        //x text & dot
+        if (modX === 0 || i % modX === 0 || len - 1 === i) {
             //dot
             context.arc(x, y, 1, 0, 2 * Math.PI);
-            //y text
-            context.fillText(yConvert ? yConvert(loads[k]) : loads[k], x - fontSize / 2, y - fontSize);
             //x text
             context.fillText(xConvert ? xConvert(k) : k, x - fontSize / 2, canvasElement.height - 1);
         }
