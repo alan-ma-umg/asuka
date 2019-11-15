@@ -152,11 +152,13 @@ function handlerSocket() {
     ws.onmessage = (evt) => {
         let data = JSON.parse(evt.data);
         vueContent.$data.payload = data;
-        document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
         ws.send("");
 
-        //chart
         if (data.basic.hasOwnProperty("loads")) {
+            //title
+            document.title = "Asuka " + data.basic.loads[5].toFixed(2) + " / " + data.basic.loads[60].toFixed(2) + " / " + data.basic.time;
+
+            //chart
             let cacheKey = "";
             for (let k in data.basic.loads) {
                 cacheKey += data.basic.loads[k].toFixed(3) + k

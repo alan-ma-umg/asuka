@@ -318,7 +318,7 @@
             mounted: function () {
                 document.getElementById('vue-content').style.display = "block";
                 this.canvas = document.getElementById("chart-rate");
-                lineChart(this.canvas, this.payload.basic.loads, timestampHumanReadable, chartCeil);
+                this.payload.basic.loads && lineChart(this.canvas, this.payload.basic.loads, timestampHumanReadable, chartCeil);
                 handlerSocket();
                 setTimeout(function () {
                     isMobile() ? sendMessage("3") : sendMessage("1")//change refresh rate
