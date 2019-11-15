@@ -354,5 +354,5 @@ a, .text-green {
 }
 
 .text-gray {
-    color: #CCC;
+    color: #CCC !important;
 }
