@@ -332,7 +332,7 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
         context.lineTo(x, y);
 
         //Y text
-        if (i === 0 || len - 1 === i || (firstMin && minValue === loads[k]) || (firstMax && maxValue === loads[k])) {
+        if (i === 0 || (firstMin && minValue === loads[k]) || (firstMax && maxValue === loads[k])) {
 
             // context.fillStyle = "#666666";
             if (firstMin && minValue === loads[k]) {
@@ -352,7 +352,7 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
         }
 
         //x text & dot
-        if (modX === 0 || i % modX === 0 || len - 1 === i) {
+        if (modX === 0 || i % modX === 0) {
             //dot
             context.arc(x, y, 1, 0, 2 * Math.PI);
             //x text
