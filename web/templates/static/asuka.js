@@ -8,7 +8,7 @@ function loadScript(src, callback) {
     document.body.appendChild(script);
 }
 
-function ajax({url, method = "POST", data, headers = {}, timeout = 10000, success, error, complete}) {
+function ajax({url, method = "POST", data, headers = {}, timeout = 30000, success, error, complete}) {
     const xhr = new XMLHttpRequest();
     xhr.timeout = timeout;
     xhr.onreadystatechange = function () {
