@@ -8,7 +8,7 @@ function loadScript(src, callback) {
     document.body.appendChild(script);
 }
 
-function ajax({url, method = "POST", data, headers = {}, timeout = 30000, success, error, complete}) {
+function ajax({url, method = "POST", data, headers = {}, timeout = 20000, success, error, complete}) {
     const xhr = new XMLHttpRequest();
     xhr.timeout = timeout;
     xhr.onreadystatechange = function () {
@@ -21,6 +21,9 @@ function ajax({url, method = "POST", data, headers = {}, timeout = 30000, succes
             error && error(this);
         }
         complete && complete(this);
+    };
+    xhr.ontimeout = function () {
+        alert("Request Timeout")
     };
     xhr.open(method, url, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
