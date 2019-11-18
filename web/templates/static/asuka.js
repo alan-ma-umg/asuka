@@ -308,9 +308,10 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
         const minHeight = (maxValue - minValue) * heightUnitPX + yOffset;
         context.fillText("" + Math.round(maxValue * 100) / 100, 0, yOffset);
         if (minHeight - yOffset > 69) {
-            context.fillText("" + Math.round((maxValue - minValue) / 2 * 100) / 100, 0, (minHeight - yOffset) / 2 + yOffset);
+            context.fillText("" + Math.round((maxValue - (maxValue - minValue) / 2) * 100) / 100, 0, (minHeight - yOffset) / 2 + yOffset);
         }
-        context.fillText("" + Math.round(minValue * 100) / 100, 0, minHeight);}
+        context.fillText("" + Math.round(minValue * 100) / 100, 0, minHeight);
+    }
 
     context.fillStyle = "#dadada";
     for (let k in loads) {
