@@ -20,7 +20,7 @@ func (my *CDN) Name() string { return "CDN" }
 func (my *CDN) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
 	my.SpiderThrottle = &SpiderThrottle{}
-	my.SetThrottleSpeed(0.01)
+	my.SetThrottleSpeed(0.001)
 	go func() {
 		for {
 			time.Sleep(20e9)
