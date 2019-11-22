@@ -239,6 +239,11 @@ func Ping(ip *net.IPAddr, times int) (avgRtt time.Duration, failureTimes int) {
 	return
 }
 
+func CurrentFileAndLine() string {
+	_, file, line, _ := runtime.Caller(1)
+	return file + ":" + strconv.Itoa(line)
+}
+
 func stringAlign(field string, value interface{}) string {
 	return field + strings.Repeat(" ", 20-len(field)) + fmt.Sprintln(value)
 }

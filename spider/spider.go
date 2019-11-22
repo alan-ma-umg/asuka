@@ -677,7 +677,7 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 			if token.Data == "a" {
 				for _, attr := range token.Attr {
 					if attr.Key == "href" {
-						value := strings.TrimSpace(attr.Val)
+						value := strings.Trim(strings.TrimSpace(attr.Val), "\x00")
 						if value == "" {
 							continue
 						}
