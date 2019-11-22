@@ -25,6 +25,8 @@ func main() {
 		fmt.Println("Done: ", time.Since(mainStart))
 	}()
 
+	//todo websocket to Server-Sent Events
+
 	//BloomFilterServer
 	if helper.Env().BloomFilterServer != "" && helper.Env().BloomFilterClient != "" {
 		go func() {
