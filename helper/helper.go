@@ -568,7 +568,7 @@ func SendTextToWXDoOnceDurationHour(content string) {
 	if Env().WechatSendMessagePassword != "" {
 		go func() {
 			DoOnceDurationHour(func() {
-				http.Get("https://wx.flysay.com/send?password=" + Env().WechatSendMessagePassword + "&touser=chen&content=" + url.QueryEscape(content))
+				http.Get("https://wechat.flysay.com/send?password=" + Env().WechatSendMessagePassword + "&touser=chen&content=" + url.QueryEscape(content))
 			})
 		}()
 	}
