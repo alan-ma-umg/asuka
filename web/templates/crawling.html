@@ -8,7 +8,7 @@
                     <th>Server</th>
                 {{end}}
                 <th>Add Time</th>
-                <th>Consume Time</th>
+                <th>RESP/DNS/TLS Time</th>
                 <th>Status</th>
                 <th>Size</th>
                 <th>Content Type</th>
@@ -25,7 +25,7 @@
                     <td class="center">{{"{{item.TransportName}}"}}</td>
                 {{end}}
                 <td class="center">{{"{{item.AddTime}}"}}</td>
-                <td class="center">{{"{{item.ConsumeTime}}"}}</td>
+                <td class="center">{{"{{item.ConsumeTime}}"}}/{{"{{item.DnsLookupTime}}"}}/{{"{{item.TLSTime}}"}}</td>
                 <td class="center">{{"{{item.StatusCode}}"}}</td>
                 <td class="center">{{"{{item.TrafficInStr}}"}}</td>
                 <td class="center">{{"{{item.ContentType}}"}}</td>

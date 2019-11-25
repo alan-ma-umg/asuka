@@ -21,7 +21,9 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httptrace"
 	"net/http/httputil"
+	"net/textproto"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -92,6 +94,8 @@ type Summary struct {
 	FindUrls      int //页面中找到的全部url
 	NewUrls       int //页面中找到的全部新url, 新入队列的url数量
 	RawUrl        string
+	DnsLookupTime string
+	TLSTime       string
 	ConsumeTime   string
 	AddTime       string
 	ErrType       string
@@ -118,17 +122,19 @@ type Spider struct {
 
 	FailureLevel int
 
-	startTime        time.Time
-	RequestStartTime time.Time
-	RequestEndTime   time.Time
-	requestTimeout   time.Duration
-	Stop             bool
-	Delete           bool
-	sleepDuration    time.Duration
-	GetQueue         func() *queue.Queue
-	RequestBefore    func(spider *Spider)
-	DownloadFilter   func(spider *Spider, response *http.Response) (bool, error)
-	ProjectThrottle  func(spider *Spider)
+	startTime         time.Time
+	RequestStartTime  time.Time
+	RequestEndTime    time.Time
+	dnsLookupDuration time.Duration
+	tlsDuration       time.Duration
+	requestTimeout    time.Duration
+	Stop              bool
+	Delete            bool
+	sleepDuration     time.Duration
+	GetQueue          func() *queue.Queue
+	RequestBefore     func(spider *Spider)
+	DownloadFilter    func(spider *Spider, response *http.Response) (bool, error)
+	ProjectThrottle   func(spider *Spider)
 
 	EnqueueForFailure func(spider *Spider, err error, rawUrl string, retryTimes int)
 
@@ -330,6 +336,10 @@ func (spider *Spider) SetRequest(url *url.URL) *Spider {
 		if spider.currentRequest.UserAgent() == "" {
 			spider.currentRequest.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/"+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" (KHTML, like Gecko) Chrome/77.0."+strconv.FormatFloat(rand.Float64()*10000, 'f', 3, 64)+" Safari/537.36")
 		}
+
+		// http trace
+		spider.currentRequest = spider.currentRequest.WithContext(httptrace.WithClientTrace(spider.currentRequest.Context(), spider.getHttpTrace()))
+
 	} else {
 		spider.currentRequest.URL = url
 	}
@@ -422,6 +432,8 @@ func (spider *Spider) HttpFetch(u *url.URL) (summary *Summary, err error) {
 	defer func() {
 		spider.RequestEndTime = time.Now()
 		spider.ResponseStatusCode = summary.StatusCode
+		summary.DnsLookupTime = spider.dnsLookupDuration.Truncate(time.Millisecond).String()
+		summary.TLSTime = spider.tlsDuration.Truncate(time.Millisecond).String()
 
 		if spider.FailureLevel == 0 && summary.StatusCode != 0 && summary.StatusCode != 200 {
 			spider.FailureLevel = 10
@@ -704,4 +716,129 @@ func (spider *Spider) GetLinksByTokenizer() (res []*url.URL) {
 			return
 		}
 	}
+}
+
+func (spider *Spider) getHttpTrace() *httptrace.ClientTrace {
+
+	var DnsLookupTime time.Time
+	var tlsTime time.Time
+	return &httptrace.ClientTrace{
+		// GetConn is called before a connection is created or
+		// retrieved from an idle pool. The hostPort is the
+		// "host:port" of the target or proxy. GetConn is called even
+		// if there's already an idle cached connection available.
+		GetConn: func(hostPort string) {
+
+		},
+
+		// GotConn is called after a successful connection is
+		// obtained. There is no hook for failure to obtain a
+		// connection; instead, use the error from
+		// Transport.RoundTrip.
+		GotConn: func(connInfo httptrace.GotConnInfo) {
+			//log.Printf("Got Conn: %+v\n", connInfo)
+		},
+
+		// PutIdleConn is called when the connection is returned to
+		// the idle pool. If err is nil, the connection was
+		// successfully returned to the idle pool. If err is non-nil,
+		// it describes why not. PutIdleConn is not called if
+		// connection reuse is disabled via Transport.DisableKeepAlives.
+		// PutIdleConn is called before the caller's Response.Body.Close
+		// call returns.
+		// For HTTP/2, this hook is not currently used.
+		PutIdleConn: func(err error) {
+
+		},
+
+		// GotFirstResponseByte is called when the first byte of the response
+		// headers is available.
+		GotFirstResponseByte: func() {
+
+		},
+
+		// Got100Continue is called if the server replies with a "100
+		// Continue" response.
+		Got100Continue: func() {
+
+		},
+
+		// Got1xxResponse is called for each 1xx informational response header
+		// returned before the final non-1xx response. Got1xxResponse is called
+		// for "100 Continue" responses, even if Got100Continue is also defined.
+		// If it returns an error, the client request is aborted with that error value.
+		Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
+			return nil
+		}, // Go 1.11
+
+		// DNSStart is called when a DNS lookup begins.
+		DNSStart: func(httptrace.DNSStartInfo) {
+			DnsLookupTime = time.Now()
+		},
+
+		// DNSDone is called when a DNS lookup ends.
+		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
+			spider.dnsLookupDuration = time.Since(DnsLookupTime)
+			//log.Println(spider.CurrentRequest.URL.String(), dnsInfo)
+		},
+
+		// ConnectStart is called when a new connection's Dial begins.
+		// If net.Dialer.DualStack (IPv6 "Happy Eyeballs") support is
+		// enabled, this may be called multiple times.
+		ConnectStart: func(network, addr string) {
+
+		},
+
+		// ConnectDone is called when a new connection's Dial
+		// completes. The provided err indicates whether the
+		// connection completedly successfully.
+		// If net.Dialer.DualStack ("Happy Eyeballs") support is
+		// enabled, this may be called multiple times.
+		ConnectDone: func(network, addr string, err error) {
+
+		},
+
+		// TLSHandshakeStart is called when the TLS handshake is started. When
+		// connecting to a HTTPS site via a HTTP proxy, the handshake happens after
+		// the CONNECT request is processed by the proxy.
+		TLSHandshakeStart: func() {
+			tlsTime = time.Now()
+		}, // Go 1.8
+
+		// TLSHandshakeDone is called after the TLS handshake with either the
+		// successful handshake's connection state, or a non-nil error on handshake
+		// failure.
+		TLSHandshakeDone: func(tls.ConnectionState, error) {
+			spider.tlsDuration = time.Since(tlsTime)
+		}, // Go 1.8
+
+		// WroteHeaderField is called after the Transport has written
+		// each request header. At the time of this call the values
+		// might be buffered and not yet written to the network.
+		WroteHeaderField: func(key string, value []string) {
+
+		}, // Go 1.11
+
+		// WroteHeaders is called after the Transport has written
+		// all request headers.
+		WroteHeaders: func() {
+
+		},
+
+		// Wait100Continue is called if the Request specified
+		// "Expected: 100-continue" and the Transport has written the
+		// request headers but is waiting for "100 Continue" from the
+		// server before writing the request body.
+		Wait100Continue: func() {
+
+		},
+
+		// WroteRequest is called with the result of writing the
+		// request and any body. It may be called multiple times
+		// in the case of retried requests.
+		WroteRequest: func(httptrace.WroteRequestInfo) {
+
+		},
+	}
+
 }
