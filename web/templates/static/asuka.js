@@ -25,6 +25,9 @@ function ajax({url, method = "POST", data, headers = {}, timeout = 20000, succes
     xhr.ontimeout = function () {
         alert("Request Timeout")
     };
+    xhr.onerror = function () {
+        alert("network error")
+    };
     xhr.open(method, url, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     for (let k in headers) {
