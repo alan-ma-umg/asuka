@@ -134,12 +134,12 @@
                        v-if="location.host.toLowerCase().indexOf('kumiko') === -1">KUMIKO</a></strong>
         {{end}}
         <strong>
-            <span v-on:click="log()" v-if="payload.basic.log_mod > 0"
+            <span v-on:click="log()" v-if="payload.basic.log_mod>payload.basic.log_check"
                   style="margin-left:10px;cursor: pointer"
                   :class="{'text-red':payload.basic.log_mod>payload.basic.log_check,'text-gray':payload.basic.log_mod<=payload.basic.log_check}">
                 {{"{{payload.basic.log_mod.timestamp2date()}}"}}
             </span>
-            <span v-on:click="tcpLog()" v-if="payload.basic.tcp_filter.LogMod > 0"
+            <span v-on:click="tcpLog()" v-if="payload.basic.tcp_filter.LogMod>payload.basic.tcp_filter.LogCheck"
                   style="margin-left:10px;cursor: pointer"
                   :class="{'text-red':payload.basic.tcp_filter.LogMod>payload.basic.tcp_filter.LogCheck,'text-gray':payload.basic.tcp_filter.LogMod<=payload.basic.tcp_filter.LogCheck}">
                 {{"{{payload.basic.tcp_filter.LogMod.timestamp2date()}}"}}
