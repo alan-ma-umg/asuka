@@ -79,7 +79,7 @@ function sendCommand(cmd, projectName) {
                 if (++i > 100) {
                     clearInterval(t);
                 }
-                if (vueContent.$data.payload.basic.log_mod >= vueContent.$data.payload.basic.log_check) {
+                if (vueContent.$data.payload.basic.log_mod > 0 && vueContent.$data.payload.basic.log_mod >= vueContent.$data.payload.basic.log_check) {
                     showLoading();
                     ajax({
                         url: "/log", success: (res) => {
@@ -88,7 +88,7 @@ function sendCommand(cmd, projectName) {
                         }
                     });
                     clearInterval(t);
-                } else if (vueContent.$data.payload.basic.tcp_filter.LogMod >= vueContent.$data.payload.basic.tcp_filter.LogCheck) {
+                } else if (vueContent.$data.payload.basic.tcp_filter.LogMod > 0 && vueContent.$data.payload.basic.tcp_filter.LogMod >= vueContent.$data.payload.basic.tcp_filter.LogCheck) {
                     showLoading();
                     ajax({
                         url: "/log/tcp", success: (res) => {
