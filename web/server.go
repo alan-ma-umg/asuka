@@ -348,16 +348,18 @@ func cmd(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Pool/New: ", queue.GetTcpFilterInstance().ConnPoolSize(), queue.GetTcpFilterInstance().NewConnectionCount)
 		fmt.Println("\n" + helper.PrintMemUsage(mem))
 
-		go func() {
-			reportBuf, _ := queue.GetTcpFilterInstance().Cmd(20, nil)
-			res := string(reportBuf)
-			res = strings.TrimLeft(res, "{")
-			res = strings.TrimRight(res, "}")
-			fmt.Println("TCP Filter: ")
-			for _, s := range strings.Split(res, ",") {
-				fmt.Println(s)
-			}
-		}()
+		if helper.Env().BloomFilterClient != "" {
+			go func() {
+				reportBuf, _ := queue.GetTcpFilterInstance().Cmd(20, nil)
+				res := string(reportBuf)
+				res = strings.TrimLeft(res, "{")
+				res = strings.TrimRight(res, "}")
+				fmt.Println("TCP Filter: ")
+				for _, s := range strings.Split(res, ",") {
+					fmt.Println(s)
+				}
+			}()
+		}
 	case "tcpmem":
 		queue.GetTcpFilterInstance().Cmd(23, nil)
 	case "mem":
