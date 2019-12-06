@@ -15,6 +15,7 @@ type Death struct {
 	*Implement
 	*SpeedShowing
 	*SpiderThrottle
+	*Setting
 }
 
 func (my *Death) Name() string { return "Death" }
@@ -26,6 +27,8 @@ func (my *Death) Throttle(spider *spider.Spider) {
 func (my *Death) Init(d *Dispatcher) {
 	my.SpeedShowing = &SpeedShowing{}
 	my.SpiderThrottle = &SpiderThrottle{}
+	my.Setting = &Setting{Option: &SettingOption{}}
+
 	my.SetThrottleSpeed(1)
 	go func() {
 		for {

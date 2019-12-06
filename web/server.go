@@ -56,6 +56,8 @@ func Server(d []*project.Dispatcher, address string) error {
 	http.HandleFunc("/get/", commonHandleFunc(getServer))
 	http.HandleFunc("/website/", commonHandleFunc(projectWebsite))
 	http.HandleFunc("/queue/", commonHandleFunc(redisQueue))
+	http.HandleFunc("/setting/", commonHandleFunc(setting))
+	http.HandleFunc("/postSetting/", commonHandleFunc(postSetting))
 	http.HandleFunc("/login", commonHandleFunc(login))
 	http.HandleFunc("/logout", commonHandleFunc(logout))
 	http.HandleFunc("/login/post", commonHandleFunc(loginPost))
@@ -311,9 +313,15 @@ func home(w http.ResponseWriter, r *http.Request) {
 		ProjectName string
 		Check       bool
 		PreloadJson template.JS
+		HasSetting  bool
 	}{
 		GOOS:        runtime.GOOS,
 		ProjectName: p.Name(),
+	}
+
+	//has setting
+	if _, ok := p.IProject.(project.SettingInterface); ok {
+		data.HasSetting = true
 	}
 
 	//login check
@@ -324,6 +332,82 @@ func home(w http.ResponseWriter, r *http.Request) {
 	data.PreloadJson = template.JS(projectJson(data.Check, p))
 
 	helper.GetTemplates().ExecuteTemplate(w, "project.html", data)
+}
+
+func postSetting(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "POST Required", 405)
+		return
+	}
+
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	ps := strings.Split(r.URL.Path, "/")
+	if len(ps) != 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(ps[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	//has setting
+	setting, ok := p.IProject.(project.SettingInterface)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	if err := json.NewDecoder(r.Body).Decode(setting.SettingGet()); err != nil {
+		http.Error(w, "decode failed: "+err.Error(), 500)
+		return
+	}
+
+	io.WriteString(w, "{success:true}")
+}
+
+func setting(w http.ResponseWriter, r *http.Request) {
+	//login check
+	if !authCheckOrRedirect(w, r) {
+		return
+	}
+
+	ps := strings.Split(r.URL.Path, "/")
+	if len(ps) != 3 {
+		http.NotFound(w, r)
+		return
+	}
+
+	p := getDispatcher(ps[2])
+	if p == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	//has setting
+	setting, ok := p.IProject.(project.SettingInterface)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := struct {
+		GOOS        string
+		ProjectName string
+		OptionJson  template.JS
+	}{
+		GOOS:        runtime.GOOS,
+		ProjectName: p.Name(),
+	}
+
+	res, _ := json.MarshalIndent(setting.SettingGet(), "", "    ")
+	data.OptionJson = template.JS(res)
+	helper.GetTemplates().ExecuteTemplate(w, "setting.html", data)
 }
 
 func cmd(w http.ResponseWriter, r *http.Request) {

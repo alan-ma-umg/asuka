@@ -164,6 +164,11 @@
                         style="margin-bottom: 10px;">WEB
                 </button>
             </a>
+            {{if .HasSetting}}
+                <button class="btn-mb orange" v-on:click="setting()"
+                        style="margin-bottom: 10px;">Setting
+                </button>
+            {{end}}
         {{end}}
         <button v-on:click="crawling()" class="btn-mb orange"
                 style="margin-bottom: 10px;">
@@ -305,7 +310,19 @@
                             popupWindow('<h1 class="text-green">{{.ProjectName}}  <small><a class="text-gray" target="_blank" href="/get/{{.ProjectName}}"> Download</a></small></h1>', res.response)
                         }
                     });
-                },
+                }, setting: function () {
+                    showLoading();
+                    ajax({
+                        url: "/setting/{{.ProjectName}}", success: function (res) {
+                            hideLoading();
+                            popupWindow('<h1 class="text-green">setting</h1>', res.response)
+                        }, error: function (res) {
+                            if (res.status === 401) {
+                                location.href = "/login"
+                            }
+                        }
+                    });
+                }
             },
             computed: {
                 retries: function () {

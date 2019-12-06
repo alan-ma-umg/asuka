@@ -1,6 +1,7 @@
 package project
 
 import (
+	"encoding/json"
 	"github.com/chenset/asuka/spider"
 	"io"
 	"math/rand"
@@ -8,6 +9,12 @@ import (
 	"net/url"
 	"time"
 )
+
+type SettingInterface interface {
+	SettingRender() string
+	SettingParser(res string)
+	SettingGet() *SettingOption
+}
 
 type ThrottleInterface interface {
 	SetThrottleSpeed(ThrottleSpeed float64)
@@ -161,4 +168,28 @@ func (my *SpiderThrottle) Throttle(spider *spider.Spider) {
 	if my.SpiderThrottleSpeed > .0 {
 		spider.AddSleep(time.Duration(rand.Float64()*float64(time.Second)/my.SpiderThrottleSpeed) * 2)
 	}
+}
+
+type SettingOption struct {
+	Int  int
+	Str  string
+	List []int
+	Map  map[string]string
+}
+
+type Setting struct {
+	Option *SettingOption
+}
+
+func (my *Setting) SettingRender() string {
+	res, _ := json.Marshal(my.Option)
+	return string(res)
+}
+
+func (my *Setting) SettingParser(res string) {
+	json.Unmarshal([]byte(res), my.Option)
+}
+
+func (my *Setting) SettingGet() *SettingOption {
+	return my.Option
 }
