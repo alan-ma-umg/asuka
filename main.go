@@ -82,7 +82,7 @@ func asuka() {
 			SpiderThrottle: &project.SpiderThrottle{1},
 			SpeedShowing:   &project.SpeedShowing{},
 			Setting:        &project.Setting{&project.DeathSettingOption{}},
-		}, time.Now()).Run(),
+		}, time.Now()).CleanUp().Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }
