@@ -949,7 +949,7 @@ func loginPost(w http.ResponseWriter, r *http.Request) {
 		jsonMap["message"] = "success"
 		jsonMap["url"] = "/"
 
-		expireDuration := time.Hour * 24 * 7
+		expireDuration := time.Hour * 24 * 30
 		id, _ := helper.Enc([]byte(helper.Env().WEBPassword))
 		database.Redis().Set(id, helper.Env().WEBPassword, expireDuration)
 		//set login session
