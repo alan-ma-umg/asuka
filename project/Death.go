@@ -11,6 +11,13 @@ import (
 	"time"
 )
 
+type DeathSettingOption struct {
+	Int  int
+	Str  string
+	List []int
+	Map  map[string]string
+}
+
 type Death struct {
 	*Implement
 	*SpeedShowing
@@ -24,12 +31,8 @@ func (my *Death) Throttle(spider *spider.Spider) {
 	spider.ResetSleep()
 	my.SpiderThrottle.Throttle(spider)
 }
-func (my *Death) Init(d *Dispatcher) {
-	my.SpeedShowing = &SpeedShowing{}
-	my.SpiderThrottle = &SpiderThrottle{}
-	my.Setting = &Setting{Option: &SettingOption{}}
 
-	my.SetThrottleSpeed(1)
+func (my *Death) Init(d *Dispatcher) {
 	go func() {
 		for {
 			time.Sleep(10e9)

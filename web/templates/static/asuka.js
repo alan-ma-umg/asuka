@@ -23,10 +23,12 @@ function ajax({url, method = "POST", data, headers = {}, timeout = 20000, succes
         complete && complete(this);
     };
     xhr.ontimeout = function () {
-        alert("Request Timeout")
+        alert("Request Timeout");
+        hideLoading()
     };
     xhr.onerror = function () {
-        alert("network error")
+        alert("Response error");
+        hideLoading()
     };
     xhr.open(method, url, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");

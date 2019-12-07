@@ -363,7 +363,7 @@ func postSetting(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if err := json.NewDecoder(r.Body).Decode(setting.SettingGet()); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(setting.GetOption()); err != nil {
 		http.Error(w, "decode failed: "+err.Error(), 500)
 		return
 	}
@@ -405,7 +405,7 @@ func setting(w http.ResponseWriter, r *http.Request) {
 		ProjectName: p.Name(),
 	}
 
-	res, _ := json.MarshalIndent(setting.SettingGet(), "", "    ")
+	res, _ := json.MarshalIndent(setting.GetOption(), "", "    ")
 	data.OptionJson = template.JS(res)
 	helper.GetTemplates().ExecuteTemplate(w, "setting.html", data)
 }

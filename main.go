@@ -58,8 +58,14 @@ func asuka() {
 		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
 		project.New(&project.Test{}, time.Now()).CleanUp().Run(),
 		project.New(&project.Forever{}, time.Now()).CleanUp().Run(),
-		project.New(&project.Death{}, time.Now()).CleanUp().Run(),
 		project.New(&project.JS{}, time.Now()).CleanUp().Run(),
+
+		//project.New(&project.Death{}, time.Now()).Run(),
+		project.New(&project.Death{
+			SpiderThrottle: &project.SpiderThrottle{1},
+			SpeedShowing:   &project.SpeedShowing{},
+			Setting:        &project.Setting{&project.DeathSettingOption{}},
+		}, time.Now()).Run(),
 	}, helper.Env().WEBListen))
 	helper.ExitHandleFunc()
 }

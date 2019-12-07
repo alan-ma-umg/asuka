@@ -1,7 +1,7 @@
 package project
 
 import (
-	"encoding/json"
+	"encoding/gob"
 	"github.com/chenset/asuka/spider"
 	"io"
 	"math/rand"
@@ -10,10 +10,12 @@ import (
 	"time"
 )
 
+func init() {
+	gob.Register(&DeathSettingOption{})
+}
+
 type SettingInterface interface {
-	SettingRender() string
-	SettingParser(res string)
-	SettingGet() *SettingOption
+	GetOption() interface{}
 }
 
 type ThrottleInterface interface {
@@ -25,7 +27,7 @@ type IProject interface {
 	// Init DoOnce func
 	Init(my *Dispatcher)
 
-	// EntryUrl 万恶的起源
+	// EntryUrl
 	// Firstly
 	EntryUrl() []string
 
@@ -170,26 +172,10 @@ func (my *SpiderThrottle) Throttle(spider *spider.Spider) {
 	}
 }
 
-type SettingOption struct {
-	Int  int
-	Str  string
-	List []int
-	Map  map[string]string
-}
-
 type Setting struct {
-	Option *SettingOption
+	Option interface{}
 }
 
-func (my *Setting) SettingRender() string {
-	res, _ := json.Marshal(my.Option)
-	return string(res)
-}
-
-func (my *Setting) SettingParser(res string) {
-	json.Unmarshal([]byte(res), my.Option)
-}
-
-func (my *Setting) SettingGet() *SettingOption {
+func (my *Setting) GetOption() interface{} {
 	return my.Option
 }
