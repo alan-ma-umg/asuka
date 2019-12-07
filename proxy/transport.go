@@ -2,11 +2,13 @@ package proxy
 
 import (
 	"context"
+	"github.com/chenset/asuka/helper"
 	"golang.org/x/net/proxy"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -31,21 +33,28 @@ func createHttpTransport(u *url.URL) *http.Transport {
 	switch u.Scheme {
 	case "direct":
 		t.Proxy = nil //disable system proxy
-		t.DialContext = (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			//DualStack: true,
-			FallbackDelay: time.Second,
-		}).DialContext
+		t.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
+			separator := strings.LastIndex(address, ":")
+			return (&net.Dialer{
+				Timeout:   time.Minute,
+				KeepAlive: time.Minute,
+				//DualStack: true,
+				FallbackDelay: time.Second,
+			}).DialContext(ctx, network, helper.GetDNSCache().Lookup(address[:separator])+address[separator:])
+		}
 	case "http", "https":
 		t.Proxy = http.ProxyURL(u) // with http proxy
 		t.TLSHandshakeTimeout = time.Minute
-		t.DialContext = (&net.Dialer{
-			Timeout:   time.Minute,
-			KeepAlive: time.Minute,
-			//DualStack: true,
-			FallbackDelay: time.Second,
-		}).DialContext
+
+		t.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
+			separator := strings.LastIndex(address, ":")
+			return (&net.Dialer{
+				Timeout:   time.Minute,
+				KeepAlive: time.Minute,
+				//DualStack: true,
+				FallbackDelay: time.Second,
+			}).DialContext(ctx, network, helper.GetDNSCache().Lookup(address[:separator])+address[separator:])
+		}
 	case "socks5":
 		dialer, err := proxy.SOCKS5("tcp", u.Host, nil, proxy.Direct)
 		if err != nil {
@@ -53,8 +62,9 @@ func createHttpTransport(u *url.URL) *http.Transport {
 			return nil
 		}
 		t.Proxy = nil //disable system proxy
-		t.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return dialer.Dial(network, addr)
+		t.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
+			separator := strings.LastIndex(address, ":")
+			return dialer.Dial(network, helper.GetDNSCache().Lookup(address[:separator])+address[separator:])
 		}
 	}
 	return t
