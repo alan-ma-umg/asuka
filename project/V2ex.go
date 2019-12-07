@@ -25,9 +25,7 @@ type V2ex struct {
 
 func (my *V2ex) InitBloomFilterCapacity() uint { return 1000000 }
 func (my *V2ex) Init(d *Dispatcher) {
-	my.SpeedShowing = &SpeedShowing{}
 	database.Redis().Del(my.Name() + "_" + helper.Env().Redis.URLQueueKey)
-
 	go func() {
 		for {
 			time.Sleep(30e9)

@@ -18,9 +18,6 @@ type Test struct {
 
 func (my *Test) Name() string { return "Kei" }
 func (my *Test) Init(d *Dispatcher) {
-	my.SpeedShowing = &SpeedShowing{}
-	my.SpiderThrottle = &SpiderThrottle{}
-	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
 			time.Sleep(10e9)

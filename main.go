@@ -45,20 +45,37 @@ func asuka() {
 	log.Println(web.Server([]*project.Dispatcher{
 		project.New(&project.DouBan{}, time.Now()).Run(),
 		project.New(&project.Pixiv{}, time.Time{}).Run(),
-		project.New(&project.V2ex{}, time.Time{}).Run(),
+
+		project.New(&project.V2ex{
+			SpeedShowing: &project.SpeedShowing{},
+		}, time.Time{}).Run(),
 		//project.New(&project.Test2{}, time.Time{}).Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).Run(),
 		//project.New(&project.JianShu{}, time.Now()).Run(),
 		//project.New(&project.Www{}, time.Now()).Run(),
 		//project.New(&project.Pixiv{}).CleanUp().Run(),
-		project.New(&project.CDN{}, time.Time{}).CleanUp().Run(),
+		project.New(&project.CDN{
+			SpiderThrottle: &project.SpiderThrottle{.001},
+			SpeedShowing:   &project.SpeedShowing{},
+		}, time.Time{}).Run(),
 		//project.New(&project.DouBan{}).CleanUp().Run(),
 		//project.New(&project.ZhiHu{}, time.Now()).CleanUp().Run(),
 		//project.New(&project.JianShu{}, time.Now()).CleanUp().Run(),
 		//project.New(&project.Www{}, time.Now().Add(time.Minute*20)).CleanUp().Run(),
-		project.New(&project.Test{}, time.Now()).CleanUp().Run(),
-		project.New(&project.Forever{}, time.Now()).CleanUp().Run(),
-		project.New(&project.JS{}, time.Now()).CleanUp().Run(),
+		project.New(&project.Test{
+			SpiderThrottle: &project.SpiderThrottle{.1},
+			SpeedShowing:   &project.SpeedShowing{},
+		}, time.Now()).CleanUp().Run(),
+
+		project.New(&project.Forever{
+			SpiderThrottle: &project.SpiderThrottle{.1},
+			SpeedShowing:   &project.SpeedShowing{},
+		}, time.Now()).CleanUp().Run(),
+
+		project.New(&project.JS{
+			SpiderThrottle: &project.SpiderThrottle{.01},
+			SpeedShowing:   &project.SpeedShowing{},
+		}, time.Now()).CleanUp().Run(),
 
 		//project.New(&project.Death{}, time.Now()).Run(),
 		project.New(&project.Death{

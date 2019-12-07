@@ -18,9 +18,6 @@ type Forever struct {
 
 func (my *Forever) Name() string { return "Mai" }
 func (my *Forever) Init(d *Dispatcher) {
-	my.SpeedShowing = &SpeedShowing{}
-	my.SpiderThrottle = &SpiderThrottle{}
-	my.SetThrottleSpeed(.1)
 	go func() {
 		for {
 			time.Sleep(30e9)
