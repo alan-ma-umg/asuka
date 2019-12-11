@@ -284,75 +284,94 @@ a, .text-green {
 }
 
 /* Dark mode */
-body {
+html[class~=dark] .sun {
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    background: rgb(247, 250, 252);
+}
+
+html:not(.dark) .moon {
+    position: relative;
+    top:-2px;
+    left: -4px;
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    box-shadow: 4px 1px 0 #191919;
+}
+
+html[class~=dark] body {
     color: #ccc;
     background-color: #191919;
 }
 
-.main-content {
+html[class~=dark] .main-content {
     background-color: #282828;
 }
 
-table.table-striped th {
+html[class~=dark] table.table-striped th {
     background: #191919;
 }
 
-table.table-striped tr:nth-child(even) {
+html[class~=dark] table.table-striped tr:nth-child(even) {
     background: #191919;
 }
 
-th, td {
+html[class~=dark] th,html[class~=dark] td {
     border: 1px solid #363636;
     border-left: none;
     border-right: none;
 }
 
-table.table-striped th {
+html[class~=dark] table.table-striped th {
     background: #363636;
 }
 
-tr:hover {
+html[class~=dark] tr:hover {
     background: #3b3b3b !important;
 }
 
-input, select, textarea {
+html[class~=dark] input,html[class~=dark] select,html[class~=dark] textarea {
     color: #ccc;
     background: #363636;
     border: 1px solid #191919;
 }
 
-.warning {
+html[class~=dark] .warning {
     background: rgb(57, 35, 13) !important;
 }
 
-.danger {
+html[class~=dark] .danger {
     background: rgb(49, 16, 16) !important;
 }
 
-.red {
+html[class~=dark] .red {
     background: #ca4040 !important;
 }
 
-.orange {
+html[class~=dark] .orange {
     background: #d2822f !important;
 }
 
-.green {
+html[class~=dark] .green {
     background: #009842 !important;
 }
 
-.text-red {
+html[class~=dark] .text-red {
     color: #ca4040 !important;
 }
 
-.text-orange {
+html[class~=dark] .text-orange {
     color: #d2822f !important;
 }
 
-a, .text-green {
+html[class~=dark] a,html[class~=dark] .text-green {
     color: #009842 !important;
 }
 
-.text-gray {
+html[class~=dark] .text-gray {
     color: #CCC !important;
 }
