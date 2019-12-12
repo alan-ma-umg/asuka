@@ -6,7 +6,7 @@ if (document.cookie.split(';').filter((item) => item.includes('darkMode=1')).len
 function darkModeToggle() {
     if (!isDarkMode()) {
         document.documentElement.className += " dark";
-        document.cookie = 'darkMode=1; expires='+new Date(new Date().getTime() + 86400000*365)+'; path=/'
+        document.cookie = 'darkMode=1; expires=' + new Date(new Date().getTime() + 86400000 * 365) + '; path=/'
     } else {
         document.documentElement.className = document.documentElement.className.replace("dark", "").trim()
         document.cookie = 'darkMode=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/'
@@ -311,6 +311,7 @@ function lineChart(canvasElement, loads, xConvert, yConvert) {
     const yOffset = yLineOffset / 2, xOffset = xLineOffset / 2;
 
     let context = canvasElement.getContext("2d");
+    context.beginPath();
     let lineCanvasWidth = canvasElement.width - xLineOffset;
     let lineCanvasHeight = canvasElement.height - yLineOffset;
     let minValue = Math.min(...Object.values(loads));
